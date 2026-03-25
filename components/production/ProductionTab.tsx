@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Loader2, Sparkles, Palette, Save, Copy, Download, ShieldAlert, Box, CheckCircle2, Paintbrush, Eye } from 'lucide-react';
 import { toast } from 'sonner';
-import { GeneratedPrompt, CATEGORIES, LIGHTING_STYLES, CAMERA_ANGLES, COLOR_TONES, ASPECT_RATIOS, COMPOSITIONS } from '@/types';
+import { GeneratedPrompt, CATEGORIES, LIGHTING_STYLES, CAMERA_ANGLES, COLOR_TONES, ASPECT_RATIOS, COMPOSITIONS, DEPTH_OF_FIELD, CAMERA_MOTION } from '@/types';
 
 interface ProductionTabProps {
   getAIClient: () => any;
@@ -46,6 +46,8 @@ export function ProductionTab({
   const [colorTone, setColorTone] = useState('Auto/AI Choice');
   const [aspectRatio, setAspectRatio] = useState('Auto/AI Choice');
   const [composition, setComposition] = useState('Auto/AI Choice');
+  const [depthOfField, setDepthOfField] = useState('Auto/AI Choice');
+  const [cameraMotion, setCameraMotion] = useState('Auto/AI Choice');
   const [targetCount, setTargetCount] = useState<number>(50);
   const [creativity, setCreativity] = useState<number>(70);
   const [currentCount, setCurrentCount] = useState<number>(0);
@@ -90,21 +92,25 @@ export function ProductionTab({
           - Camera Angle: ${cameraAngle}
           - Color Tone: ${colorTone}
           - Composition: ${composition}
+          - Depth of Field: ${depthOfField}
+          - Camera Motion: ${cameraMotion}
           - Aspect Ratio: ${aspectRatio} (Jika bukan Auto, pastikan komposisi prompt mendukung rasio ini dan outputkan rasio ini persis di field aspectRatio)
         `;
 
         let systemInstruction = `Anda adalah Elite Creative Director dan Prompt Engineer ahli untuk Adobe Stock. Tugas Anda adalah menghasilkan ${batchSize} prompt gambar 4K (Nano Banana Pro) yang sangat presisi, fotorealistik, dan bernilai komersial tinggi.
-Setiap prompt WAJIB mematuhi kerangka kerja "Creative Director" dari Nano Banana: [Subject] + [Action] + [Location/context] + [Composition] + [Style].
+Setiap prompt WAJIB mematuhi kerangka kerja "Creative Director" dari Nano Banana: [Subject] + [Action] + [Storytelling Context] + [Composition & DoF] + [Lighting & Style].
 
-ATURAN WAJIB NANO BANANA PRO:
-1. Mulai prompt dengan kata kerja yang kuat atau deskripsi subjek yang sangat spesifik.
-2. Gunakan "positive framing" (jelaskan apa yang Anda inginkan, BUKAN apa yang tidak Anda inginkan. Hindari kata "no").
-3. Desain Pencahayaan (Lighting): Wajib sebutkan setup studio ("three-point softbox") atau efek dramatis ("Chiaroscuro lighting with harsh, high contrast", "Golden hour backlighting creating long shadows").
-4. Kontrol Kamera & Lensa: Wajib sebutkan hardware ("shot on a GoPro", "Fujifilm camera", "disposable camera") ATAU lensa ("low-angle shot with a shallow depth of field f/1.8", "wide-angle lens", "macro lens").
-5. Color Grading & Film Stock: Wajib sebutkan tekstur emosional ("as if on 1980s color film, slightly grainy", "Cinematic color grading with muted teal tones").
-6. Materialitas & Tekstur: Jika ada produk/objek, definisikan fisik materialnya ("minimalist ceramic coffee mug", "matte plastic", "frosted glass").
-7. Tipografi (Jika ada teks): Gunakan tanda kutip untuk kata, sebutkan font, dan gaya (contoh: the word "GLOW" in a flowing, elegant Brush Script font).
-8. Commercial Utility: Pastikan gambar memiliki nilai jual (contoh: "generous copy space on the left", "clean background for text overlay", "authentic lifestyle").
+ATURAN WAJIB NANO BANANA PRO (STORYTELLING & COMMERCIAL FOCUS):
+1. Visual Storytelling: Gambar harus membangkitkan emosi atau menceritakan momen spesifik (candid, authentic) yang relevan untuk kampanye iklan atau editorial komersial.
+2. Subjek & Aksi: Mulai prompt dengan kata kerja yang kuat atau deskripsi subjek yang sangat spesifik sedang melakukan aksi bermakna.
+3. Gunakan "positive framing" (jelaskan apa yang Anda inginkan, BUKAN apa yang tidak Anda inginkan. Hindari kata "no").
+4. Desain Pencahayaan (Lighting): Wajib sebutkan setup studio ("three-point softbox") atau efek dramatis ("Chiaroscuro lighting with harsh, high contrast", "Golden hour backlighting creating long shadows").
+5. Kontrol Kamera, Lensa & DoF: Wajib sebutkan hardware/lensa dan Depth of Field ("85mm lens, shallow depth of field f/1.4 with creamy bokeh", "wide-angle lens f/8 everything in focus", "macro lens").
+6. Efek Gerak (Motion): Definisikan apakah gambar statis ("crisp, shot on tripod") atau dinamis ("motion blur on the subject", "handheld camera shake for documentary feel").
+7. Color Grading & Film Stock: Wajib sebutkan tekstur emosional ("as if on 1980s color film, slightly grainy", "Cinematic color grading with muted teal tones").
+8. Materialitas & Tekstur: Jika ada produk/objek, definisikan fisik materialnya ("minimalist ceramic coffee mug", "matte plastic", "frosted glass").
+9. Tipografi (Jika ada teks): Gunakan tanda kutip untuk kata, sebutkan font, dan gaya (contoh: the word "GLOW" in a flowing, elegant Brush Script font).
+10. Commercial Utility: Pastikan gambar memiliki nilai jual tinggi (contoh: "generous copy space on the left", "clean background for text overlay", "authentic lifestyle diversity").
 
 ATURAN NEGATIVE PROMPT (SANGAT PENTING UNTUK ADOBE STOCK):
 - Selalu sertakan penolakan standar: "watermark, text, signature, logo, trademark, copyright, blurry, cropped, out of focus, low quality, jpeg artifacts, noise, pixelated".
@@ -269,25 +275,35 @@ ${parametricRules}`;
             
             <div className="pt-4 border-t border-cyan-500/20 space-y-4">
               <Label className="text-xs font-bold text-cyan-500/70 uppercase tracking-wider flex items-center gap-2 font-mono"><Paintbrush className="w-3 h-3 text-fuchsia-500" /> Parametric Controls</Label>
-              <div className="space-y-2">
-                <Label className="text-xs text-cyan-300 font-mono">Lighting Style</Label>
-                <Select value={lightingStyle} onValueChange={(val) => val && setLightingStyle(val)}><SelectTrigger className="h-8 text-xs bg-[#050505] border-cyan-500/50 text-cyan-50 font-mono"><SelectValue /></SelectTrigger><SelectContent className="bg-slate-900 border-cyan-500/50 text-cyan-50 font-mono">{LIGHTING_STYLES.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}</SelectContent></Select>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs text-cyan-300 font-mono">Camera Angle</Label>
-                <Select value={cameraAngle} onValueChange={(val) => val && setCameraAngle(val)}><SelectTrigger className="h-8 text-xs bg-[#050505] border-cyan-500/50 text-cyan-50 font-mono"><SelectValue /></SelectTrigger><SelectContent className="bg-slate-900 border-cyan-500/50 text-cyan-50 font-mono">{CAMERA_ANGLES.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}</SelectContent></Select>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs text-cyan-300 font-mono">Color Tone</Label>
-                <Select value={colorTone} onValueChange={(val) => val && setColorTone(val)}><SelectTrigger className="h-8 text-xs bg-[#050505] border-cyan-500/50 text-cyan-50 font-mono"><SelectValue /></SelectTrigger><SelectContent className="bg-slate-900 border-cyan-500/50 text-cyan-50 font-mono">{COLOR_TONES.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}</SelectContent></Select>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs text-cyan-300 font-mono">Aspect Ratio</Label>
-                <Select value={aspectRatio} onValueChange={(val) => val && setAspectRatio(val)}><SelectTrigger className="h-8 text-xs bg-[#050505] border-cyan-500/50 text-cyan-50 font-mono"><SelectValue /></SelectTrigger><SelectContent className="bg-slate-900 border-cyan-500/50 text-cyan-50 font-mono">{ASPECT_RATIOS.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}</SelectContent></Select>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs text-cyan-300 font-mono">Composition</Label>
-                <Select value={composition} onValueChange={(val) => val && setComposition(val)}><SelectTrigger className="h-8 text-xs bg-[#050505] border-cyan-500/50 text-cyan-50 font-mono"><SelectValue /></SelectTrigger><SelectContent className="bg-slate-900 border-cyan-500/50 text-cyan-50 font-mono">{COMPOSITIONS.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}</SelectContent></Select>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label className="text-xs text-cyan-300 font-mono">Lighting Style</Label>
+                  <Select value={lightingStyle} onValueChange={(val) => val && setLightingStyle(val)}><SelectTrigger className="h-8 text-xs bg-[#050505] border-cyan-500/50 text-cyan-50 font-mono"><SelectValue /></SelectTrigger><SelectContent className="bg-slate-900 border-cyan-500/50 text-cyan-50 font-mono">{LIGHTING_STYLES.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}</SelectContent></Select>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs text-cyan-300 font-mono">Camera Angle</Label>
+                  <Select value={cameraAngle} onValueChange={(val) => val && setCameraAngle(val)}><SelectTrigger className="h-8 text-xs bg-[#050505] border-cyan-500/50 text-cyan-50 font-mono"><SelectValue /></SelectTrigger><SelectContent className="bg-slate-900 border-cyan-500/50 text-cyan-50 font-mono">{CAMERA_ANGLES.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}</SelectContent></Select>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs text-cyan-300 font-mono">Color Tone</Label>
+                  <Select value={colorTone} onValueChange={(val) => val && setColorTone(val)}><SelectTrigger className="h-8 text-xs bg-[#050505] border-cyan-500/50 text-cyan-50 font-mono"><SelectValue /></SelectTrigger><SelectContent className="bg-slate-900 border-cyan-500/50 text-cyan-50 font-mono">{COLOR_TONES.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}</SelectContent></Select>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs text-cyan-300 font-mono">Composition</Label>
+                  <Select value={composition} onValueChange={(val) => val && setComposition(val)}><SelectTrigger className="h-8 text-xs bg-[#050505] border-cyan-500/50 text-cyan-50 font-mono"><SelectValue /></SelectTrigger><SelectContent className="bg-slate-900 border-cyan-500/50 text-cyan-50 font-mono">{COMPOSITIONS.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}</SelectContent></Select>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs text-cyan-300 font-mono">Depth of Field</Label>
+                  <Select value={depthOfField} onValueChange={(val) => val && setDepthOfField(val)}><SelectTrigger className="h-8 text-xs bg-[#050505] border-cyan-500/50 text-cyan-50 font-mono"><SelectValue /></SelectTrigger><SelectContent className="bg-slate-900 border-cyan-500/50 text-cyan-50 font-mono">{DEPTH_OF_FIELD.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}</SelectContent></Select>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs text-cyan-300 font-mono">Camera Motion</Label>
+                  <Select value={cameraMotion} onValueChange={(val) => val && setCameraMotion(val)}><SelectTrigger className="h-8 text-xs bg-[#050505] border-cyan-500/50 text-cyan-50 font-mono"><SelectValue /></SelectTrigger><SelectContent className="bg-slate-900 border-cyan-500/50 text-cyan-50 font-mono">{CAMERA_MOTION.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}</SelectContent></Select>
+                </div>
+                <div className="col-span-2 space-y-2">
+                  <Label className="text-xs text-cyan-300 font-mono">Aspect Ratio</Label>
+                  <Select value={aspectRatio} onValueChange={(val) => val && setAspectRatio(val)}><SelectTrigger className="h-8 text-xs bg-[#050505] border-cyan-500/50 text-cyan-50 font-mono"><SelectValue /></SelectTrigger><SelectContent className="bg-slate-900 border-cyan-500/50 text-cyan-50 font-mono">{ASPECT_RATIOS.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}</SelectContent></Select>
+                </div>
               </div>
               <div className="space-y-2 pt-2 border-t border-cyan-500/20">
                 <Label className="text-xs text-fuchsia-400 font-mono font-bold flex items-center gap-1"><Sparkles className="w-3 h-3" /> Target Auto-Batching (Max 1000)</Label>

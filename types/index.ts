@@ -59,3 +59,5 @@ export const CAMERA_ANGLES = ['Auto/AI Choice', 'Macro (Close-up)', 'Wide Angle'
 export const COLOR_TONES = ['Auto/AI Choice', 'Warm & Earthy', 'Cool & Moody', 'Pastel Minimalist', 'Vibrant & Saturated', 'Monochrome/B&W'];
 export const ASPECT_RATIOS = ['Auto/AI Choice', '16:9', '9:16', '1:1', '3:2', '4:3', '21:9'];
 export const COMPOSITIONS = ['Auto/AI Choice', 'Rule of Thirds', 'Symmetrical Balance', 'Leading Lines', 'Golden Ratio', 'Negative Space (Copy Space)', 'Framing within Frame'];
+export const DEPTH_OF_FIELD = ['Auto/AI Choice', 'Shallow (f/1.2 - Bokeh)', 'Deep (f/8 - Full Focus)', 'Macro (Extreme Close-up)'];
+export const CAMERA_MOTION = ['Auto/AI Choice', 'Static/Tripod (Crisp)', 'Motion Blur (Fast Action)', 'Handheld (Camera Shake/Raw)', 'Long Exposure (Light Trails)'];
