@@ -30,69 +30,101 @@ export function ResearchTab({ getAIClient, onSendToProduction }: ResearchTabProp
   const handleResearch = async () => {
     if (!researchTopic.trim()) { toast.error('Silakan masukkan topik.'); return; }
     setIsResearching(true); setResearchResult(null);
+    
     try {
       const ai = getAIClient();
-      const response = await ai.models.generateContent({
-        model: 'gemini-3-flash-preview', // Fallback to flash for better compatibility
-        contents: `Lakukan pencarian web real-time untuk tren microstock dan Adobe Stock terbaru terkait topik: "${researchTopic}". Terapkan metode "Niche Market" dan "Blue Ocean Strategy". Analisis tingkat permintaan pasar, tingkat kompetisi, kejenuhan pasar, persona pembeli, palet warna yang sedang tren, dan temukan celah pasar (uncontested market space) di mana permintaan tinggi namun kompetisi/suplai aset masih sangat rendah untuk menghasilkan rekomendasi sub-niche "Blue Ocean" yang paling menguntungkan berdasarkan data internet terbaru.`,
-        config: {
-          thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
-          systemInstruction: `Anda adalah Elite Microstock Market Analyst dan Pakar Blue Ocean Strategy. Anda MEMILIKI AKSES INTERNET. Wajib gunakan alat pencarian (Google Search) untuk mencari data tren Adobe Stock terbaru. Berikan analisis yang sangat mendalam, temukan celah pasar yang belum banyak digarap kompetitor (Blue Ocean), dan berorientasi pada penjualan komersial tinggi.
-          
-          PENTING UNTUK REJECTION RISKS: Anda WAJIB membagi 'rejectionRisks' ke dalam 3 kategori baku berikut agar sangat actionable:
-          1. "Compositional Risks" (Masalah framing, pencahayaan buruk, lack of copy space, angle membosankan)
-          2. "Technical Artifacts" (Cacat AI, anatomi aneh, noise, blur, over-sharpening, chromatic aberration berlebih)
-          3. "Content Violations" (Pelanggaran hak cipta, logo, trademark, properti pribadi, wajah tanpa rilis model)`,
-          temperature: 0.4,
-          tools: [{ googleSearch: {} }],
-          responseMimeType: 'application/json',
-          responseSchema: {
-            type: Type.OBJECT,
-            properties: {
-              trendScore: { type: Type.INTEGER, description: "Skor potensi komersial (1-100)" },
-              saturationIndex: { type: Type.INTEGER, description: "Indeks kejenuhan pasar (1-100)." },
-              demandLevel: { type: Type.STRING, description: "Tinggi, Sedang, atau Rendah" },
-              competitionLevel: { type: Type.STRING, description: "Tinggi, Sedang, atau Rendah" },
-              buyerPersona: { type: Type.STRING, description: "Target pembeli utama aset ini" },
-              seasonality: { type: Type.STRING, description: "Evergreen atau Seasonal?" },
-              colorPalette: { type: Type.ARRAY, items: { type: Type.STRING }, description: "3-4 warna tren" },
-              analysis: { type: Type.STRING, description: "Analisis tajam mengapa topik ini laku dan bagaimana strategi Blue Ocean-nya" },
-              subNiches: {
-                type: Type.ARRAY,
-                items: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, reason: { type: Type.STRING } }, required: ["name", "reason"] },
-                description: "3-5 sub-niche 'Blue Ocean' spesifik (permintaan tinggi, kompetisi rendah)"
-              },
-              visualRequirements: {
-                type: Type.ARRAY,
-                items: {
-                  type: Type.OBJECT,
-                  properties: {
-                    category: { type: Type.STRING, description: "Kategori (misal: Lighting & Color, Composition, Subject Matter)" },
-                    items: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Daftar kebutuhan visual" }
-                  },
-                  required: ["category", "items"]
-                },
-                description: "Kebutuhan visual yang dikategorikan"
-              },
-              rejectionRisks: {
-                type: Type.ARRAY,
-                items: {
-                  type: Type.OBJECT,
-                  properties: {
-                    category: { type: Type.STRING, description: "Kategori (misal: Compositional Risks, Technical Artifacts, Content Violations)" },
-                    items: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Daftar risiko penolakan" }
-                  },
-                  required: ["category", "items"]
-                },
-                description: "Risiko penolakan yang dikategorikan"
-              },
-              titleTemplate: { type: Type.STRING, description: "Satu template judul SEO Adobe Stock (maks 70 karakter)" },
-              seoTags: { type: Type.ARRAY, items: { type: Type.STRING }, description: "10-15 kata kunci SEO" }
+      
+      const baseConfig = {
+        thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
+        systemInstruction: `Anda adalah Elite Microstock Market Analyst dan Pakar Blue Ocean Strategy. Berikan analisis yang sangat mendalam, temukan celah pasar yang belum banyak digarap kompetitor (Blue Ocean), dan berorientasi pada penjualan komersial tinggi.
+        
+        PENTING UNTUK REJECTION RISKS: Anda WAJIB membagi 'rejectionRisks' ke dalam 3 kategori baku berikut agar sangat actionable:
+        1. "Compositional Risks" (Masalah framing, pencahayaan buruk, lack of copy space, angle membosankan)
+        2. "Technical Artifacts" (Cacat AI, anatomi aneh, noise, blur, over-sharpening, chromatic aberration berlebih)
+        3. "Content Violations" (Pelanggaran hak cipta, logo, trademark, properti pribadi, wajah tanpa rilis model)`,
+        temperature: 0.4,
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            trendScore: { type: Type.INTEGER, description: "Skor potensi komersial (1-100)" },
+            saturationIndex: { type: Type.INTEGER, description: "Indeks kejenuhan pasar (1-100)." },
+            demandLevel: { type: Type.STRING, description: "Tinggi, Sedang, atau Rendah" },
+            competitionLevel: { type: Type.STRING, description: "Tinggi, Sedang, atau Rendah" },
+            buyerPersona: { type: Type.STRING, description: "Target pembeli utama aset ini" },
+            seasonality: { type: Type.STRING, description: "Evergreen atau Seasonal?" },
+            colorPalette: { type: Type.ARRAY, items: { type: Type.STRING }, description: "3-4 warna tren" },
+            analysis: { type: Type.STRING, description: "Analisis tajam mengapa topik ini laku dan bagaimana strategi Blue Ocean-nya" },
+            subNiches: {
+              type: Type.ARRAY,
+              items: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, reason: { type: Type.STRING } }, required: ["name", "reason"] },
+              description: "3-5 sub-niche 'Blue Ocean' spesifik (permintaan tinggi, kompetisi rendah)"
             },
-            required: ["trendScore", "saturationIndex", "demandLevel", "competitionLevel", "buyerPersona", "seasonality", "colorPalette", "analysis", "subNiches", "visualRequirements", "rejectionRisks", "titleTemplate", "seoTags"]
-          }
-        },
-      });
+            visualRequirements: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  category: { type: Type.STRING, description: "Kategori (misal: Lighting & Color, Composition, Subject Matter)" },
+                  items: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Daftar kebutuhan visual" }
+                },
+                required: ["category", "items"]
+              },
+              description: "Kebutuhan visual yang dikategorikan"
+            },
+            rejectionRisks: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  category: { type: Type.STRING, description: "Kategori (misal: Compositional Risks, Technical Artifacts, Content Violations)" },
+                  items: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Daftar risiko penolakan" }
+                },
+                required: ["category", "items"]
+              },
+              description: "Risiko penolakan yang dikategorikan"
+            },
+            titleTemplate: { type: Type.STRING, description: "Satu template judul SEO Adobe Stock (maks 70 karakter)" },
+            seoTags: { type: Type.ARRAY, items: { type: Type.STRING }, description: "10-15 kata kunci SEO" }
+          },
+          required: ["trendScore", "saturationIndex", "demandLevel", "competitionLevel", "buyerPersona", "seasonality", "colorPalette", "analysis", "subNiches", "visualRequirements", "rejectionRisks", "titleTemplate", "seoTags"]
+        }
+      };
+
+      const contents = `Lakukan analisis tren microstock dan Adobe Stock terbaru terkait topik: "${researchTopic}". Terapkan metode "Niche Market" dan "Blue Ocean Strategy". Analisis tingkat permintaan pasar, tingkat kompetisi, kejenuhan pasar, persona pembeli, palet warna yang sedang tren, dan temukan celah pasar (uncontested market space) di mana permintaan tinggi namun kompetisi/suplai aset masih sangat rendah untuk menghasilkan rekomendasi sub-niche "Blue Ocean" yang paling menguntungkan.`;
+
+      let response;
+      let usedFallback = false;
+
+      try {
+        // Attempt 1: With Google Search Grounding
+        response = await ai.models.generateContent({
+          model: 'gemini-3-flash-preview',
+          contents: contents,
+          config: {
+            ...baseConfig,
+            tools: [{ googleSearch: {} }],
+            systemInstruction: baseConfig.systemInstruction + "\n\nAnda MEMILIKI AKSES INTERNET. Wajib gunakan alat pencarian (Google Search) untuk mencari data tren Adobe Stock terbaru."
+          },
+        });
+      } catch (searchError: any) {
+        const msg = searchError.message || '';
+        if (msg.includes('429') || msg.includes('RESOURCE_EXHAUSTED') || msg.includes('quota')) {
+          console.warn("Google Search Grounding hit rate limit. Falling back to internal knowledge...");
+          usedFallback = true;
+          // Attempt 2: Fallback WITHOUT Google Search Grounding
+          response = await ai.models.generateContent({
+            model: 'gemini-3-flash-preview',
+            contents: contents,
+            config: {
+              ...baseConfig,
+              systemInstruction: baseConfig.systemInstruction + "\n\nGunakan pengetahuan internal Anda yang luas tentang tren desain dan microstock untuk memberikan analisis terbaik."
+            },
+          });
+        } else {
+          throw searchError; // Rethrow if it's not a quota issue
+        }
+      }
 
       const text = response.text;
       const chunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks;
@@ -109,12 +141,16 @@ export function ResearchTab({ getAIClient, onSendToProduction }: ResearchTabProp
         const parsedResult = JSON.parse(text) as ResearchResult;
         parsedResult.sources = sources;
         setResearchResult(parsedResult);
-        toast.success('Analisis pasar super cerdas berhasil diselesaikan!');
+        if (usedFallback) {
+          toast.success('Analisis berhasil menggunakan Internal AI Knowledge (Pencarian Web dinonaktifkan sementara karena limit API).');
+        } else {
+          toast.success('Analisis pasar super cerdas (Live Web) berhasil diselesaikan!');
+        }
       }
     } catch (error: any) {
       const msg = error.message || '';
       if (msg.includes('429') || msg.includes('RESOURCE_EXHAUSTED')) {
-        toast.error('Error 429 (Quota Exceeded): Kuota API Key Anda habis. Silakan periksa billing di Google AI Studio.');
+        toast.error('Error 429 (Quota Exceeded): Kuota API Key Anda benar-benar habis. Silakan periksa billing di Google AI Studio.');
       } else {
         toast.error('Gagal melakukan riset pasar. Cek API Key Anda.');
         console.error(error);
@@ -150,7 +186,7 @@ export function ResearchTab({ getAIClient, onSendToProduction }: ResearchTabProp
             {/* Bento Grid Analytics */}
             <Card className="md:col-span-2 bg-[#050505] border-cyan-500/30 text-cyan-50 relative overflow-hidden shadow-[0_0_20px_rgba(6,182,212,0.1)]">
               <div className="absolute top-4 right-4 bg-fuchsia-500/10 text-fuchsia-400 text-xs px-3 py-1 rounded-full border border-fuchsia-500/30 flex items-center gap-1 font-mono">
-                <span className="w-2 h-2 rounded-full bg-fuchsia-500 animate-pulse shadow-[0_0_5px_rgba(217,70,239,0.8)]"></span> Live Web Grounded
+                <span className="w-2 h-2 rounded-full bg-fuchsia-500 animate-pulse shadow-[0_0_5px_rgba(217,70,239,0.8)]"></span> {researchResult.sources && researchResult.sources.length > 0 ? 'Live Web Grounded' : 'Internal AI Knowledge'}
               </div>
               <CardContent className="p-6">
                 <div className="flex flex-col md:flex-row items-center gap-8">
