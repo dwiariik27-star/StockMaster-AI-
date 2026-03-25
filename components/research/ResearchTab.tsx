@@ -37,7 +37,12 @@ export function ResearchTab({ getAIClient, onSendToProduction }: ResearchTabProp
         contents: `Lakukan pencarian web real-time untuk tren microstock dan Adobe Stock terbaru terkait topik: "${researchTopic}". Terapkan metode "Niche Market" dan "Blue Ocean Strategy". Analisis tingkat permintaan pasar, tingkat kompetisi, kejenuhan pasar, persona pembeli, palet warna yang sedang tren, dan temukan celah pasar (uncontested market space) di mana permintaan tinggi namun kompetisi/suplai aset masih sangat rendah untuk menghasilkan rekomendasi sub-niche "Blue Ocean" yang paling menguntungkan berdasarkan data internet terbaru.`,
         config: {
           thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
-          systemInstruction: `Anda adalah Elite Microstock Market Analyst dan Pakar Blue Ocean Strategy. Anda MEMILIKI AKSES INTERNET. Wajib gunakan alat pencarian (Google Search) untuk mencari data tren Adobe Stock terbaru. Berikan analisis yang sangat mendalam, temukan celah pasar yang belum banyak digarap kompetitor (Blue Ocean), dan berorientasi pada penjualan komersial tinggi.`,
+          systemInstruction: `Anda adalah Elite Microstock Market Analyst dan Pakar Blue Ocean Strategy. Anda MEMILIKI AKSES INTERNET. Wajib gunakan alat pencarian (Google Search) untuk mencari data tren Adobe Stock terbaru. Berikan analisis yang sangat mendalam, temukan celah pasar yang belum banyak digarap kompetitor (Blue Ocean), dan berorientasi pada penjualan komersial tinggi.
+          
+          PENTING UNTUK REJECTION RISKS: Anda WAJIB membagi 'rejectionRisks' ke dalam 3 kategori baku berikut agar sangat actionable:
+          1. "Compositional Risks" (Masalah framing, pencahayaan buruk, lack of copy space, angle membosankan)
+          2. "Technical Artifacts" (Cacat AI, anatomi aneh, noise, blur, over-sharpening, chromatic aberration berlebih)
+          3. "Content Violations" (Pelanggaran hak cipta, logo, trademark, properti pribadi, wajah tanpa rilis model)`,
           temperature: 0.4,
           tools: [{ googleSearch: {} }],
           responseMimeType: 'application/json',
@@ -205,17 +210,17 @@ export function ResearchTab({ getAIClient, onSendToProduction }: ResearchTabProp
                     </div>
                   ))}
                 </div>
-                <div className="pt-4 border-t border-cyan-500/20">
-                  <div className="flex items-center gap-2 text-sm font-semibold mb-3 text-red-400 font-mono"><ShieldAlert className="w-4 h-4 drop-shadow-[0_0_5px_rgba(248,113,113,0.8)]" /> Rejection Risks (AVOID)</div>
-                  <div className="space-y-4">
+                <div className="mt-6 p-4 rounded-lg border border-red-500/30 bg-red-950/20 shadow-[inset_0_0_15px_rgba(248,113,113,0.05)]">
+                  <div className="flex items-center gap-2 text-sm font-bold mb-4 text-red-400 font-mono uppercase tracking-wider"><ShieldAlert className="w-5 h-5 drop-shadow-[0_0_5px_rgba(248,113,113,0.8)]" /> Critical Rejection Risks</div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {researchResult.rejectionRisks?.map((riskCat, i) => (
-                      <div key={i} className="space-y-2">
-                        <h4 className="text-sm font-semibold text-red-300 font-mono border-b border-red-500/20 pb-1">{riskCat.category}</h4>
-                        <ul className="space-y-1.5 pl-2">
+                      <div key={i} className="space-y-2 bg-[#050505] p-3 rounded-md border border-red-500/10 hover:border-red-500/30 transition-colors">
+                        <h4 className="text-xs font-bold text-red-300 font-mono border-b border-red-500/20 pb-2 uppercase tracking-wide">{riskCat.category}</h4>
+                        <ul className="space-y-2 pt-1">
                           {riskCat.items?.map((item, j) => (
-                            <li key={j} className="text-sm flex items-start gap-2">
-                              <span className="text-red-500 font-bold drop-shadow-[0_0_5px_rgba(248,113,113,0.8)] mt-0.5">✕</span>
-                              <span className="text-cyan-50/80 leading-snug">{item}</span>
+                            <li key={j} className="text-xs flex items-start gap-2">
+                              <span className="text-red-500 font-bold drop-shadow-[0_0_5px_rgba(248,113,113,0.8)] mt-0.5 shrink-0">✕</span>
+                              <span className="text-red-100/80 leading-snug">{item}</span>
                             </li>
                           ))}
                         </ul>
