@@ -48,17 +48,17 @@ export default function StockMasterDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-[#050505] p-4 md:p-8 font-sans bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-cyan-950/20 via-[#050505] to-[#050505]">
+    <div className="min-h-screen bg-[#050505] text-cyan-50 p-4 md:p-8 font-sans selection:bg-fuchsia-500/40">
       <div className="max-w-6xl mx-auto space-y-8">
-        <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-cyan-500/20 pb-6">
+        <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-cyan-900/50 pb-6">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-cyan-400 flex items-center gap-2 drop-shadow-[0_0_10px_rgba(6,182,212,0.5)]">
-              <Sparkles className="w-8 h-8 text-fuchsia-500" />
-              StockMaster AI <span className="text-xs bg-fuchsia-500/20 text-fuchsia-400 border border-fuchsia-500/50 px-2 py-1 rounded-full ml-2 align-middle font-mono">v5 Multimodal</span>
+            <h1 className="text-3xl font-bold tracking-tight text-cyan-300 flex items-center gap-2 font-mono">
+              <Sparkles className="w-7 h-7 text-fuchsia-500 drop-shadow-[0_0_8px_rgba(217,70,239,0.8)]" />
+              StockMaster AI <span className="text-[10px] uppercase tracking-widest bg-cyan-950/50 text-cyan-400 border border-cyan-500/50 px-2 py-1 rounded-full ml-2 align-middle font-medium shadow-[0_0_10px_rgba(6,182,212,0.2)]">v5 Multimodal</span>
             </h1>
-            <p className="text-cyan-500/70 mt-1 font-mono text-sm">Platform Intelijen Pasar & Produksi Masal Adobe Stock</p>
+            <p className="text-cyan-500/70 mt-1.5 text-sm font-medium tracking-wide font-mono">Platform Intelijen Pasar & Produksi Masal Adobe Stock</p>
           </div>
-          <Button variant={apiKey ? "outline" : "default"} className={!apiKey ? "bg-cyan-500 text-black hover:bg-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.4)]" : "border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10"} onClick={() => setShowSettings(!showSettings)}>
+          <Button variant={apiKey ? "outline" : "default"} className={!apiKey ? "bg-cyan-500 text-black hover:bg-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.4)] font-bold font-mono" : "border-cyan-500/50 text-cyan-400 hover:bg-cyan-950/50 hover:text-cyan-300 font-mono"} onClick={() => setShowSettings(!showSettings)}>
             <Key className="w-4 h-4 mr-2" /> {apiKey ? 'API Key Terpasang' : 'Set API Key (BYOK)'}
           </Button>
         </header>
@@ -76,10 +76,10 @@ export default function StockMasterDashboard() {
         )}
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full flex flex-col items-center">
-          <TabsList className="grid w-full max-w-2xl grid-cols-3 mb-8 bg-slate-900/50 border border-cyan-500/20 p-1 rounded-lg">
-            <TabsTrigger value="research" className="flex items-center gap-2 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-300 data-[state=active]:shadow-[0_0_10px_rgba(6,182,212,0.2)]"><TrendingUp className="w-4 h-4" /> Market Intel</TabsTrigger>
-            <TabsTrigger value="vision" className="flex items-center gap-2 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-300 data-[state=active]:shadow-[0_0_10px_rgba(6,182,212,0.2)]"><Eye className="w-4 h-4" /> Vision Analyzer</TabsTrigger>
-            <TabsTrigger value="production" className="flex items-center gap-2 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-300 data-[state=active]:shadow-[0_0_10px_rgba(6,182,212,0.2)]"><Palette className="w-4 h-4" /> Production</TabsTrigger>
+          <TabsList className="grid w-full max-w-2xl grid-cols-3 mb-8 bg-[#0a0a0a] border border-cyan-900/50 p-1 rounded-lg shadow-[inset_0_0_20px_rgba(6,182,212,0.05)]">
+            <TabsTrigger value="research" className="flex items-center gap-2 data-[state=active]:bg-cyan-950/50 data-[state=active]:text-cyan-300 data-[state=active]:border-cyan-500/50 data-[state=active]:shadow-[0_0_10px_rgba(6,182,212,0.2)] text-cyan-600 border border-transparent transition-all font-mono"><TrendingUp className="w-4 h-4" /> Market Intel</TabsTrigger>
+            <TabsTrigger value="vision" className="flex items-center gap-2 data-[state=active]:bg-cyan-950/50 data-[state=active]:text-cyan-300 data-[state=active]:border-cyan-500/50 data-[state=active]:shadow-[0_0_10px_rgba(6,182,212,0.2)] text-cyan-600 border border-transparent transition-all font-mono"><Eye className="w-4 h-4" /> Vision Analyzer</TabsTrigger>
+            <TabsTrigger value="production" className="flex items-center gap-2 data-[state=active]:bg-cyan-950/50 data-[state=active]:text-cyan-300 data-[state=active]:border-cyan-500/50 data-[state=active]:shadow-[0_0_10px_rgba(6,182,212,0.2)] text-cyan-600 border border-transparent transition-all font-mono"><Palette className="w-4 h-4" /> Production</TabsTrigger>
           </TabsList>
 
           <TabsContent value="research" className="space-y-6 w-full">

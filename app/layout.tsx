@@ -21,7 +21,7 @@ export const metadata: Metadata = {
 export default function RootLayout({children}: {children: React.ReactNode}) {
   return (
     <html lang="en" className="dark">
-      <body className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} font-sans bg-[#050505] text-cyan-50 antialiased selection:bg-cyan-500/30`} suppressHydrationWarning>
+      <body className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} font-sans bg-[#050505] text-cyan-50 antialiased selection:bg-fuchsia-500/40`} suppressHydrationWarning>
         {children}
         <Toaster theme="dark" />
       </body>

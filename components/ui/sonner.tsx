@@ -38,7 +38,10 @@ const Toaster = ({ ...props }: ToasterProps) => {
       }
       toastOptions={{
         classNames: {
-          toast: "cn-toast",
+          toast: "group toast group-[.toaster]:bg-[#0a0a0a] group-[.toaster]:text-cyan-50 group-[.toaster]:border-cyan-500/50 group-[.toaster]:shadow-[0_0_15px_rgba(6,182,212,0.2)] font-mono",
+          description: "group-[.toast]:text-cyan-500/70",
+          actionButton: "group-[.toast]:bg-fuchsia-600 group-[.toast]:text-white",
+          cancelButton: "group-[.toast]:bg-cyan-950/50 group-[.toast]:text-cyan-400",
         },
       }}
       {...props}

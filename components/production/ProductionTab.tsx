@@ -335,84 +335,84 @@ ${parametricRules}`;
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
       <div className="lg:col-span-4 space-y-6 sticky top-8">
-        <Card className="bg-slate-900/50 border-cyan-500/20 shadow-[0_0_15px_rgba(6,182,212,0.05)]">
+        <Card className="bg-[#0a0a0a] border-cyan-500/30 shadow-[0_0_15px_rgba(6,182,212,0.05)]">
           <CardHeader>
-            <CardTitle className="text-cyan-400 font-mono">Parametric Production Engine</CardTitle>
-            <CardDescription className="text-cyan-500/70 font-mono text-xs">Kunci spesifikasi teknis untuk merender 10 masterpiece.</CardDescription>
+            <CardTitle className="text-cyan-300 font-mono">Parametric Production Engine</CardTitle>
+            <CardDescription className="text-cyan-500/70 text-sm font-mono">Kunci spesifikasi teknis untuk merender 10 masterpiece.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="productionKeyword" className="text-cyan-300 font-mono">Niche / Sub-Niche Target</Label>
-              <Input id="productionKeyword" placeholder="Contoh: Virtual business meeting..." value={keyword} onChange={(e) => setKeyword(e.target.value)} className="bg-[#050505] border-cyan-500/50 text-cyan-50 focus-visible:ring-cyan-400/50 font-mono" />
+              <Label htmlFor="productionKeyword" className="text-xs uppercase tracking-wider text-cyan-400 font-semibold font-mono">Niche / Sub-Niche Target</Label>
+              <Input id="productionKeyword" placeholder="Contoh: Virtual business meeting..." value={keyword} onChange={(e) => setKeyword(e.target.value)} className="h-10 bg-[#050505] border-cyan-500/50 text-cyan-50 focus-visible:ring-cyan-400/50 transition-colors font-mono" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="category" className="text-cyan-300 font-mono">Kategori Aset</Label>
+              <Label htmlFor="category" className="text-xs uppercase tracking-wider text-cyan-400 font-semibold font-mono">Kategori Aset</Label>
               <Select value={category} onValueChange={(val) => val && setCategory(val)}>
-                <SelectTrigger id="category" className="bg-[#050505] border-cyan-500/50 text-cyan-50 font-mono"><SelectValue placeholder="Pilih kategori" /></SelectTrigger>
-                <SelectContent className="bg-slate-900 border-cyan-500/50 text-cyan-50 font-mono">{CATEGORIES.map((cat) => (<SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>))}</SelectContent>
+                <SelectTrigger id="category" className="h-10 bg-[#050505] border-cyan-500/50 text-cyan-50 transition-colors font-mono"><SelectValue placeholder="Pilih kategori" /></SelectTrigger>
+                <SelectContent className="bg-[#050505] border-cyan-500/50 text-cyan-50 font-mono">{CATEGORIES.map((cat) => (<SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>))}</SelectContent>
               </Select>
             </div>
             
-            <div className="pt-4 border-t border-cyan-500/20 space-y-4">
-              <Label className="text-xs font-bold text-cyan-500/70 uppercase tracking-wider flex items-center gap-2 font-mono"><Paintbrush className="w-3 h-3 text-fuchsia-500" /> Parametric Controls</Label>
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-                <div className="space-y-2">
-                  <Label className="text-xs text-cyan-300 font-mono">Lighting Style</Label>
-                  <Select value={lightingStyle} onValueChange={(val) => val && setLightingStyle(val)}><SelectTrigger className="h-8 text-xs bg-[#050505] border-cyan-500/50 text-cyan-50 font-mono"><SelectValue /></SelectTrigger><SelectContent className="bg-slate-900 border-cyan-500/50 text-cyan-50 font-mono">{LIGHTING_STYLES.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}</SelectContent></Select>
+            <div className="pt-6 border-t border-cyan-500/30 space-y-5">
+              <Label className="text-xs font-bold text-fuchsia-400 uppercase tracking-wider flex items-center gap-2 font-mono"><Paintbrush className="w-3.5 h-3.5 text-fuchsia-500" /> Parametric Controls</Label>
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-5">
+                <div className="flex flex-col justify-end gap-1.5 h-full">
+                  <Label className="text-[10px] uppercase tracking-wider text-cyan-500/70 font-semibold leading-tight font-mono">Lighting Style</Label>
+                  <Select value={lightingStyle} onValueChange={(val) => val && setLightingStyle(val)}><SelectTrigger className="h-9 text-xs bg-[#050505] border-cyan-500/30 text-cyan-300 hover:bg-cyan-950/30 hover:border-cyan-400/50 transition-colors font-mono"><SelectValue /></SelectTrigger><SelectContent className="bg-[#050505] border-cyan-500/50 text-cyan-300 font-mono">{LIGHTING_STYLES.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}</SelectContent></Select>
                 </div>
-                <div className="space-y-2">
-                  <Label className="text-xs text-cyan-300 font-mono">Camera Angle</Label>
-                  <Select value={cameraAngle} onValueChange={(val) => val && setCameraAngle(val)}><SelectTrigger className="h-8 text-xs bg-[#050505] border-cyan-500/50 text-cyan-50 font-mono"><SelectValue /></SelectTrigger><SelectContent className="bg-slate-900 border-cyan-500/50 text-cyan-50 font-mono">{CAMERA_ANGLES.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}</SelectContent></Select>
+                <div className="flex flex-col justify-end gap-1.5 h-full">
+                  <Label className="text-[10px] uppercase tracking-wider text-cyan-500/70 font-semibold leading-tight font-mono">Camera Angle</Label>
+                  <Select value={cameraAngle} onValueChange={(val) => val && setCameraAngle(val)}><SelectTrigger className="h-9 text-xs bg-[#050505] border-cyan-500/30 text-cyan-300 hover:bg-cyan-950/30 hover:border-cyan-400/50 transition-colors font-mono"><SelectValue /></SelectTrigger><SelectContent className="bg-[#050505] border-cyan-500/50 text-cyan-300 font-mono">{CAMERA_ANGLES.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}</SelectContent></Select>
                 </div>
-                <div className="space-y-2">
-                  <Label className="text-xs text-cyan-300 font-mono">Color Tone</Label>
-                  <Select value={colorTone} onValueChange={(val) => val && setColorTone(val)}><SelectTrigger className="h-8 text-xs bg-[#050505] border-cyan-500/50 text-cyan-50 font-mono"><SelectValue /></SelectTrigger><SelectContent className="bg-slate-900 border-cyan-500/50 text-cyan-50 font-mono">{COLOR_TONES.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}</SelectContent></Select>
+                <div className="flex flex-col justify-end gap-1.5 h-full">
+                  <Label className="text-[10px] uppercase tracking-wider text-cyan-500/70 font-semibold leading-tight font-mono">Color Tone</Label>
+                  <Select value={colorTone} onValueChange={(val) => val && setColorTone(val)}><SelectTrigger className="h-9 text-xs bg-[#050505] border-cyan-500/30 text-cyan-300 hover:bg-cyan-950/30 hover:border-cyan-400/50 transition-colors font-mono"><SelectValue /></SelectTrigger><SelectContent className="bg-[#050505] border-cyan-500/50 text-cyan-300 font-mono">{COLOR_TONES.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}</SelectContent></Select>
                 </div>
-                <div className="space-y-2">
-                  <Label className="text-xs text-cyan-300 font-mono">Composition</Label>
-                  <Select value={composition} onValueChange={(val) => val && setComposition(val)}><SelectTrigger className="h-8 text-xs bg-[#050505] border-cyan-500/50 text-cyan-50 font-mono"><SelectValue /></SelectTrigger><SelectContent className="bg-slate-900 border-cyan-500/50 text-cyan-50 font-mono">{COMPOSITIONS.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}</SelectContent></Select>
+                <div className="flex flex-col justify-end gap-1.5 h-full">
+                  <Label className="text-[10px] uppercase tracking-wider text-cyan-500/70 font-semibold leading-tight font-mono">Composition</Label>
+                  <Select value={composition} onValueChange={(val) => val && setComposition(val)}><SelectTrigger className="h-9 text-xs bg-[#050505] border-cyan-500/30 text-cyan-300 hover:bg-cyan-950/30 hover:border-cyan-400/50 transition-colors font-mono"><SelectValue /></SelectTrigger><SelectContent className="bg-[#050505] border-cyan-500/50 text-cyan-300 font-mono">{COMPOSITIONS.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}</SelectContent></Select>
                 </div>
-                <div className="space-y-2">
-                  <Label className="text-xs text-cyan-300 font-mono">Depth of Field</Label>
-                  <Select value={depthOfField} onValueChange={(val) => val && setDepthOfField(val)}><SelectTrigger className="h-8 text-xs bg-[#050505] border-cyan-500/50 text-cyan-50 font-mono"><SelectValue /></SelectTrigger><SelectContent className="bg-slate-900 border-cyan-500/50 text-cyan-50 font-mono">{DEPTH_OF_FIELD.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}</SelectContent></Select>
+                <div className="flex flex-col justify-end gap-1.5 h-full">
+                  <Label className="text-[10px] uppercase tracking-wider text-cyan-500/70 font-semibold leading-tight font-mono">Depth of Field</Label>
+                  <Select value={depthOfField} onValueChange={(val) => val && setDepthOfField(val)}><SelectTrigger className="h-9 text-xs bg-[#050505] border-cyan-500/30 text-cyan-300 hover:bg-cyan-950/30 hover:border-cyan-400/50 transition-colors font-mono"><SelectValue /></SelectTrigger><SelectContent className="bg-[#050505] border-cyan-500/50 text-cyan-300 font-mono">{DEPTH_OF_FIELD.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}</SelectContent></Select>
                 </div>
-                <div className="space-y-2">
-                  <Label className="text-xs text-cyan-300 font-mono">Camera Motion</Label>
-                  <Select value={cameraMotion} onValueChange={(val) => val && setCameraMotion(val)}><SelectTrigger className="h-8 text-xs bg-[#050505] border-cyan-500/50 text-cyan-50 font-mono"><SelectValue /></SelectTrigger><SelectContent className="bg-slate-900 border-cyan-500/50 text-cyan-50 font-mono">{CAMERA_MOTION.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}</SelectContent></Select>
+                <div className="flex flex-col justify-end gap-1.5 h-full">
+                  <Label className="text-[10px] uppercase tracking-wider text-cyan-500/70 font-semibold leading-tight font-mono">Camera Motion</Label>
+                  <Select value={cameraMotion} onValueChange={(val) => val && setCameraMotion(val)}><SelectTrigger className="h-9 text-xs bg-[#050505] border-cyan-500/30 text-cyan-300 hover:bg-cyan-950/30 hover:border-cyan-400/50 transition-colors font-mono"><SelectValue /></SelectTrigger><SelectContent className="bg-[#050505] border-cyan-500/50 text-cyan-300 font-mono">{CAMERA_MOTION.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}</SelectContent></Select>
                 </div>
-                <div className="space-y-2">
-                  <Label className="text-xs text-cyan-300 font-mono">Lens Flare</Label>
-                  <Select value={lensFlare} onValueChange={(val) => val && setLensFlare(val)}><SelectTrigger className="h-8 text-xs bg-[#050505] border-cyan-500/50 text-cyan-50 font-mono"><SelectValue /></SelectTrigger><SelectContent className="bg-slate-900 border-cyan-500/50 text-cyan-50 font-mono">{LENS_FLARE.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}</SelectContent></Select>
+                <div className="flex flex-col justify-end gap-1.5 h-full">
+                  <Label className="text-[10px] uppercase tracking-wider text-cyan-500/70 font-semibold leading-tight font-mono">Lens Flare</Label>
+                  <Select value={lensFlare} onValueChange={(val) => val && setLensFlare(val)}><SelectTrigger className="h-9 text-xs bg-[#050505] border-cyan-500/30 text-cyan-300 hover:bg-cyan-950/30 hover:border-cyan-400/50 transition-colors font-mono"><SelectValue /></SelectTrigger><SelectContent className="bg-[#050505] border-cyan-500/50 text-cyan-300 font-mono">{LENS_FLARE.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}</SelectContent></Select>
                 </div>
-                <div className="space-y-2">
-                  <Label className="text-xs text-cyan-300 font-mono">Bokeh Intensity</Label>
-                  <Select value={bokehIntensity} onValueChange={(val) => val && setBokehIntensity(val)}><SelectTrigger className="h-8 text-xs bg-[#050505] border-cyan-500/50 text-cyan-50 font-mono"><SelectValue /></SelectTrigger><SelectContent className="bg-slate-900 border-cyan-500/50 text-cyan-50 font-mono">{BOKEH_INTENSITY.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}</SelectContent></Select>
+                <div className="flex flex-col justify-end gap-1.5 h-full">
+                  <Label className="text-[10px] uppercase tracking-wider text-cyan-500/70 font-semibold leading-tight font-mono">Bokeh Intensity</Label>
+                  <Select value={bokehIntensity} onValueChange={(val) => val && setBokehIntensity(val)}><SelectTrigger className="h-9 text-xs bg-[#050505] border-cyan-500/30 text-cyan-300 hover:bg-cyan-950/30 hover:border-cyan-400/50 transition-colors font-mono"><SelectValue /></SelectTrigger><SelectContent className="bg-[#050505] border-cyan-500/50 text-cyan-300 font-mono">{BOKEH_INTENSITY.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}</SelectContent></Select>
                 </div>
-                <div className="space-y-2">
-                  <Label className="text-xs text-cyan-300 font-mono">Film Grain</Label>
-                  <Select value={filmGrain} onValueChange={(val) => val && setFilmGrain(val)}><SelectTrigger className="h-8 text-xs bg-[#050505] border-cyan-500/50 text-cyan-50 font-mono"><SelectValue /></SelectTrigger><SelectContent className="bg-slate-900 border-cyan-500/50 text-cyan-50 font-mono">{FILM_GRAIN.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}</SelectContent></Select>
+                <div className="flex flex-col justify-end gap-1.5 h-full">
+                  <Label className="text-[10px] uppercase tracking-wider text-cyan-500/70 font-semibold leading-tight font-mono">Film Grain</Label>
+                  <Select value={filmGrain} onValueChange={(val) => val && setFilmGrain(val)}><SelectTrigger className="h-9 text-xs bg-[#050505] border-cyan-500/30 text-cyan-300 hover:bg-cyan-950/30 hover:border-cyan-400/50 transition-colors font-mono"><SelectValue /></SelectTrigger><SelectContent className="bg-[#050505] border-cyan-500/50 text-cyan-300 font-mono">{FILM_GRAIN.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}</SelectContent></Select>
                 </div>
-                <div className="space-y-2">
-                  <Label className="text-xs text-cyan-300 font-mono">Chromatic Aberration</Label>
-                  <Select value={chromaticAberration} onValueChange={(val) => val && setChromaticAberration(val)}><SelectTrigger className="h-8 text-xs bg-[#050505] border-cyan-500/50 text-cyan-50 font-mono"><SelectValue /></SelectTrigger><SelectContent className="bg-slate-900 border-cyan-500/50 text-cyan-50 font-mono">{CHROMATIC_ABERRATION.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}</SelectContent></Select>
+                <div className="flex flex-col justify-end gap-1.5 h-full">
+                  <Label className="text-[10px] uppercase tracking-wider text-cyan-500/70 font-semibold leading-tight font-mono">Chromatic Aberration</Label>
+                  <Select value={chromaticAberration} onValueChange={(val) => val && setChromaticAberration(val)}><SelectTrigger className="h-9 text-xs bg-[#050505] border-cyan-500/30 text-cyan-300 hover:bg-cyan-950/30 hover:border-cyan-400/50 transition-colors font-mono"><SelectValue /></SelectTrigger><SelectContent className="bg-[#050505] border-cyan-500/50 text-cyan-300 font-mono">{CHROMATIC_ABERRATION.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}</SelectContent></Select>
                 </div>
-                <div className="space-y-2">
-                  <Label className="text-xs text-cyan-300 font-mono">Color Bleed</Label>
-                  <Select value={colorBleed} onValueChange={(val) => val && setColorBleed(val)}><SelectTrigger className="h-8 text-xs bg-[#050505] border-cyan-500/50 text-cyan-50 font-mono"><SelectValue /></SelectTrigger><SelectContent className="bg-slate-900 border-cyan-500/50 text-cyan-50 font-mono">{COLOR_BLEED.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}</SelectContent></Select>
+                <div className="flex flex-col justify-end gap-1.5 h-full">
+                  <Label className="text-[10px] uppercase tracking-wider text-cyan-500/70 font-semibold leading-tight font-mono">Color Bleed</Label>
+                  <Select value={colorBleed} onValueChange={(val) => val && setColorBleed(val)}><SelectTrigger className="h-9 text-xs bg-[#050505] border-cyan-500/30 text-cyan-300 hover:bg-cyan-950/30 hover:border-cyan-400/50 transition-colors font-mono"><SelectValue /></SelectTrigger><SelectContent className="bg-[#050505] border-cyan-500/50 text-cyan-300 font-mono">{COLOR_BLEED.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}</SelectContent></Select>
                 </div>
-                <div className="space-y-2">
-                  <Label className="text-xs text-cyan-300 font-mono">Aspect Ratio</Label>
-                  <Select value={aspectRatio} onValueChange={(val) => val && setAspectRatio(val)}><SelectTrigger className="h-8 text-xs bg-[#050505] border-cyan-500/50 text-cyan-50 font-mono"><SelectValue /></SelectTrigger><SelectContent className="bg-slate-900 border-cyan-500/50 text-cyan-50 font-mono">{ASPECT_RATIOS.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}</SelectContent></Select>
+                <div className="flex flex-col justify-end gap-1.5 h-full">
+                  <Label className="text-[10px] uppercase tracking-wider text-cyan-500/70 font-semibold leading-tight font-mono">Aspect Ratio</Label>
+                  <Select value={aspectRatio} onValueChange={(val) => val && setAspectRatio(val)}><SelectTrigger className="h-9 text-xs bg-[#050505] border-cyan-500/30 text-cyan-300 hover:bg-cyan-950/30 hover:border-cyan-400/50 transition-colors font-mono"><SelectValue /></SelectTrigger><SelectContent className="bg-[#050505] border-cyan-500/50 text-cyan-300 font-mono">{ASPECT_RATIOS.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}</SelectContent></Select>
                 </div>
               </div>
-              <div className="space-y-2 pt-2 border-t border-cyan-500/20">
-                <Label className="text-xs text-fuchsia-400 font-mono font-bold flex items-center gap-1"><Sparkles className="w-3 h-3" /> Target Auto-Batching (Max 1000)</Label>
-                <Input type="number" min={10} max={1000} step={10} value={targetCount} onChange={(e) => setTargetCount(Number(e.target.value))} className="h-8 text-xs bg-[#050505] border-fuchsia-500/50 text-fuchsia-50 font-mono focus-visible:ring-fuchsia-400/50" />
+              <div className="space-y-2 pt-2 border-t border-cyan-500/30">
+                <Label className="text-xs text-fuchsia-400 font-bold flex items-center gap-1 font-mono"><Sparkles className="w-3 h-3 text-fuchsia-500" /> Target Auto-Batching (Max 1000)</Label>
+                <Input type="number" min={10} max={1000} step={10} value={targetCount} onChange={(e) => setTargetCount(Number(e.target.value))} className="h-8 text-xs bg-[#050505] border-cyan-500/50 text-cyan-300 focus-visible:ring-cyan-400/50 font-mono" />
               </div>
-              <div className="space-y-2 pt-2 border-t border-cyan-500/20">
+              <div className="space-y-2 pt-2 border-t border-cyan-500/30">
                 <div className="flex items-center justify-between">
-                  <Label className="text-xs text-fuchsia-400 font-mono font-bold flex items-center gap-1"><Sparkles className="w-3 h-3" /> Creativity Level</Label>
-                  <span className="text-xs text-cyan-500 font-mono">{creativity}%</span>
+                  <Label className="text-xs text-fuchsia-400 font-bold flex items-center gap-1 font-mono"><Sparkles className="w-3 h-3 text-fuchsia-500" /> Creativity Level</Label>
+                  <span className="text-xs text-cyan-500/70 font-mono">{creativity}%</span>
                 </div>
                 <input 
                   type="range" 
@@ -421,9 +421,9 @@ ${parametricRules}`;
                   step="5"
                   value={creativity} 
                   onChange={(e) => setCreativity(Number(e.target.value))}
-                  className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-fuchsia-500"
+                  className="w-full h-1.5 bg-cyan-950/50 rounded-lg appearance-none cursor-pointer accent-fuchsia-500"
                 />
-                <p className="text-[10px] text-cyan-500/50 font-mono leading-tight">
+                <p className="text-[10px] text-cyan-500/70 leading-tight font-mono">
                   {creativity < 50 ? 'Konservatif: Variasi rendah, sangat patuh pada prompt dasar.' : 
                    creativity <= 100 ? 'Seimbang: Eksplorasi konsep baru dengan tetap menjaga relevansi.' : 
                    'Ekstrem: Variasi liar, ide out-of-the-box, risiko halusinasi lebih tinggi.'}
@@ -432,11 +432,11 @@ ${parametricRules}`;
             </div>
 
             {isBatching ? (
-              <Button className="w-full bg-fuchsia-500 text-black hover:bg-fuchsia-400 shadow-[0_0_10px_rgba(217,70,239,0.5)] mt-4 font-bold" size="lg" onClick={handleCancel}>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" /> {batchStatus} ({currentCount}/{targetCount})
+              <Button className="w-full bg-cyan-950/50 text-cyan-300 hover:bg-cyan-900/50 border border-cyan-500/50 mt-4 font-mono font-medium shadow-[0_0_10px_rgba(6,182,212,0.2)]" size="lg" onClick={handleCancel}>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin text-fuchsia-500" /> {batchStatus} ({currentCount}/{targetCount})
               </Button>
             ) : (
-              <Button className="w-full bg-cyan-500 text-black hover:bg-cyan-400 shadow-[0_0_10px_rgba(6,182,212,0.5)] mt-4 font-bold" size="lg" onClick={handleGenerate} disabled={!keyword.trim()}>
+              <Button className="w-full bg-cyan-500 text-black hover:bg-cyan-400 mt-4 font-bold font-mono shadow-[0_0_15px_rgba(6,182,212,0.4)]" size="lg" onClick={handleGenerate} disabled={!keyword.trim()}>
                 <Sparkles className="w-4 h-4 mr-2" /> Mulai Auto-Batching
               </Button>
             )}
@@ -445,17 +445,17 @@ ${parametricRules}`;
       </div>
 
       <div className="lg:col-span-8">
-        <Card className="h-full flex flex-col bg-slate-900/50 border-cyan-500/20 shadow-[0_0_15px_rgba(6,182,212,0.05)]">
+        <Card className="h-full flex flex-col bg-[#0a0a0a] border-cyan-500/30 shadow-[0_0_15px_rgba(6,182,212,0.05)]">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
             <div>
-              <CardTitle className="flex items-center gap-2 text-cyan-400 font-mono">Batch Generation Interface {generatedPrompts.length > 0 && <span className="text-xs bg-fuchsia-500/20 text-fuchsia-400 border border-fuchsia-500/30 px-2 py-1 rounded-full flex items-center gap-1 shadow-[0_0_5px_rgba(217,70,239,0.3)]"><Save className="w-3 h-3" /> Auto-Saved</span>}</CardTitle>
-              <CardDescription className="text-cyan-500/70 font-mono text-xs">Hasil produksi prompt masal siap ekspor.</CardDescription>
+              <CardTitle className="flex items-center gap-2 text-cyan-300 font-mono">Batch Generation Interface {generatedPrompts.length > 0 && <span className="text-xs bg-emerald-950/30 text-emerald-400 border border-emerald-500/50 px-2 py-1 rounded-full flex items-center gap-1 shadow-[0_0_8px_rgba(16,185,129,0.2)]"><Save className="w-3 h-3" /> Auto-Saved</span>}</CardTitle>
+              <CardDescription className="text-cyan-500/70 text-xs mt-1 font-mono">Hasil produksi prompt masal siap ekspor.</CardDescription>
             </div>
             {generatedPrompts.length > 0 && (
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={() => { setGeneratedPrompts([]); localStorage.removeItem('stockmaster_prompts'); toast.success('Data dibersihkan'); }} className="text-red-400 border-red-500/50 hover:text-red-300 hover:bg-red-500/20 font-mono">Clear</Button>
-                <Button variant="outline" size="sm" onClick={downloadTXT} className="text-cyan-400 border-cyan-500/50 hover:bg-cyan-500/20 font-mono"><Download className="w-4 h-4 mr-2" /> Download TXT ({generatedPrompts.length})</Button>
-                <Button variant="default" size="sm" className="bg-fuchsia-600 text-white hover:bg-fuchsia-500 shadow-[0_0_10px_rgba(192,38,211,0.5)] font-bold font-mono" onClick={downloadCSV}><Download className="w-4 h-4 mr-2" /> Export CSV</Button>
+                <Button variant="outline" size="sm" onClick={() => { setGeneratedPrompts([]); localStorage.removeItem('stockmaster_prompts'); toast.success('Data dibersihkan'); }} className="text-red-400 border-red-500/50 hover:text-red-300 hover:bg-red-950/50 font-mono">Clear</Button>
+                <Button variant="outline" size="sm" onClick={downloadTXT} className="text-cyan-300 border-cyan-500/50 hover:bg-cyan-950/50 font-mono"><Download className="w-4 h-4 mr-2" /> Download TXT ({generatedPrompts.length})</Button>
+                <Button variant="default" size="sm" className="bg-fuchsia-600 text-white hover:bg-fuchsia-500 font-bold font-mono shadow-[0_0_10px_rgba(217,70,239,0.4)]" onClick={downloadCSV}><Download className="w-4 h-4 mr-2" /> Export CSV</Button>
               </div>
             )}
           </CardHeader>
@@ -463,35 +463,35 @@ ${parametricRules}`;
             {generatedPrompts.length === 0 && !isBatching ? (
               <div className="h-[400px] flex flex-col items-center justify-center text-cyan-500/50 border-2 border-dashed border-cyan-500/30 rounded-lg bg-[#050505]">
                 <Palette className="w-12 h-12 mb-4 opacity-20 text-cyan-500" />
-                <p className="font-mono text-sm">Belum ada prompt yang dihasilkan.</p>
+                <p className="text-sm font-mono">Belum ada prompt yang dihasilkan.</p>
                 <p className="text-xs opacity-50 mt-2 font-mono">Mulai Auto-Batching untuk memproduksi masal.</p>
               </div>
             ) : (
               <div className="space-y-6">
-                <div className="p-4 bg-cyan-950/20 border border-cyan-500/30 rounded-lg text-center shadow-[inset_0_0_10px_rgba(6,182,212,0.1)]">
-                  <h3 className="text-cyan-400 font-mono text-lg font-bold mb-3">Auto-Batching Status</h3>
-                  <div className="w-full bg-[#050505] rounded-full h-4 mb-3 border border-cyan-500/30 overflow-hidden">
-                    <div className="bg-cyan-500 h-4 transition-all duration-500 relative" style={{ width: `${Math.min(100, (currentCount / targetCount) * 100)}%` }}>
+                <div className="p-4 bg-[#050505] border border-cyan-500/30 rounded-lg text-center shadow-[inset_0_0_15px_rgba(6,182,212,0.05)]">
+                  <h3 className="text-cyan-300 text-lg font-medium mb-3 font-mono">Auto-Batching Status</h3>
+                  <div className="w-full bg-cyan-950/30 rounded-full h-4 mb-3 border border-cyan-500/50 overflow-hidden">
+                    <div className="bg-fuchsia-500 h-4 transition-all duration-500 relative shadow-[0_0_10px_rgba(217,70,239,0.8)]" style={{ width: `${Math.min(100, (currentCount / targetCount) * 100)}%` }}>
                       <div className="absolute inset-0 bg-white/20 animate-[shimmer_2s_infinite]"></div>
                     </div>
                   </div>
-                  <p className="text-cyan-50/70 text-sm font-mono">{currentCount} / {targetCount} Prompts Generated</p>
+                  <p className="text-cyan-400 text-sm font-mono">{currentCount} / {targetCount} Prompts Generated</p>
                 </div>
 
                 {generatedPrompts.length > 0 ? (
                   <div>
-                    <h4 className="text-cyan-300 font-mono font-semibold mb-4 flex items-center gap-2 border-b border-cyan-500/20 pb-2"><Eye className="w-4 h-4 text-fuchsia-500" /> Preview (Prompt Terakhir)</h4>
+                    <h4 className="text-cyan-300 font-medium mb-4 flex items-center gap-2 border-b border-cyan-500/30 pb-2 font-mono"><Eye className="w-4 h-4 text-fuchsia-500" /> Preview (Prompt Terakhir)</h4>
                     
                     {/* Render ONLY the last prompt to save DOM memory */}
-                    <div className="p-4 rounded-lg border border-cyan-500/20 bg-[#050505] hover:border-cyan-500/50 transition-colors group relative overflow-hidden">
-                      <div className="absolute top-0 right-0 bg-cyan-500/20 text-cyan-300 text-[10px] px-2 py-1 rounded-bl-lg border-b border-l border-cyan-500/30 font-mono font-bold">
+                    <div className="p-4 rounded-lg border border-cyan-500/30 bg-[#050505] hover:border-cyan-400/60 hover:shadow-[0_0_15px_rgba(6,182,212,0.15)] transition-all group relative overflow-hidden">
+                      <div className="absolute top-0 right-0 bg-cyan-950/80 text-cyan-300 text-[10px] px-2 py-1 rounded-bl-lg border-b border-l border-cyan-500/50 font-mono font-bold shadow-[0_0_8px_rgba(6,182,212,0.3)]">
                         PROMPT #{generatedPrompts.length}
                       </div>
                       <div className="space-y-4 mt-2">
                         <div className="flex flex-col md:flex-row gap-4">
                           <div className="space-y-1">
                             <Label className="text-[10px] uppercase tracking-wider text-cyan-500/70 font-mono">Aspect Ratio</Label>
-                            <div className="inline-flex items-center gap-1.5 px-2 py-1 bg-cyan-950/30 border border-cyan-500/30 rounded text-xs font-semibold text-cyan-300 font-mono">
+                            <div className="inline-flex items-center gap-1.5 px-2 py-1 bg-cyan-950/30 border border-cyan-500/40 rounded text-xs font-medium text-cyan-300 font-mono shadow-[0_0_8px_rgba(6,182,212,0.1)]">
                               <Box className="w-3 h-3 text-fuchsia-500" /> {generatedPrompts[generatedPrompts.length - 1].aspectRatio}
                             </div>
                           </div>
@@ -500,28 +500,28 @@ ${parametricRules}`;
                         <div className="space-y-1">
                           <Label className="text-[10px] uppercase tracking-wider text-cyan-500/70 font-mono">Positive Prompt</Label>
                           <div className="relative">
-                            <p className="text-sm text-cyan-50 leading-relaxed bg-slate-900/50 p-3 rounded border border-cyan-500/20">{generatedPrompts[generatedPrompts.length - 1].positivePrompt}</p>
-                            <Button size="icon" variant="ghost" className="absolute top-2 right-2 h-6 w-6 text-cyan-500 hover:text-cyan-300 hover:bg-cyan-500/20" onClick={() => { navigator.clipboard.writeText(generatedPrompts[generatedPrompts.length - 1].positivePrompt); toast.success('Prompt disalin!'); }}><Copy className="w-3 h-3" /></Button>
+                            <p className="text-sm text-cyan-50 leading-relaxed bg-[#0a0a0a] p-3 rounded border border-cyan-500/30">{generatedPrompts[generatedPrompts.length - 1].positivePrompt}</p>
+                            <Button size="icon" variant="ghost" className="absolute top-2 right-2 h-6 w-6 text-cyan-500 hover:text-cyan-300 hover:bg-cyan-950/50" onClick={() => { navigator.clipboard.writeText(generatedPrompts[generatedPrompts.length - 1].positivePrompt); toast.success('Prompt disalin!'); }}><Copy className="w-3 h-3" /></Button>
                           </div>
                         </div>
 
                         <div className="space-y-1">
-                          <Label className="text-[10px] uppercase tracking-wider text-fuchsia-400 font-mono flex items-center gap-1"><ShieldAlert className="w-3 h-3" /> Negative Prompt (Avoid)</Label>
-                          <p className="text-xs text-fuchsia-200/80 leading-relaxed bg-fuchsia-950/20 p-2 rounded border border-fuchsia-500/20">{generatedPrompts[generatedPrompts.length - 1].negativePrompt}</p>
+                          <Label className="text-[10px] uppercase tracking-wider text-fuchsia-400 flex items-center gap-1 font-mono"><ShieldAlert className="w-3 h-3" /> Negative Prompt (Avoid)</Label>
+                          <p className="text-xs text-fuchsia-200/80 leading-relaxed bg-fuchsia-950/10 p-3 rounded border border-fuchsia-500/20">{generatedPrompts[generatedPrompts.length - 1].negativePrompt}</p>
                         </div>
                       </div>
                     </div>
                     
-                    <p className="text-center text-cyan-500/50 text-xs mt-6 font-mono bg-cyan-950/10 p-3 rounded-lg border border-cyan-500/10">
+                    <p className="text-center text-cyan-500/70 text-xs mt-6 bg-[#050505] p-3 rounded-lg border border-cyan-500/30 font-mono">
                       <Sparkles className="w-3 h-3 inline-block mr-1 text-fuchsia-500" />
                       Hanya menampilkan 1 prompt terakhir untuk menghemat memori browser. <br/>
-                      Silakan klik <strong>Download TXT</strong> atau <strong>Export CSV</strong> untuk melihat dan menyimpan seluruh {generatedPrompts.length} prompt.
+                      Silakan klik <strong className="text-cyan-300">Download TXT</strong> atau <strong className="text-cyan-300">Export CSV</strong> untuk melihat dan menyimpan seluruh {generatedPrompts.length} prompt.
                     </p>
                   </div>
                 ) : (
                   <div className="h-[250px] flex flex-col items-center justify-center text-cyan-500/50 border-2 border-dashed border-cyan-500/30 rounded-lg bg-[#050505] animate-pulse">
-                    <Loader2 className="w-10 h-10 mb-4 text-fuchsia-500 animate-spin" />
-                    <p className="font-mono text-sm text-cyan-400">Memproses Batch Pertama...</p>
+                    <Loader2 className="w-10 h-10 mb-4 text-fuchsia-500 animate-spin drop-shadow-[0_0_8px_rgba(217,70,239,0.5)]" />
+                    <p className="text-sm text-cyan-400 font-mono">Memproses Batch Pertama...</p>
                     <p className="text-xs opacity-50 mt-2 font-mono">AI sedang merakit masterpiece Anda.</p>
                   </div>
                 )}

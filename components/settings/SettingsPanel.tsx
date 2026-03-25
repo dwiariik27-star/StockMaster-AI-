@@ -63,12 +63,12 @@ export function SettingsPanel({
     }
   };
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={onClose}>
-      <Card className="w-full max-w-2xl border-cyan-500/50 bg-slate-900/90 backdrop-blur-md shadow-[0_0_30px_rgba(6,182,212,0.2)]" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={onClose}>
+      <Card className="w-full max-w-2xl border-cyan-500/50 bg-[#0a0a0a] shadow-[0_0_30px_rgba(6,182,212,0.15)]" onClick={(e) => e.stopPropagation()}>
         <CardContent className="pt-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
-            <Label htmlFor="apikey" className="text-cyan-300 font-semibold font-mono">Gemini API Key (Manual BYOK)</Label>
+            <Label htmlFor="apikey" className="text-cyan-300 font-medium font-mono">Gemini API Key (Manual BYOK)</Label>
             <div className="flex gap-2">
               <Input 
                 id="apikey" 
@@ -76,17 +76,17 @@ export function SettingsPanel({
                 placeholder="Masukkan API Key Gemini Anda (AIzaSy...)" 
                 value={apiKey} 
                 onChange={(e) => saveApiKey(e.target.value)} 
-                className="bg-[#050505] border-cyan-500/50 text-cyan-50 focus-visible:ring-cyan-400/50 flex-1 font-mono"
+                className="bg-[#050505] border-cyan-500/50 text-cyan-50 focus-visible:ring-cyan-400/50 flex-1 font-mono text-sm"
               />
               <Button 
                 variant="outline" 
                 onClick={handleTestConnection}
                 disabled={isTesting || (!apiKey && !process.env.NEXT_PUBLIC_GEMINI_API_KEY)}
-                className="bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20 border-cyan-500/50 font-mono"
+                className="bg-cyan-950/30 text-cyan-400 hover:bg-cyan-900/50 border-cyan-500/50 font-mono"
                 title="Uji Koneksi API Key"
               >
                 {isTesting ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
-                <span className="ml-2 hidden sm:inline">Uji Koneksi</span>
+                <span className="ml-2 hidden sm:inline">Uji</span>
               </Button>
               <Button 
                 variant="destructive" 
@@ -96,18 +96,18 @@ export function SettingsPanel({
                   toast.success('API Key berhasil dihapus');
                 }}
                 title="Reset API Key"
-                className="bg-red-500/20 text-red-400 hover:bg-red-500/40 border border-red-500/50"
+                className="bg-red-950/30 text-red-400 hover:bg-red-900/50 border border-red-500/50"
               >
                 <Trash2 className="w-4 h-4" />
               </Button>
             </div>
             <p className="text-xs text-cyan-500/70 flex items-center gap-1 font-mono">
-              <ShieldAlert className="w-3 h-3 text-fuchsia-500" /> Key disimpan secara aman di browser lokal Anda.
+              <ShieldAlert className="w-3 h-3 text-cyan-400" /> Key disimpan secara aman di browser lokal Anda.
             </p>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="ai-model" className="text-cyan-300 font-semibold font-mono">AI Engine (Khusus Produksi Prompt)</Label>
+            <Label htmlFor="ai-model" className="text-cyan-300 font-medium font-mono">AI Engine (Khusus Produksi Prompt)</Label>
             <Select 
               value={selectedModel} 
               onValueChange={(val) => {
@@ -120,19 +120,19 @@ export function SettingsPanel({
               <SelectTrigger id="ai-model" className="bg-[#050505] border-cyan-500/50 text-cyan-50 font-mono">
                 <SelectValue placeholder="Pilih Model AI" />
               </SelectTrigger>
-              <SelectContent className="bg-slate-900 border-cyan-500/50 text-cyan-50 font-mono">
+              <SelectContent className="bg-[#050505] border-cyan-500/50 text-cyan-50 font-mono">
                 <SelectItem value="gemini-3.1-flash-lite-preview">Gemini 3.1 Flash Lite (⚡ Hemat Kuota / Fastest)</SelectItem>
                 <SelectItem value="gemini-3-flash-preview">Gemini 3.0 Flash (⚡ Cepat & Efisien)</SelectItem>
                 <SelectItem value="gemini-3.1-pro-preview">Gemini 3.1 Pro (Best Quality)</SelectItem>
               </SelectContent>
             </Select>
             <p className="text-xs text-cyan-500/70 flex items-center gap-1 font-mono">
-              <Activity className="w-3 h-3 text-fuchsia-500" /> Riset & Vision menggunakan Gemini 3.0 Flash untuk stabilitas.
+              <Activity className="w-3 h-3 text-cyan-400" /> Riset & Vision menggunakan Gemini 3.0 Flash untuk stabilitas.
             </p>
           </div>
         </div>
-        <div className="mt-6 flex justify-end">
-          <Button onClick={onClose} className="bg-cyan-500 text-black hover:bg-cyan-400 shadow-[0_0_10px_rgba(6,182,212,0.5)] w-full md:w-auto font-bold">
+        <div className="mt-8 flex justify-end">
+          <Button onClick={onClose} className="bg-fuchsia-600 text-white hover:bg-fuchsia-500 shadow-[0_0_15px_rgba(217,70,239,0.4)] font-bold font-mono w-full md:w-auto">
             Tutup Pengaturan
           </Button>
         </div>
