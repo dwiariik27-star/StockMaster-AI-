@@ -47,6 +47,7 @@ export function ProductionTab({
   const [aspectRatio, setAspectRatio] = useState('Auto/AI Choice');
   const [composition, setComposition] = useState('Auto/AI Choice');
   const [targetCount, setTargetCount] = useState<number>(50);
+  const [creativity, setCreativity] = useState<number>(70);
   const [currentCount, setCurrentCount] = useState<number>(0);
   const [isBatching, setIsBatching] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -133,10 +134,20 @@ Sertakan orkestrasi soundstage dan durasi klip spesifik (4, 6, atau 8 detik).
 ${parametricRules}`;
         }
 
-        const currentTemp = Math.min(0.7 + (i / Math.max(1, batches - 1)) * 0.5, 1.2);
+        const baseTemp = creativity / 100;
+        const currentTemp = Math.min(baseTemp + (i / Math.max(1, batches - 1)) * 0.4, 2.0);
         const currentTheme = THEMATIC_MODIFIERS[i % THEMATIC_MODIFIERS.length];
 
-        const dynamicInstruction = `\n\n--- INSTRUKSI BATCH KE-${i+1} DARI ${batches} ---\nWAJIB BERIKAN VARIASI YANG 100% BERBEDA DARI BATCH SEBELUMNYA. \nFOKUS KREATIF UNTUK BATCH INI: "${currentTheme}"\nGunakan kombinasi subjek, angle, lighting, dan warna yang sangat acak dan unik berdasarkan fokus kreatif tersebut.`;
+        let explorationInstruction = "";
+        if (creativity < 50) {
+          explorationInstruction = "PENTING: Tetap sangat konservatif dan patuh pada kata kunci. Jangan terlalu banyak berimajinasi di luar konteks.";
+        } else if (creativity <= 100) {
+          explorationInstruction = "PENTING: Berikan variasi konsep yang seimbang antara relevansi komersial dan kreativitas artistik.";
+        } else {
+          explorationInstruction = "PENTING: Eksplorasi konsep secara radikal! Gunakan kombinasi elemen yang tidak biasa, surealis, atau sangat artistik yang masih memiliki nilai jual.";
+        }
+
+        const dynamicInstruction = `\n\n--- INSTRUKSI BATCH KE-${i+1} DARI ${batches} ---\nWAJIB BERIKAN VARIASI YANG 100% BERBEDA DARI BATCH SEBELUMNYA. \nFOKUS KREATIF UNTUK BATCH INI: "${currentTheme}"\nGunakan kombinasi subjek, angle, lighting, dan warna yang sangat acak dan unik berdasarkan fokus kreatif tersebut.\n${explorationInstruction}`;
 
         const response = await ai.models.generateContent({
           model: selectedModel,
@@ -281,6 +292,26 @@ ${parametricRules}`;
               <div className="space-y-2 pt-2 border-t border-cyan-500/20">
                 <Label className="text-xs text-fuchsia-400 font-mono font-bold flex items-center gap-1"><Sparkles className="w-3 h-3" /> Target Auto-Batching (Max 1000)</Label>
                 <Input type="number" min={10} max={1000} step={10} value={targetCount} onChange={(e) => setTargetCount(Number(e.target.value))} className="h-8 text-xs bg-[#050505] border-fuchsia-500/50 text-fuchsia-50 font-mono focus-visible:ring-fuchsia-400/50" />
+              </div>
+              <div className="space-y-2 pt-2 border-t border-cyan-500/20">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs text-fuchsia-400 font-mono font-bold flex items-center gap-1"><Sparkles className="w-3 h-3" /> Creativity Level</Label>
+                  <span className="text-xs text-cyan-500 font-mono">{creativity}%</span>
+                </div>
+                <input 
+                  type="range" 
+                  min="10" 
+                  max="150" 
+                  step="5"
+                  value={creativity} 
+                  onChange={(e) => setCreativity(Number(e.target.value))}
+                  className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-fuchsia-500"
+                />
+                <p className="text-[10px] text-cyan-500/50 font-mono leading-tight">
+                  {creativity < 50 ? 'Konservatif: Variasi rendah, sangat patuh pada prompt dasar.' : 
+                   creativity <= 100 ? 'Seimbang: Eksplorasi konsep baru dengan tetap menjaga relevansi.' : 
+                   'Ekstrem: Variasi liar, ide out-of-the-box, risiko halusinasi lebih tinggi.'}
+                </p>
               </div>
             </div>
 
