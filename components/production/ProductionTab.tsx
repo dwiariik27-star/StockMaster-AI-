@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Loader2, Sparkles, Palette, Save, Copy, Download, ShieldAlert, Box, CheckCircle2, Paintbrush, Eye } from 'lucide-react';
 import { toast } from 'sonner';
-import { GeneratedPrompt, CATEGORIES, LIGHTING_STYLES, CAMERA_ANGLES, COLOR_TONES, ASPECT_RATIOS, COMPOSITIONS, DEPTH_OF_FIELD, CAMERA_MOTION } from '@/types';
+import { GeneratedPrompt, CATEGORIES, LIGHTING_STYLES, CAMERA_ANGLES, COLOR_TONES, ASPECT_RATIOS, COMPOSITIONS, DEPTH_OF_FIELD, CAMERA_MOTION, LENS_FLARE, BOKEH_INTENSITY, FILM_GRAIN, CHROMATIC_ABERRATION, COLOR_BLEED } from '@/types';
 
 interface ProductionTabProps {
   getAIClient: () => any;
@@ -18,19 +18,6 @@ interface ProductionTabProps {
   generatedPrompts: GeneratedPrompt[];
   setGeneratedPrompts: (prompts: GeneratedPrompt[]) => void;
 }
-
-const THEMATIC_MODIFIERS = [
-  "Authentic Lifestyle & Diversity: Fokus pada momen candid, emosi natural, dan keberagaman tanpa terlihat seperti pose studio.",
-  "Minimalist Corporate: Ruang kerja modern, clean desk, pencahayaan alami yang terang, dan negative space besar untuk teks presentasi.",
-  "Cinematic Moody: Pencahayaan dramatis, kontras tinggi, warna deep cinematic, cocok untuk poster atau cover artikel premium.",
-  "Hyper-Realistic Macro: Detail ekstrem pada tekstur (makanan, kain, alam), ketajaman luar biasa, depth of field sangat tipis.",
-  "Abstract Data & Tech: Visualisasi konsep teknologi masa depan, glowing lines, bokeh, warna neon cyberpunk yang elegan.",
-  "Sustainable & Eco-Friendly: Palet warna bumi (earth tones), material organik, pencahayaan matahari pagi yang hangat.",
-  "Neon Nightlife/Cyberpunk: Warna-warna berani (magenta, cyan), pantulan cahaya di permukaan basah, energi kota malam.",
-  "Zen & Wellness: Komposisi simetris, warna pastel lembut, pencahayaan diffuse yang menenangkan, elemen alam.",
-  "Dynamic Action: Angle ekstrem (low angle/dutch angle), motion blur pada background, subjek tajam membeku dalam aksi.",
-  "Luxury & Premium: Palet warna gelap dengan aksen emas/perak, pencahayaan studio chiaroscuro, material mahal (marmer, velvet)."
-];
 
 export function ProductionTab({ 
   getAIClient, 
@@ -48,10 +35,16 @@ export function ProductionTab({
   const [composition, setComposition] = useState('Auto/AI Choice');
   const [depthOfField, setDepthOfField] = useState('Auto/AI Choice');
   const [cameraMotion, setCameraMotion] = useState('Auto/AI Choice');
+  const [lensFlare, setLensFlare] = useState('Auto/AI Choice');
+  const [bokehIntensity, setBokehIntensity] = useState('Auto/AI Choice');
+  const [filmGrain, setFilmGrain] = useState('Auto/AI Choice');
+  const [chromaticAberration, setChromaticAberration] = useState('Auto/AI Choice');
+  const [colorBleed, setColorBleed] = useState('Auto/AI Choice');
   const [targetCount, setTargetCount] = useState<number>(50);
   const [creativity, setCreativity] = useState<number>(70);
   const [currentCount, setCurrentCount] = useState<number>(0);
   const [isBatching, setIsBatching] = useState(false);
+  const [batchStatus, setBatchStatus] = useState('');
   const abortControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
@@ -70,12 +63,55 @@ export function ProductionTab({
     setIsBatching(true);
     setCurrentCount(0);
     setGeneratedPrompts([]);
+    setBatchStatus('Menganalisis tema dinamis...');
     
     abortControllerRef.current = new AbortController();
     const ai = getAIClient();
     let accumulatedPrompts: GeneratedPrompt[] = [];
 
     try {
+      // 1. Generate Dynamic Themes based on Keyword and Category
+      let dynamicThemes: string[] = [];
+      try {
+        const themeResponse = await ai.models.generateContent({
+          model: selectedModel,
+          contents: `Buat 10 variasi tema visual (thematic modifiers) yang sangat berbeda dan kreatif untuk kategori aset "${CATEGORIES.find(c => c.id === category)?.name}" dengan kata kunci utama: "${keyword}".
+          Setiap tema harus berupa 1-2 kalimat yang mendeskripsikan mood, gaya visual, atau angle penceritaan yang unik untuk stok komersial premium Adobe Stock.
+          Fokus pada variasi yang ekstrem (misal: dari minimalis terang hingga sinematik gelap, dari candid hingga konseptual surealis) agar prompt yang dihasilkan nantinya sangat beragam.`,
+          config: {
+            ...(selectedModel.startsWith('gemini-3') ? { thinkingConfig: { thinkingLevel: ThinkingLevel.LOW } } : {}),
+            responseMimeType: 'application/json',
+            responseSchema: {
+              type: Type.ARRAY,
+              items: { type: Type.STRING },
+              description: "Array berisi tepat 10 tema visual unik"
+            }
+          }
+        });
+        
+        if (themeResponse.text) {
+          dynamicThemes = JSON.parse(themeResponse.text);
+        }
+      } catch (e) {
+        console.error("Gagal generate dynamic themes, menggunakan fallback.", e);
+      }
+
+      // Fallback if AI fails to return array
+      if (!Array.isArray(dynamicThemes) || dynamicThemes.length === 0) {
+        dynamicThemes = [
+          "Authentic Lifestyle & Diversity: Fokus pada momen candid, emosi natural.",
+          "Minimalist Corporate: Ruang kerja modern, clean desk, pencahayaan alami.",
+          "Cinematic Moody: Pencahayaan dramatis, kontras tinggi, warna deep cinematic.",
+          "Hyper-Realistic Macro: Detail ekstrem pada tekstur, ketajaman luar biasa.",
+          "Abstract Data & Tech: Visualisasi konsep masa depan, glowing lines, neon.",
+          "Sustainable & Eco-Friendly: Palet warna bumi, material organik.",
+          "Neon Nightlife/Cyberpunk: Warna berani, pantulan cahaya, energi malam.",
+          "Zen & Wellness: Komposisi simetris, warna pastel lembut, elemen alam.",
+          "Dynamic Action: Angle ekstrem, motion blur, subjek tajam membeku.",
+          "Luxury & Premium: Palet warna gelap, aksen emas, pencahayaan studio."
+        ];
+      }
+
       const batches = Math.ceil(targetCount / 10);
       
       for (let i = 0; i < batches; i++) {
@@ -84,6 +120,7 @@ export function ProductionTab({
           break;
         }
 
+        setBatchStatus(`Generating batch ${i + 1} of ${batches}...`);
         const batchSize = Math.min(10, targetCount - accumulatedPrompts.length);
         
         const parametricRules = `
@@ -94,11 +131,16 @@ export function ProductionTab({
           - Composition: ${composition}
           - Depth of Field: ${depthOfField}
           - Camera Motion: ${cameraMotion}
+          - Lens Flare: ${lensFlare}
+          - Bokeh Intensity: ${bokehIntensity}
+          - Film Grain: ${filmGrain}
+          - Chromatic Aberration: ${chromaticAberration}
+          - Color Bleed/Halation: ${colorBleed}
           - Aspect Ratio: ${aspectRatio} (Jika bukan Auto, pastikan komposisi prompt mendukung rasio ini dan outputkan rasio ini persis di field aspectRatio)
         `;
 
         let systemInstruction = `Anda adalah Elite Creative Director dan Prompt Engineer ahli untuk Adobe Stock. Tugas Anda adalah menghasilkan ${batchSize} prompt gambar 4K (Nano Banana Pro) yang sangat presisi, fotorealistik, dan bernilai komersial tinggi.
-Setiap prompt WAJIB mematuhi kerangka kerja "Creative Director" dari Nano Banana: [Subject] + [Action] + [Storytelling Context] + [Composition & DoF] + [Lighting & Style].
+Setiap prompt WAJIB mematuhi kerangka kerja "Creative Director" dari Nano Banana: [Subject] + [Action] + [Storytelling Context] + [Composition & DoF] + [Lighting & Style] + [Optical & Film Emulation].
 
 ATURAN WAJIB NANO BANANA PRO (STORYTELLING & COMMERCIAL FOCUS):
 1. Visual Storytelling: Gambar harus membangkitkan emosi atau menceritakan momen spesifik (candid, authentic) yang relevan untuk kampanye iklan atau editorial komersial.
@@ -107,15 +149,22 @@ ATURAN WAJIB NANO BANANA PRO (STORYTELLING & COMMERCIAL FOCUS):
 4. Desain Pencahayaan (Lighting): Wajib sebutkan setup studio ("three-point softbox") atau efek dramatis ("Chiaroscuro lighting with harsh, high contrast", "Golden hour backlighting creating long shadows").
 5. Kontrol Kamera, Lensa & DoF: Wajib sebutkan hardware/lensa dan Depth of Field ("85mm lens, shallow depth of field f/1.4 with creamy bokeh", "wide-angle lens f/8 everything in focus", "macro lens").
 6. Efek Gerak (Motion): Definisikan apakah gambar statis ("crisp, shot on tripod") atau dinamis ("motion blur on the subject", "handheld camera shake for documentary feel").
-7. Color Grading & Film Stock: Wajib sebutkan tekstur emosional ("as if on 1980s color film, slightly grainy", "Cinematic color grading with muted teal tones").
-8. Materialitas & Tekstur: Jika ada produk/objek, definisikan fisik materialnya ("minimalist ceramic coffee mug", "matte plastic", "frosted glass").
-9. Tipografi (Jika ada teks): Gunakan tanda kutip untuk kata, sebutkan font, dan gaya (contoh: the word "GLOW" in a flowing, elegant Brush Script font).
-10. Commercial Utility: Pastikan gambar memiliki nilai jual tinggi (contoh: "generous copy space on the left", "clean background for text overlay", "authentic lifestyle diversity").
+7. Optical & Film Emulation: Wajib integrasikan efek optik spesifik seperti Lens Flare, Bokeh Intensity, Film Grain, Chromatic Aberration, dan Color Bleed/Halation sesuai parameter. Gunakan istilah teknis ("anamorphic lens flare", "creamy swirly bokeh", "heavy ISO 3200 film grain", "subtle edge fringing", "cinematic halation on highlights").
+8. Color Grading & Film Stock: Wajib sebutkan tekstur emosional ("as if on 1980s color film, slightly grainy", "Cinematic color grading with muted teal tones").
+9. Materialitas & Tekstur: Jika ada produk/objek, definisikan fisik materialnya ("minimalist ceramic coffee mug", "matte plastic", "frosted glass").
+10. Tipografi (Jika ada teks): Gunakan tanda kutip untuk kata, sebutkan font, dan gaya (contoh: the word "GLOW" in a flowing, elegant Brush Script font).
+11. Commercial Utility: Pastikan gambar memiliki nilai jual tinggi (contoh: "generous copy space on the left", "clean background for text overlay", "authentic lifestyle diversity").
 
-ATURAN NEGATIVE PROMPT (SANGAT PENTING UNTUK ADOBE STOCK):
-- Selalu sertakan penolakan standar: "watermark, text, signature, logo, trademark, copyright, blurry, cropped, out of focus, low quality, jpeg artifacts, noise, pixelated".
-- Jika subjek manusia, tambahkan: "ugly, deformed, mutated, extra limbs, extra fingers, poorly drawn face, unnatural skin, plastic skin, cross-eyed, bad anatomy, missing limbs".
-- Jika arsitektur/benda, tambahkan: "warped lines, impossible geometry, asymmetrical, distorted proportions, floating objects".
+ATURAN NEGATIVE PROMPT (DYNAMIC & CONTEXTUAL SYNTHESIS):
+1. Base Rejections (WAJIB ADA DI SETIAP PROMPT): "watermark, text, signature, logo, trademark, copyright, blurry, cropped, out of focus, low quality, jpeg artifacts, noise, pixelated, ai generated, generic".
+2. Dynamic Contextual Rejections (SANGAT PENTING): Analisis subjek pada Positive Prompt secara mendalam dan tambahkan kata kunci negatif spesifik untuk mencegah kegagalan umum AI (AI hallucinations) pada subjek tersebut:
+   - Jika Manusia/Potret: "ugly, deformed, mutated, extra limbs, extra fingers, fused fingers, six fingers, poorly drawn face, asymmetrical eyes, unnatural teeth, plastic skin, elongated neck, disproportionate body, stiff pose, weird hands".
+   - Jika Arsitektur/Interior: "warped lines, impossible geometry, Escher-like structures, doors leading nowhere, mismatched perspective, leaning buildings, structural impossibility, crooked walls, weird reflections".
+   - Jika Makanan/Minuman: "unappetizing, moldy, plastic food, overly glossy, radioactive colors, floating ingredients, unidentifiable ingredients, messy plating, weird utensils, fused cutlery".
+   - Jika Alam/Lanskap: "neon green grass, oversaturated sky, fake plastic trees, two suns, unnatural water flow, repetitive patterns, fractal artifacts, weird clouds".
+   - Jika Kendaraan/Teknologi: "asymmetrical wheels, missing doors, nonsensical UI, fused mechanical parts, impossible physics, bent metal".
+   - Jika Hewan: "extra legs, weird snouts, human-like eyes, fused bodies, unnatural fur patterns, mutated anatomy".
+3. SYNTHESIS MANDATE: Anda WAJIB menggabungkan Base Rejections dengan Dynamic Contextual Rejections yang relevan menjadi SATU string comma-separated yang panjang dan komprehensif. Jangan pisahkan, jadikan satu kesatuan "negativePrompt" yang sangat kuat dan spesifik dengan tema gambar.
 
 ${parametricRules}
 Jika kategori adalah 'Minimalist Background', fokus pada Copy Space (60-70% area kosong).
@@ -142,7 +191,7 @@ ${parametricRules}`;
 
         const baseTemp = creativity / 100;
         const currentTemp = Math.min(baseTemp + (i / Math.max(1, batches - 1)) * 0.4, 2.0);
-        const currentTheme = THEMATIC_MODIFIERS[i % THEMATIC_MODIFIERS.length];
+        const currentTheme = dynamicThemes[i % dynamicThemes.length];
 
         let explorationInstruction = "";
         if (creativity < 50) {
@@ -169,7 +218,7 @@ ${parametricRules}`;
                 type: Type.OBJECT,
                 properties: {
                   positivePrompt: { type: Type.STRING, description: "Prompt utama yang sangat detail (Bahasa Inggris)" },
-                  negativePrompt: { type: Type.STRING, description: "Elemen yang harus dihindari AI agar tidak ditolak Adobe Stock (misal: ugly, deformed, text, watermark, bad anatomy). (Bahasa Inggris)" },
+                  negativePrompt: { type: Type.STRING, description: "Negative prompt yang sangat dinamis dan spesifik dengan konteks positive prompt. Gabungan dari Base Rejections dan Dynamic Contextual Rejections (Bahasa Inggris)" },
                   aspectRatio: { type: Type.STRING, description: "Rasio aspek yang paling optimal (misal: 16:9, 9:16, 1:1, 3:2)" }
                 },
                 required: ["positivePrompt", "negativePrompt", "aspectRatio"]
@@ -275,7 +324,7 @@ ${parametricRules}`;
             
             <div className="pt-4 border-t border-cyan-500/20 space-y-4">
               <Label className="text-xs font-bold text-cyan-500/70 uppercase tracking-wider flex items-center gap-2 font-mono"><Paintbrush className="w-3 h-3 text-fuchsia-500" /> Parametric Controls</Label>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
                 <div className="space-y-2">
                   <Label className="text-xs text-cyan-300 font-mono">Lighting Style</Label>
                   <Select value={lightingStyle} onValueChange={(val) => val && setLightingStyle(val)}><SelectTrigger className="h-8 text-xs bg-[#050505] border-cyan-500/50 text-cyan-50 font-mono"><SelectValue /></SelectTrigger><SelectContent className="bg-slate-900 border-cyan-500/50 text-cyan-50 font-mono">{LIGHTING_STYLES.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}</SelectContent></Select>
@@ -300,7 +349,27 @@ ${parametricRules}`;
                   <Label className="text-xs text-cyan-300 font-mono">Camera Motion</Label>
                   <Select value={cameraMotion} onValueChange={(val) => val && setCameraMotion(val)}><SelectTrigger className="h-8 text-xs bg-[#050505] border-cyan-500/50 text-cyan-50 font-mono"><SelectValue /></SelectTrigger><SelectContent className="bg-slate-900 border-cyan-500/50 text-cyan-50 font-mono">{CAMERA_MOTION.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}</SelectContent></Select>
                 </div>
-                <div className="col-span-2 space-y-2">
+                <div className="space-y-2">
+                  <Label className="text-xs text-cyan-300 font-mono">Lens Flare</Label>
+                  <Select value={lensFlare} onValueChange={(val) => val && setLensFlare(val)}><SelectTrigger className="h-8 text-xs bg-[#050505] border-cyan-500/50 text-cyan-50 font-mono"><SelectValue /></SelectTrigger><SelectContent className="bg-slate-900 border-cyan-500/50 text-cyan-50 font-mono">{LENS_FLARE.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}</SelectContent></Select>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs text-cyan-300 font-mono">Bokeh Intensity</Label>
+                  <Select value={bokehIntensity} onValueChange={(val) => val && setBokehIntensity(val)}><SelectTrigger className="h-8 text-xs bg-[#050505] border-cyan-500/50 text-cyan-50 font-mono"><SelectValue /></SelectTrigger><SelectContent className="bg-slate-900 border-cyan-500/50 text-cyan-50 font-mono">{BOKEH_INTENSITY.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}</SelectContent></Select>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs text-cyan-300 font-mono">Film Grain</Label>
+                  <Select value={filmGrain} onValueChange={(val) => val && setFilmGrain(val)}><SelectTrigger className="h-8 text-xs bg-[#050505] border-cyan-500/50 text-cyan-50 font-mono"><SelectValue /></SelectTrigger><SelectContent className="bg-slate-900 border-cyan-500/50 text-cyan-50 font-mono">{FILM_GRAIN.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}</SelectContent></Select>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs text-cyan-300 font-mono">Chromatic Aberration</Label>
+                  <Select value={chromaticAberration} onValueChange={(val) => val && setChromaticAberration(val)}><SelectTrigger className="h-8 text-xs bg-[#050505] border-cyan-500/50 text-cyan-50 font-mono"><SelectValue /></SelectTrigger><SelectContent className="bg-slate-900 border-cyan-500/50 text-cyan-50 font-mono">{CHROMATIC_ABERRATION.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}</SelectContent></Select>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs text-cyan-300 font-mono">Color Bleed</Label>
+                  <Select value={colorBleed} onValueChange={(val) => val && setColorBleed(val)}><SelectTrigger className="h-8 text-xs bg-[#050505] border-cyan-500/50 text-cyan-50 font-mono"><SelectValue /></SelectTrigger><SelectContent className="bg-slate-900 border-cyan-500/50 text-cyan-50 font-mono">{COLOR_BLEED.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}</SelectContent></Select>
+                </div>
+                <div className="space-y-2">
                   <Label className="text-xs text-cyan-300 font-mono">Aspect Ratio</Label>
                   <Select value={aspectRatio} onValueChange={(val) => val && setAspectRatio(val)}><SelectTrigger className="h-8 text-xs bg-[#050505] border-cyan-500/50 text-cyan-50 font-mono"><SelectValue /></SelectTrigger><SelectContent className="bg-slate-900 border-cyan-500/50 text-cyan-50 font-mono">{ASPECT_RATIOS.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}</SelectContent></Select>
                 </div>
@@ -333,7 +402,7 @@ ${parametricRules}`;
 
             {isBatching ? (
               <Button className="w-full bg-fuchsia-500 text-black hover:bg-fuchsia-400 shadow-[0_0_10px_rgba(217,70,239,0.5)] mt-4 font-bold" size="lg" onClick={handleCancel}>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Batalkan Batching ({currentCount}/{targetCount})
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" /> {batchStatus} ({currentCount}/{targetCount})
               </Button>
             ) : (
               <Button className="w-full bg-cyan-500 text-black hover:bg-cyan-400 shadow-[0_0_10px_rgba(6,182,212,0.5)] mt-4 font-bold" size="lg" onClick={handleGenerate} disabled={!keyword.trim()}>
