@@ -8,6 +8,11 @@ export interface SubNiche {
   reason: string; 
 }
 
+export interface CategorizedList {
+  category: string;
+  items: string[];
+}
+
 export interface GeneratedPrompt { 
   positivePrompt: string; 
   negativePrompt: string; 
@@ -23,10 +28,10 @@ export interface ResearchResult {
   colorPalette: string[]; 
   analysis: string; 
   subNiches: SubNiche[];
-  visualRequirements: string[]; 
+  visualRequirements: CategorizedList[]; 
   seoTags: string[]; 
   seasonality: string; 
-  rejectionRisks: string[];
+  rejectionRisks: CategorizedList[];
   titleTemplate: string; 
   sources?: GroundingSource[];
 }

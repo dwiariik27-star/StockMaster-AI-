@@ -57,8 +57,30 @@ export function ResearchTab({ getAIClient, onSendToProduction }: ResearchTabProp
                 items: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, reason: { type: Type.STRING } }, required: ["name", "reason"] },
                 description: "3-5 sub-niche 'Blue Ocean' spesifik (permintaan tinggi, kompetisi rendah)"
               },
-              visualRequirements: { type: Type.ARRAY, items: { type: Type.STRING }, description: "3-5 elemen visual spesifik" },
-              rejectionRisks: { type: Type.ARRAY, items: { type: Type.STRING }, description: "3-5 hal yang HARUS DIHINDARI agar tidak ditolak Adobe Stock" },
+              visualRequirements: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    category: { type: Type.STRING, description: "Kategori (misal: Lighting & Color, Composition, Subject Matter)" },
+                    items: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Daftar kebutuhan visual" }
+                  },
+                  required: ["category", "items"]
+                },
+                description: "Kebutuhan visual yang dikategorikan"
+              },
+              rejectionRisks: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    category: { type: Type.STRING, description: "Kategori (misal: Compositional Risks, Technical Artifacts, Content Violations)" },
+                    items: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Daftar risiko penolakan" }
+                  },
+                  required: ["category", "items"]
+                },
+                description: "Risiko penolakan yang dikategorikan"
+              },
               titleTemplate: { type: Type.STRING, description: "Satu template judul SEO Adobe Stock (maks 70 karakter)" },
               seoTags: { type: Type.ARRAY, items: { type: Type.STRING }, description: "10-15 kata kunci SEO" }
             },
@@ -168,14 +190,38 @@ export function ResearchTab({ getAIClient, onSendToProduction }: ResearchTabProp
             <Card className="bg-slate-900/50 border-cyan-500/20">
               <CardHeader className="pb-3"><CardTitle className="text-lg flex items-center gap-2 text-cyan-400 font-mono"><ImageIcon className="w-5 h-5 text-fuchsia-500" /> Visual Requirements</CardTitle></CardHeader>
               <CardContent className="space-y-6">
-                <ul className="space-y-2">
-                  {researchResult.visualRequirements.map((req, i) => (<li key={i} className="text-sm flex items-start gap-2"><span className="text-cyan-500 font-bold drop-shadow-[0_0_5px_rgba(6,182,212,0.8)]">•</span><span className="text-cyan-50/80">{req}</span></li>))}
-                </ul>
+                <div className="space-y-4">
+                  {researchResult.visualRequirements?.map((reqCat, i) => (
+                    <div key={i} className="space-y-2">
+                      <h4 className="text-sm font-semibold text-cyan-300 font-mono border-b border-cyan-500/20 pb-1">{reqCat.category}</h4>
+                      <ul className="space-y-1.5 pl-2">
+                        {reqCat.items?.map((item, j) => (
+                          <li key={j} className="text-sm flex items-start gap-2">
+                            <span className="text-cyan-500 font-bold drop-shadow-[0_0_5px_rgba(6,182,212,0.8)] mt-0.5">•</span>
+                            <span className="text-cyan-50/80 leading-snug">{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
                 <div className="pt-4 border-t border-cyan-500/20">
                   <div className="flex items-center gap-2 text-sm font-semibold mb-3 text-red-400 font-mono"><ShieldAlert className="w-4 h-4 drop-shadow-[0_0_5px_rgba(248,113,113,0.8)]" /> Rejection Risks (AVOID)</div>
-                  <ul className="space-y-2">
-                    {researchResult.rejectionRisks.map((risk, i) => (<li key={i} className="text-sm flex items-start gap-2"><span className="text-red-500 font-bold drop-shadow-[0_0_5px_rgba(248,113,113,0.8)]">✕</span><span className="text-cyan-50/80">{risk}</span></li>))}
-                  </ul>
+                  <div className="space-y-4">
+                    {researchResult.rejectionRisks?.map((riskCat, i) => (
+                      <div key={i} className="space-y-2">
+                        <h4 className="text-sm font-semibold text-red-300 font-mono border-b border-red-500/20 pb-1">{riskCat.category}</h4>
+                        <ul className="space-y-1.5 pl-2">
+                          {riskCat.items?.map((item, j) => (
+                            <li key={j} className="text-sm flex items-start gap-2">
+                              <span className="text-red-500 font-bold drop-shadow-[0_0_5px_rgba(248,113,113,0.8)] mt-0.5">✕</span>
+                              <span className="text-cyan-50/80 leading-snug">{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
                 </div>
                 <div className="pt-4 border-t border-cyan-500/20">
                   <div className="flex items-center gap-2 text-sm font-semibold mb-3 text-cyan-300 font-mono"><Droplet className="w-4 h-4 text-fuchsia-500" /> Trending Colors</div>
