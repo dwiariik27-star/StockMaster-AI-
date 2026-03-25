@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Loader2, Sparkles, Palette, Save, Copy, Download, ShieldAlert, Box, CheckCircle2, Paintbrush, Eye } from 'lucide-react';
 import { toast } from 'sonner';
-import { GeneratedPrompt, CATEGORIES, LIGHTING_STYLES, CAMERA_ANGLES, COLOR_TONES } from '@/types';
+import { GeneratedPrompt, CATEGORIES, LIGHTING_STYLES, CAMERA_ANGLES, COLOR_TONES, ASPECT_RATIOS, COMPOSITIONS } from '@/types';
 
 interface ProductionTabProps {
   getAIClient: () => any;
@@ -18,6 +18,19 @@ interface ProductionTabProps {
   generatedPrompts: GeneratedPrompt[];
   setGeneratedPrompts: (prompts: GeneratedPrompt[]) => void;
 }
+
+const THEMATIC_MODIFIERS = [
+  "Authentic Lifestyle & Diversity: Fokus pada momen candid, emosi natural, dan keberagaman tanpa terlihat seperti pose studio.",
+  "Minimalist Corporate: Ruang kerja modern, clean desk, pencahayaan alami yang terang, dan negative space besar untuk teks presentasi.",
+  "Cinematic Moody: Pencahayaan dramatis, kontras tinggi, warna deep cinematic, cocok untuk poster atau cover artikel premium.",
+  "Hyper-Realistic Macro: Detail ekstrem pada tekstur (makanan, kain, alam), ketajaman luar biasa, depth of field sangat tipis.",
+  "Abstract Data & Tech: Visualisasi konsep teknologi masa depan, glowing lines, bokeh, warna neon cyberpunk yang elegan.",
+  "Sustainable & Eco-Friendly: Palet warna bumi (earth tones), material organik, pencahayaan matahari pagi yang hangat.",
+  "Neon Nightlife/Cyberpunk: Warna-warna berani (magenta, cyan), pantulan cahaya di permukaan basah, energi kota malam.",
+  "Zen & Wellness: Komposisi simetris, warna pastel lembut, pencahayaan diffuse yang menenangkan, elemen alam.",
+  "Dynamic Action: Angle ekstrem (low angle/dutch angle), motion blur pada background, subjek tajam membeku dalam aksi.",
+  "Luxury & Premium: Palet warna gelap dengan aksen emas/perak, pencahayaan studio chiaroscuro, material mahal (marmer, velvet)."
+];
 
 export function ProductionTab({ 
   getAIClient, 
@@ -31,6 +44,8 @@ export function ProductionTab({
   const [lightingStyle, setLightingStyle] = useState('Auto/AI Choice');
   const [cameraAngle, setCameraAngle] = useState('Auto/AI Choice');
   const [colorTone, setColorTone] = useState('Auto/AI Choice');
+  const [aspectRatio, setAspectRatio] = useState('Auto/AI Choice');
+  const [composition, setComposition] = useState('Auto/AI Choice');
   const [targetCount, setTargetCount] = useState<number>(50);
   const [currentCount, setCurrentCount] = useState<number>(0);
   const [isBatching, setIsBatching] = useState(false);
@@ -73,6 +88,8 @@ export function ProductionTab({
           - Lighting Style: ${lightingStyle}
           - Camera Angle: ${cameraAngle}
           - Color Tone: ${colorTone}
+          - Composition: ${composition}
+          - Aspect Ratio: ${aspectRatio} (Jika bukan Auto, pastikan komposisi prompt mendukung rasio ini dan outputkan rasio ini persis di field aspectRatio)
         `;
 
         let systemInstruction = `Anda adalah Elite Creative Director dan Prompt Engineer ahli untuk Adobe Stock. Tugas Anda adalah menghasilkan ${batchSize} prompt gambar 4K (Nano Banana Pro) yang sangat presisi, fotorealistik, dan bernilai komersial tinggi.
@@ -86,6 +103,12 @@ ATURAN WAJIB NANO BANANA PRO:
 5. Color Grading & Film Stock: Wajib sebutkan tekstur emosional ("as if on 1980s color film, slightly grainy", "Cinematic color grading with muted teal tones").
 6. Materialitas & Tekstur: Jika ada produk/objek, definisikan fisik materialnya ("minimalist ceramic coffee mug", "matte plastic", "frosted glass").
 7. Tipografi (Jika ada teks): Gunakan tanda kutip untuk kata, sebutkan font, dan gaya (contoh: the word "GLOW" in a flowing, elegant Brush Script font).
+8. Commercial Utility: Pastikan gambar memiliki nilai jual (contoh: "generous copy space on the left", "clean background for text overlay", "authentic lifestyle").
+
+ATURAN NEGATIVE PROMPT (SANGAT PENTING UNTUK ADOBE STOCK):
+- Selalu sertakan penolakan standar: "watermark, text, signature, logo, trademark, copyright, blurry, cropped, out of focus, low quality, jpeg artifacts, noise, pixelated".
+- Jika subjek manusia, tambahkan: "ugly, deformed, mutated, extra limbs, extra fingers, poorly drawn face, unnatural skin, plastic skin, cross-eyed, bad anatomy, missing limbs".
+- Jika arsitektur/benda, tambahkan: "warped lines, impossible geometry, asymmetrical, distorted proportions, floating objects".
 
 ${parametricRules}
 Jika kategori adalah 'Minimalist Background', fokus pada Copy Space (60-70% area kosong).
@@ -110,7 +133,10 @@ Sertakan orkestrasi soundstage dan durasi klip spesifik (4, 6, atau 8 detik).
 ${parametricRules}`;
         }
 
-        const dynamicInstruction = `\n\nINI ADALAH BATCH KE-${i+1} DARI ${batches}. WAJIB BERIKAN VARIASI YANG 100% BERBEDA DARI SEBELUMNYA. Gunakan kombinasi subjek, angle, lighting, dan warna yang sangat acak dan unik. Jangan gunakan ide standar.`;
+        const currentTemp = Math.min(0.7 + (i / Math.max(1, batches - 1)) * 0.5, 1.2);
+        const currentTheme = THEMATIC_MODIFIERS[i % THEMATIC_MODIFIERS.length];
+
+        const dynamicInstruction = `\n\n--- INSTRUKSI BATCH KE-${i+1} DARI ${batches} ---\nWAJIB BERIKAN VARIASI YANG 100% BERBEDA DARI BATCH SEBELUMNYA. \nFOKUS KREATIF UNTUK BATCH INI: "${currentTheme}"\nGunakan kombinasi subjek, angle, lighting, dan warna yang sangat acak dan unik berdasarkan fokus kreatif tersebut.`;
 
         const response = await ai.models.generateContent({
           model: selectedModel,
@@ -118,7 +144,7 @@ ${parametricRules}`;
           config: {
             ...(selectedModel.startsWith('gemini-3') ? { thinkingConfig: { thinkingLevel: ThinkingLevel.LOW } } : {}),
             systemInstruction: systemInstruction + dynamicInstruction,
-            temperature: 0.9, // Higher temp for more variety in batches
+            temperature: currentTemp, // Dynamic temperature scaling
             responseMimeType: 'application/json',
             responseSchema: {
               type: Type.ARRAY,
@@ -243,6 +269,14 @@ ${parametricRules}`;
               <div className="space-y-2">
                 <Label className="text-xs text-cyan-300 font-mono">Color Tone</Label>
                 <Select value={colorTone} onValueChange={(val) => val && setColorTone(val)}><SelectTrigger className="h-8 text-xs bg-[#050505] border-cyan-500/50 text-cyan-50 font-mono"><SelectValue /></SelectTrigger><SelectContent className="bg-slate-900 border-cyan-500/50 text-cyan-50 font-mono">{COLOR_TONES.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}</SelectContent></Select>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs text-cyan-300 font-mono">Aspect Ratio</Label>
+                <Select value={aspectRatio} onValueChange={(val) => val && setAspectRatio(val)}><SelectTrigger className="h-8 text-xs bg-[#050505] border-cyan-500/50 text-cyan-50 font-mono"><SelectValue /></SelectTrigger><SelectContent className="bg-slate-900 border-cyan-500/50 text-cyan-50 font-mono">{ASPECT_RATIOS.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}</SelectContent></Select>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs text-cyan-300 font-mono">Composition</Label>
+                <Select value={composition} onValueChange={(val) => val && setComposition(val)}><SelectTrigger className="h-8 text-xs bg-[#050505] border-cyan-500/50 text-cyan-50 font-mono"><SelectValue /></SelectTrigger><SelectContent className="bg-slate-900 border-cyan-500/50 text-cyan-50 font-mono">{COMPOSITIONS.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}</SelectContent></Select>
               </div>
               <div className="space-y-2 pt-2 border-t border-cyan-500/20">
                 <Label className="text-xs text-fuchsia-400 font-mono font-bold flex items-center gap-1"><Sparkles className="w-3 h-3" /> Target Auto-Batching (Max 1000)</Label>

@@ -52,3 +52,5 @@ export const CATEGORIES = [
 export const LIGHTING_STYLES = ['Auto/AI Choice', 'Cinematic Lighting', 'Studio Softbox', 'Natural Sunlight', 'Neon Cyberpunk', 'Chiaroscuro (High Contrast)'];
 export const CAMERA_ANGLES = ['Auto/AI Choice', 'Macro (Close-up)', 'Wide Angle', 'Aerial/Drone View', 'Eye-Level', 'Low Angle (Heroic)'];
 export const COLOR_TONES = ['Auto/AI Choice', 'Warm & Earthy', 'Cool & Moody', 'Pastel Minimalist', 'Vibrant & Saturated', 'Monochrome/B&W'];
+export const ASPECT_RATIOS = ['Auto/AI Choice', '16:9', '9:16', '1:1', '3:2', '4:3', '21:9'];
+export const COMPOSITIONS = ['Auto/AI Choice', 'Rule of Thirds', 'Symmetrical Balance', 'Leading Lines', 'Golden Ratio', 'Negative Space (Copy Space)', 'Framing within Frame'];
