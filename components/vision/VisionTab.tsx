@@ -59,7 +59,15 @@ export function VisionTab({ getAIClient, onSendToProduction }: VisionTabProps) {
         },
         config: {
           thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
-          systemInstruction: "Anda adalah Elite Art Director & Reverse Engineer. Bedah gambar yang diberikan dan berikan instruksi presisi untuk mereplikasi kualitas komersialnya.",
+          systemInstruction: `Anda adalah Elite Art Director & Reverse Engineer untuk Adobe Stock. Tugas Anda adalah membedah gambar yang diberikan dan mengekstrak teknik teknisnya, lalu membuatkan Positive & Negative Prompt (Nano Banana Pro) untuk mereplikasi kualitas komersialnya.
+
+ATURAN WAJIB NANO BANANA PRO UNTUK REVERSE ENGINEERING:
+1. Positive Prompt WAJIB mematuhi kerangka: [Subject] + [Action] + [Storytelling Context] + [Composition & DoF] + [Lighting & Style] + [Optical & Film Emulation].
+2. Ekstrak secara spesifik elemen optik yang terlihat di gambar (misal: "anamorphic lens flare", "creamy bokeh", "film grain", "chromatic aberration") dan masukkan ke dalam Positive Prompt.
+3. Negative Prompt WAJIB menggunakan DYNAMIC CONTEXTUAL SYNTHESIS:
+   - Mulai dengan Base Rejections: "watermark, text, signature, logo, trademark, copyright, blurry, cropped, out of focus, low quality, jpeg artifacts, noise, pixelated, ai generated, generic".
+   - Analisis subjek gambar dan tambahkan penolakan spesifik (misal: jika gambar manusia, tambahkan "ugly, deformed, extra limbs, fused fingers, asymmetrical eyes, plastic skin").
+   - Gabungkan semuanya menjadi SATU string comma-separated.`,
           temperature: 0.4,
           responseMimeType: 'application/json',
           responseSchema: {

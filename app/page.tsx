@@ -71,6 +71,7 @@ export default function StockMasterDashboard() {
             selectedModel={selectedModel}
             saveModel={saveModel}
             onClose={() => setShowSettings(false)}
+            getAIClient={getAIClient}
           />
         )}
 

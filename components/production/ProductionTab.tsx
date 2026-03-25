@@ -204,31 +204,52 @@ ${parametricRules}`;
 
         const dynamicInstruction = `\n\n--- INSTRUKSI BATCH KE-${i+1} DARI ${batches} ---\nWAJIB BERIKAN VARIASI YANG 100% BERBEDA DARI BATCH SEBELUMNYA. \nFOKUS KREATIF UNTUK BATCH INI: "${currentTheme}"\nGunakan kombinasi subjek, angle, lighting, dan warna yang sangat acak dan unik berdasarkan fokus kreatif tersebut.\n${explorationInstruction}`;
 
-        const response = await ai.models.generateContent({
-          model: selectedModel,
-          contents: `Hasilkan ${batchSize} prompt untuk kategori "${CATEGORIES.find(c => c.id === category)?.name}" dengan kata kunci: "${keyword}".`,
-          config: {
-            ...(selectedModel.startsWith('gemini-3') ? { thinkingConfig: { thinkingLevel: ThinkingLevel.LOW } } : {}),
-            systemInstruction: systemInstruction + dynamicInstruction,
-            temperature: currentTemp, // Dynamic temperature scaling
-            responseMimeType: 'application/json',
-            responseSchema: {
-              type: Type.ARRAY,
-              items: {
-                type: Type.OBJECT,
-                properties: {
-                  positivePrompt: { type: Type.STRING, description: "Prompt utama yang sangat detail (Bahasa Inggris)" },
-                  negativePrompt: { type: Type.STRING, description: "Negative prompt yang sangat dinamis dan spesifik dengan konteks positive prompt. Gabungan dari Base Rejections dan Dynamic Contextual Rejections (Bahasa Inggris)" },
-                  aspectRatio: { type: Type.STRING, description: "Rasio aspek yang paling optimal (misal: 16:9, 9:16, 1:1, 3:2)" }
-                },
-                required: ["positivePrompt", "negativePrompt", "aspectRatio"]
-              },
-              description: `Daftar ${batchSize} prompt masterpiece`
-            }
-          },
-        });
+        let retryCount = 0;
+        const maxRetries = 3;
+        let success = false;
+        let text = "";
 
-        const text = response.text;
+        while (!success && retryCount < maxRetries) {
+          try {
+            const response = await ai.models.generateContent({
+              model: selectedModel,
+              contents: `Hasilkan ${batchSize} prompt untuk kategori "${CATEGORIES.find(c => c.id === category)?.name}" dengan kata kunci: "${keyword}".`,
+              config: {
+                ...(selectedModel.startsWith('gemini-3') ? { thinkingConfig: { thinkingLevel: ThinkingLevel.LOW } } : {}),
+                systemInstruction: systemInstruction + dynamicInstruction,
+                temperature: currentTemp, // Dynamic temperature scaling
+                responseMimeType: 'application/json',
+                responseSchema: {
+                  type: Type.ARRAY,
+                  items: {
+                    type: Type.OBJECT,
+                    properties: {
+                      positivePrompt: { type: Type.STRING, description: "Prompt utama yang sangat detail (Bahasa Inggris)" },
+                      negativePrompt: { type: Type.STRING, description: "Negative prompt yang sangat dinamis dan spesifik dengan konteks positive prompt. Gabungan dari Base Rejections dan Dynamic Contextual Rejections (Bahasa Inggris)" },
+                      aspectRatio: { type: Type.STRING, description: "Rasio aspek yang paling optimal (misal: 16:9, 9:16, 1:1, 3:2)" }
+                    },
+                    required: ["positivePrompt", "negativePrompt", "aspectRatio"]
+                  },
+                  description: `Daftar ${batchSize} prompt masterpiece`
+                }
+              },
+            });
+            text = response.text || "";
+            success = true;
+          } catch (error: any) {
+            if (error.status === 429 || error.message?.includes('429') || error.message?.includes('quota') || error.message?.includes('Too Many Requests')) {
+              retryCount++;
+              if (retryCount >= maxRetries) {
+                throw new Error(`Rate limit exceeded. Gagal setelah ${maxRetries} percobaan.`);
+              }
+              setBatchStatus(`Rate limit hit. Retrying batch ${i + 1} (${retryCount}/${maxRetries})...`);
+              await new Promise(resolve => setTimeout(resolve, 3000 * retryCount)); // Exponential backoff
+            } else {
+              throw error;
+            }
+          }
+        }
+
         if (text) {
           const newPrompts = JSON.parse(text);
           accumulatedPrompts = [...accumulatedPrompts, ...newPrompts];
@@ -282,15 +303,19 @@ ${parametricRules}`;
     if (generatedPrompts.length === 0) return;
     
     let csvContent = "data:text/csv;charset=utf-8,";
-    csvContent += "Filename,Positive Prompt,Negative Prompt,Aspect Ratio\n";
+    csvContent += "Filename,Category,Keyword,Positive Prompt,Negative Prompt,Aspect Ratio\n";
+    
+    const categoryName = CATEGORIES.find(c => c.id === category)?.name || category;
     
     generatedPrompts.forEach((p, index) => {
       const filename = `image_${index + 1}.jpg`;
+      const cat = `"${categoryName.replace(/"/g, '""')}"`;
+      const kw = `"${keyword.replace(/"/g, '""')}"`;
       const positive = `"${(p.positivePrompt || '').replace(/"/g, '""')}"`;
       const negative = `"${(p.negativePrompt || '').replace(/"/g, '""')}"`;
       const ar = `"${(p.aspectRatio || '').replace(/"/g, '""')}"`;
       
-      csvContent += `${filename},${positive},${negative},${ar}\n`;
+      csvContent += `${filename},${cat},${kw},${positive},${negative},${ar}\n`;
     });
 
     const encodedUri = encodeURI(csvContent);
