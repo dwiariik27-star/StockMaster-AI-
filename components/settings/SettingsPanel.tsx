@@ -49,7 +49,15 @@ export function SettingsPanel({
         toast.error('Respon kosong dari server. Coba lagi.');
       }
     } catch (error: any) {
-      toast.error(`Koneksi Gagal: ${error.message || 'API Key tidak valid atau limit tercapai.'}`);
+      const msg = error.message || '';
+      if (msg.includes('429') || msg.includes('RESOURCE_EXHAUSTED')) {
+        toast.error('Koneksi Gagal (Error 429): API Key valid, tetapi KUOTA HABIS. Periksa billing Google AI Studio Anda.');
+      } else if (msg.includes('API_KEY_INVALID') || msg.includes('key not valid')) {
+         toast.error('Koneksi Gagal: API Key tidak valid atau salah ketik.');
+      } else {
+        toast.error('Koneksi Gagal: Periksa kembali API Key Anda.');
+        console.error(error);
+      }
     } finally {
       setIsTesting(false);
     }

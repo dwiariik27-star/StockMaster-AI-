@@ -112,7 +112,13 @@ export function ResearchTab({ getAIClient, onSendToProduction }: ResearchTabProp
         toast.success('Analisis pasar super cerdas berhasil diselesaikan!');
       }
     } catch (error: any) {
-      toast.error(error.message || 'Gagal melakukan riset pasar.');
+      const msg = error.message || '';
+      if (msg.includes('429') || msg.includes('RESOURCE_EXHAUSTED')) {
+        toast.error('Error 429 (Quota Exceeded): Kuota API Key Anda habis. Silakan periksa billing di Google AI Studio.');
+      } else {
+        toast.error('Gagal melakukan riset pasar. Cek API Key Anda.');
+        console.error(error);
+      }
     } finally {
       setIsResearching(false);
     }

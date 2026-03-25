@@ -107,7 +107,13 @@ ATURAN WAJIB NANO BANANA PRO UNTUK REVERSE ENGINEERING:
         toast.success('Reverse-Engineering berhasil!');
       }
     } catch (error: any) {
-      toast.error(error.message || 'Gagal menganalisis gambar.');
+      const msg = error.message || '';
+      if (msg.includes('429') || msg.includes('RESOURCE_EXHAUSTED')) {
+        toast.error('Error 429 (Quota Exceeded): Kuota API Key Anda habis. Silakan periksa billing di Google AI Studio.');
+      } else {
+        toast.error('Gagal menganalisis gambar. Cek API Key Anda.');
+        console.error(error);
+      }
     } finally {
       setIsAnalyzing(false);
     }
