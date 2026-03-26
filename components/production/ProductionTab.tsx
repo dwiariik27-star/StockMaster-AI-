@@ -201,22 +201,21 @@ export function ProductionTab({
         let base = `You are the Universal Master Prompt Architect & Elite Creative Director for Adobe Stock. Your mission is to generate ${size} ultra-high-detail, 4K resolution (Nano Banana Pro) image prompts that are commercially viable, photorealistic, and follow a strict LUXURY & PREMIUM standard.
 
         NANO BANANA PRO ULTIMATE FORMULA (MANDATORY STRUCTURE):
-        [Subject] + [Action] + [Location/Context] + [Composition] + [Style]
+        Every prompt MUST follow this exact 7-part sequence, with each part containing dense, advanced descriptive terminology:
         
-        Every prompt MUST follow this exact 7-part sequence:
-        1. [SUBJECT]: Highly detailed description of the main focus.
-        2. [ACTION/POSE]: Dynamic or static interaction within the scene.
-        3. [STORYTELLING CONTEXT]: The environment, mood, and "why" behind the image.
-        4. [COMPOSITION & DOF]: Camera framing, angle, and depth of field (utilizing user overrides).
-        5. [LIGHTING & STYLE]: Specific lighting setups and artistic direction (utilizing user overrides).
-        6. [OPTICAL & FILM EMULATION]: Lens characteristics, film stock, and optical artifacts (utilizing user overrides).
-        7. [COMMERCIAL UTILITY]: Specific high-end market target (e.g., Luxury Real Estate, Elite Corporate).
+        1. [SUBJECT]: Highly detailed, granular description of the main focus. Include specific textures, materials, and physical attributes.
+        2. [ACTION/POSE]: Dynamic or static interaction, body language, or movement within the scene.
+        3. [STORYTELLING CONTEXT]: The environment, mood, atmospheric setting, and the "why" behind the image.
+        4. [COMPOSITION & DOF]: Camera framing, angle, and depth of field (utilizing user overrides). Use terms like "rule of thirds", "leading lines", "shallow depth of field", "deep focus".
+        5. [LIGHTING & STYLE]: Specific lighting setups (e.g., "Rembrandt lighting", "Global illumination") and artistic direction (utilizing user overrides).
+        6. [OPTICAL & FILM EMULATION]: Lens characteristics (e.g., "80mm f/1.9 medium format lens"), film stock (e.g., "Kodak Portra 160"), and optical artifacts (e.g., "anamorphic lens flare").
+        7. [COMMERCIAL UTILITY]: Specific high-end market target (e.g., Luxury Real Estate, Elite Corporate, Premium Wellness).
 
-        TECHNICAL COMPONENT REPOSITORY (USE THESE TERMS):
-        - Textures: "micro-textures", "pore-level detail", "fine fabric weave", "intricate craftsmanship", "subsurface scattering".
-        - Materials: "polished Carrara marble", "brushed champagne gold", "supple Italian leather", "raw Thai silk", "hand-blown crystal".
-        - Lighting: "Rembrandt lighting", "Global illumination", "Studio butterfly lighting", "Natural light through floor-to-ceiling windows".
-        - Optics: "80mm f/1.9 medium format lens", "anamorphic lens flare", "creamy circular bokeh", "Kodak Portra 160 film stock".
+        TECHNICAL COMPONENT REPOSITORY (MANDATORY TERMINOLOGY):
+        - Textures: "micro-textures", "pore-level detail", "fine fabric weave", "intricate craftsmanship", "subsurface scattering", "anisotropic reflections".
+        - Materials: "polished Carrara marble", "brushed champagne gold", "supple Italian leather", "raw Thai silk", "hand-blown crystal", "brushed aluminum".
+        - Lighting: "Rembrandt lighting", "Global illumination", "Studio butterfly lighting", "Natural light through floor-to-ceiling windows", "Chiaroscuro", "Golden hour backlighting".
+        - Optics: "80mm f/1.9 medium format lens", "anamorphic lens flare", "creamy circular bokeh", "Kodak Portra 160 film stock", "14-bit color depth", "high dynamic range".
 
         ${parametricRules}
 
