@@ -28,26 +28,6 @@ export function SettingsPanel({
   getAIClient,
 }: SettingsPanelProps) {
   const [isTesting, setIsTesting] = useState(false);
-  const [customModel, setCustomModel] = useState('');
-  const [isCustom, setIsCustom] = useState(false);
-
-  const handleSaveModel = (val: string) => {
-    if (val === 'custom') {
-      setIsCustom(true);
-    } else {
-      setIsCustom(false);
-      saveModel(val);
-      toast.success(`Model diubah ke ${val}`);
-    }
-  };
-
-  const handleSaveCustomModel = () => {
-    if (customModel.trim()) {
-      saveModel(customModel.trim());
-      toast.success(`Model kustom diatur ke: ${customModel}`);
-      setIsCustom(false);
-    }
-  };
 
   const handleTestConnection = async () => {
     if (!apiKey && !process.env.NEXT_PUBLIC_GEMINI_API_KEY) {
@@ -128,42 +108,26 @@ export function SettingsPanel({
 
           <div className="space-y-2">
             <Label htmlFor="ai-model" className="text-cyan-300 font-medium font-mono">AI Engine (Khusus Produksi Prompt)</Label>
-            <div className="space-y-2">
-              <Select 
-                value={isCustom ? 'custom' : selectedModel} 
-                onValueChange={handleSaveModel}
-              >
-                <SelectTrigger id="ai-model" className="bg-[#050505] border-cyan-500/50 text-cyan-50 font-mono">
-                  <SelectValue placeholder="Pilih Model AI" />
-                </SelectTrigger>
-                <SelectContent className="bg-[#050505] border-cyan-500/50 text-cyan-50 font-mono">
-                  <SelectItem value="gemini-3.1-flash-lite-preview">Gemini 3.1 Flash Lite (⚡ Raja Kuota / Rekomendasi)</SelectItem>
-                  <SelectItem value="gemini-3-flash-preview">Gemini 3.0 Flash (⚡ Cepat & Stabil)</SelectItem>
-                  <SelectItem value="gemini-3.1-pro-preview">Gemini 3.1 Pro (Kualitas Tertinggi)</SelectItem>
-                  <SelectItem value="custom">-- Input ID Kustom (Advanced) --</SelectItem>
-                </SelectContent>
-              </Select>
-
-              {isCustom && (
-                <div className="flex gap-2 animate-in fade-in slide-in-from-top-1">
-                  <Input 
-                    placeholder="Masukkan ID Model (misal: gemini-2.5-flash-lite)" 
-                    value={customModel}
-                    onChange={(e) => setCustomModel(e.target.value)}
-                    className="bg-[#050505] border-fuchsia-500/50 text-cyan-50 font-mono text-xs"
-                  />
-                  <Button size="sm" onClick={handleSaveCustomModel} className="bg-fuchsia-600 hover:bg-fuchsia-500 font-mono text-xs">
-                    Set
-                  </Button>
-                </div>
-              )}
-              
-              {!isCustom && !['gemini-3.1-flash-lite-preview', 'gemini-3-flash-preview', 'gemini-3.1-pro-preview'].includes(selectedModel) && (
-                <p className="text-[10px] text-fuchsia-400 font-mono italic">Aktif: {selectedModel} (Kustom)</p>
-              )}
-            </div>
-            <p className="text-[10px] text-cyan-500/60 mt-2 font-mono leading-tight">
-              *Catatan: Seri 2.5 Flash (Nano Banana) adalah model spesialis Gambar/Audio dan TIDAK mendukung pembuatan teks prompt. Gunakan seri 3.x untuk produksi prompt.
+            <Select 
+              value={selectedModel} 
+              onValueChange={(val) => {
+                if (val) {
+                  saveModel(val);
+                  toast.success(`Model diubah ke ${val}`);
+                }
+              }}
+            >
+              <SelectTrigger id="ai-model" className="bg-[#050505] border-cyan-500/50 text-cyan-50 font-mono">
+                <SelectValue placeholder="Pilih Model AI" />
+              </SelectTrigger>
+              <SelectContent className="bg-[#050505] border-cyan-500/50 text-cyan-50 font-mono">
+                <SelectItem value="gemini-3.1-flash-lite-preview">Gemini 3.1 Flash Lite (⚡ Hemat Kuota / Fastest)</SelectItem>
+                <SelectItem value="gemini-3-flash-preview">Gemini 3.0 Flash (⚡ Cepat & Efisien)</SelectItem>
+                <SelectItem value="gemini-3.1-pro-preview">Gemini 3.1 Pro (Best Quality)</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-cyan-500/70 flex items-center gap-1 font-mono">
+              <Activity className="w-3 h-3 text-cyan-400" /> Riset & Vision menggunakan Gemini 3.0 Flash untuk stabilitas.
             </p>
           </div>
         </div>
