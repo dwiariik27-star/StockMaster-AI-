@@ -147,7 +147,7 @@ export function useAI() {
     // --- Groq Key Rotation Logic ---
     if (providerType === 'groq') {
       const keys = groqApiKey.split(/[,\n]/).map(k => k.trim()).filter(Boolean);
-      if (keys.length === 0) throw new Error('Groq API Key tidak ditemukan.');
+      if (keys.length === 0) throw new Error('Groq API Key not found.');
 
       let lastError: any = null;
       // Try each key if we hit rate limits
@@ -194,7 +194,7 @@ export function useAI() {
                       return searchRes.text;
                     } catch (e) {
                       console.error("Web Search Tool Error:", e);
-                      return "Gagal mengambil data real-time. Melanjutkan dengan pengetahuan internal.";
+                      return "Failed to fetch real-time data. Continuing with internal knowledge.";
                     }
                   }
                 }
@@ -210,7 +210,7 @@ export function useAI() {
           
           if (isRateLimit && i < keys.length - 1) {
             console.warn(`Groq Key [${keySnippet}] hit limit. Rotating to next key...`);
-            toast.info(`Key Groq limit tercapai. Merotasi ke key berikutnya... (${i + 2}/${keys.length})`);
+            toast.info(`Groq Key limit reached. Rotating to next key... (${i + 2}/${keys.length})`);
             continue; // Try next key
           }
           throw error; // If not rate limit or no more keys, throw

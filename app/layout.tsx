@@ -15,7 +15,7 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: 'StockMaster AI',
-  description: 'Platform Intelijen Pasar & Produksi Masal Adobe Stock',
+  description: 'Adobe Stock Market Intelligence & Mass Production Platform',
 };
 
 export default function RootLayout({children}: {children: React.ReactNode}) {

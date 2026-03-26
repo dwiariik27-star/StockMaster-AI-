@@ -201,7 +201,9 @@ export function ProductionTab({
 
         let base = `You are the Universal Master Prompt Architect & Elite Creative Director for Adobe Stock. Your mission is to generate ${size} ultra-high-detail, 4K resolution (Nano Banana Pro) image prompts that are commercially viable, photorealistic, and follow a strict LUXURY & PREMIUM standard.
 
-        UNIVERSAL PROMPT ARCHITECTURE FRAMEWORK (MANDATORY STRUCTURE):
+        NANO BANANA PRO ULTIMATE FORMULA (MANDATORY STRUCTURE):
+        [Subject] + [Action] + [Location/Context] + [Composition] + [Style]
+        
         Every prompt MUST follow this exact 7-part sequence:
         1. [SUBJECT]: Highly detailed description of the main focus.
         2. [ACTION/POSE]: Dynamic or static interaction within the scene.
@@ -325,7 +327,7 @@ export function ProductionTab({
         while (!batchSuccess && retryCount <= maxRetries) {
           try {
             const { text: batchText } = await callAI({
-              prompt: `Hasilkan ${currentBatchSize} prompt untuk kategori "${CATEGORIES.find(c => c.id === category)?.name}" dengan kata kunci: "${keyword}".`,
+              prompt: `Generate ${currentBatchSize} prompts for the category "${CATEGORIES.find(c => c.id === category)?.name}" with the keyword: "${keyword}".`,
               system: getSystemInstruction(currentBatchSize) + dynamicInstruction,
               temperature: currentTemp,
               jsonMode: true,

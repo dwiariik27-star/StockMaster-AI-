@@ -46,29 +46,29 @@ export function SettingsPanel({
     const currentKey = selectedProvider === 'google' ? apiKey : groqApiKey;
     
     if (!currentKey && selectedProvider === 'google' && !process.env.NEXT_PUBLIC_GEMINI_API_KEY) {
-      toast.error('API Key Gemini kosong.');
+      toast.error('Gemini API Key is empty.');
       return;
     }
 
     if (!currentKey && selectedProvider === 'groq') {
-      toast.error('API Key Groq kosong.');
+      toast.error('Groq API Key is empty.');
       return;
     }
     
     setIsTesting(true);
     try {
       const { text } = await callAI({
-        prompt: 'Balas dengan kata "OK" jika Anda menerima pesan ini.',
+        prompt: 'Reply with "OK" if you receive this message.',
         model: selectedProvider === 'google' ? 'gemini-3-flash-preview' : 'llama-3.3-70b-versatile'
       });
       
       if (text) {
-        toast.success(`Koneksi ${selectedProvider === 'google' ? 'Gemini' : 'Groq'} Berhasil!`);
+        toast.success(`${selectedProvider === 'google' ? 'Gemini' : 'Groq'} Connection Successful!`);
       } else {
-        toast.error('Respon kosong dari AI.');
+        toast.error('Empty response from AI.');
       }
     } catch (error: any) {
-      toast.error(`Koneksi Gagal: ${error.message || 'Periksa kembali API Key Anda.'}`);
+      toast.error(`Connection Failed: ${error.message || 'Please check your API Key.'}`);
       console.error(error);
     } finally {
       setIsTesting(false);
@@ -87,7 +87,7 @@ export function SettingsPanel({
                 </Label>
                 <Select value={selectedProvider} onValueChange={(val) => saveProvider(val as AIProvider)}>
                   <SelectTrigger className="bg-[#050505] border-cyan-500/50 text-cyan-50 font-mono">
-                    <SelectValue placeholder="Pilih Provider" />
+                    <SelectValue placeholder="Select Provider" />
                   </SelectTrigger>
                   <SelectContent className="bg-[#050505] border-cyan-500/50 text-cyan-50 font-mono">
                     <SelectItem value="google">Google Gemini (Default)</SelectItem>
@@ -108,7 +108,7 @@ export function SettingsPanel({
                     )}
                   </div>
                   {selectedProvider === 'groq' && (
-                    <span className="text-[10px] text-cyan-500/50 font-normal">Pisahkan dengan baris baru atau koma</span>
+                    <span className="text-[10px] text-cyan-500/50 font-normal">Separate with new lines or commas</span>
                   )}
                 </Label>
                 <div className="flex gap-2">
@@ -135,7 +135,7 @@ export function SettingsPanel({
                     size="icon" 
                     onClick={() => {
                       selectedProvider === 'google' ? clearApiKey() : clearGroqApiKey();
-                      toast.success('API Key berhasil dihapus');
+                      toast.success('API Key successfully deleted');
                     }}
                     className="bg-red-950/30 text-red-400 hover:bg-red-900/50 border border-red-500/50 self-start"
                   >
@@ -153,12 +153,12 @@ export function SettingsPanel({
                   onValueChange={(val) => {
                     if (val) {
                       saveModel(val);
-                      toast.success(`Model diubah ke ${val}`);
+                      toast.success(`Model changed to ${val}`);
                     }
                   }}
                 >
                   <SelectTrigger id="ai-model" className="bg-[#050505] border-cyan-500/50 text-cyan-50 font-mono">
-                    <SelectValue placeholder="Pilih Model AI" />
+                    <SelectValue placeholder="Select AI Model" />
                   </SelectTrigger>
                   <SelectContent className="bg-[#050505] border-cyan-500/50 text-cyan-50 font-mono">
                     {selectedProvider === 'google' ? (
@@ -187,7 +187,7 @@ export function SettingsPanel({
                   className="w-full bg-cyan-950/30 text-cyan-400 hover:bg-cyan-900/50 border border-cyan-500/50 font-mono"
                 >
                   {isTesting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <CheckCircle2 className="w-4 h-4 mr-2" />}
-                  Uji Koneksi {selectedProvider === 'google' ? 'Gemini' : 'Groq'}
+                  Test {selectedProvider === 'google' ? 'Gemini' : 'Groq'} Connection
                 </Button>
               </div>
             </div>
@@ -195,10 +195,10 @@ export function SettingsPanel({
 
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 pt-4 border-t border-cyan-900/50">
             <p className="text-xs text-cyan-500/70 flex items-center gap-1 font-mono">
-              <ShieldAlert className="w-3 h-3 text-cyan-400" /> Key disimpan secara aman di browser lokal Anda.
+              <ShieldAlert className="w-3 h-3 text-cyan-400" /> Key is stored securely in your local browser.
             </p>
             <Button onClick={onClose} className="bg-fuchsia-600 text-white hover:bg-fuchsia-500 shadow-[0_0_15px_rgba(217,70,239,0.4)] font-bold font-mono w-full md:w-auto">
-              Simpan & Tutup
+              Save & Close
             </Button>
           </div>
         </CardContent>

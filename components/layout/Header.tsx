@@ -16,7 +16,7 @@ export function Header({ hasApiKey, onSettingsClick }: HeaderProps) {
           <Sparkles className="w-7 h-7 text-fuchsia-500 drop-shadow-[0_0_8px_rgba(217,70,239,0.8)]" />
           StockMaster AI <span className="text-[10px] uppercase tracking-widest bg-cyan-950/50 text-cyan-400 border border-cyan-500/50 px-2 py-1 rounded-full ml-2 align-middle font-medium shadow-[0_0_10px_rgba(6,182,212,0.2)]">v5 Multimodal</span>
         </h1>
-        <p className="text-cyan-500/70 mt-1.5 text-sm font-medium tracking-wide font-mono">Platform Intelijen Pasar & Produksi Masal Adobe Stock</p>
+        <p className="text-cyan-500/70 mt-1.5 text-sm font-medium tracking-wide font-mono">Adobe Stock Market Intelligence & Mass Production Platform</p>
       </div>
       <Button 
         variant={hasApiKey ? "outline" : "default"} 
@@ -26,7 +26,7 @@ export function Header({ hasApiKey, onSettingsClick }: HeaderProps) {
         } 
         onClick={onSettingsClick}
       >
-        <Key className="w-4 h-4 mr-2" /> {hasApiKey ? 'API Key Terpasang' : 'Set API Key (BYOK)'}
+        <Key className="w-4 h-4 mr-2" /> {hasApiKey ? 'API Key Configured' : 'Set API Key (BYOK)'}
       </Button>
     </header>
   );

@@ -70,7 +70,9 @@ export function ResearchTab({ getAIClient, callAI, apiKey, selectedProvider, onS
       const prompt = `Perform a deep microstock and Adobe Stock market intelligence analysis for the topic: "${researchTopic}". 
       Apply "Niche Market Discovery" and "Blue Ocean Strategy" methods. 
       Analyze market demand, competition levels, saturation, buyer personas (who buys this?), psychologically trending color palettes, and find "Blue Ocean" gaps where demand is high but supply/competition is low.
-      Provide 5 most profitable "Blue Ocean" sub-niche recommendations with strong commercial justifications.`;
+      Provide 5 most profitable "Blue Ocean" sub-niche recommendations with strong commercial justifications.
+      
+      Ensure all output is in English.`;
 
       const { text } = await callAI({
         prompt,
