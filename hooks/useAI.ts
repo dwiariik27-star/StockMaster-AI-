@@ -22,6 +22,8 @@ export function useAI() {
     return '';
   });
 
+  const [groqKeyIndex, setGroqKeyIndex] = useState(0);
+
   const [selectedProvider, setSelectedProvider] = useState<AIProvider>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('stockmaster_provider');
@@ -151,12 +153,16 @@ export function useAI() {
       if (keys.length === 0) throw new Error('Groq API Key tidak ditemukan.');
 
       let lastError: any = null;
+      
+      // Use the persistent index
+      let currentIndex = groqKeyIndex % keys.length;
+      
       // Try each key if we hit rate limits
       for (let i = 0; i < keys.length; i++) {
-        const currentKey = keys[i];
+        const currentKey = keys[currentIndex];
         const keySnippet = `${currentKey.substring(0, 8)}...${currentKey.substring(currentKey.length - 4)}`;
         
-        console.log(`[Groq] Using API Key: ${keySnippet}`);
+        console.log(`[Groq] Attempting with Key Index ${currentIndex}: ${keySnippet}`);
         
         try {
           const provider = createGroq({ apiKey: currentKey });
@@ -202,17 +208,22 @@ export function useAI() {
             } : {}),
           } as any);
 
+          // Success! Update the persistent index for next time
+          setGroqKeyIndex(currentIndex);
           return { text };
         } catch (error: any) {
           lastError = error;
           const isRateLimit = error.status === 429 || error.message?.includes('429') || error.message?.includes('rate limit') || error.message?.includes('exhausted');
           
-          if (isRateLimit && i < keys.length - 1) {
-            console.warn(`Groq Key [${keySnippet}] hit limit. Rotating to next key...`);
-            toast.info(`Key Groq limit tercapai. Merotasi ke key berikutnya... (${i + 2}/${keys.length})`);
+          if (isRateLimit) {
+            console.warn(`[Groq] Key Index ${currentIndex} [${keySnippet}] hit limit. Rotating to next key...`);
+            toast.info(`Key Groq limit tercapai. Merotasi ke key berikutnya...`);
+            
+            // Rotate index
+            currentIndex = (currentIndex + 1) % keys.length;
             continue; // Try next key
           }
-          throw error; // If not rate limit or no more keys, throw
+          throw error; // If not rate limit, throw
         }
       }
       throw lastError;
