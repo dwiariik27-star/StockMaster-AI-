@@ -251,6 +251,48 @@ export function useAI() {
     }
 
     // --- Default Gemini Logic ---
+    if (providerType === 'google') {
+      const key = geminiApiKey || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+      if (!key) throw new Error('Gemini API Key tidak ditemukan.');
+      
+      const ai = new GoogleGenAI({ apiKey: key });
+      
+      const contents: any[] = [];
+      if (options.image) {
+        contents.push({
+          parts: [
+            { text: options.prompt },
+            { inlineData: { data: options.image.data, mimeType: options.image.mimeType } }
+          ]
+        });
+      } else {
+        contents.push(options.prompt);
+      }
+
+      const response = await ai.models.generateContent({
+        model: modelId,
+        contents: contents,
+        config: {
+          systemInstruction: options.system,
+          temperature: options.temperature,
+          ...(options.jsonMode ? { responseMimeType: "application/json" } : {}),
+          ...(options.useSearch ? { tools: [{ googleSearch: {} }] } : {}),
+        }
+      });
+
+      let sources = undefined;
+      const chunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks;
+      if (chunks) {
+        sources = chunks.map((chunk: any) => ({
+          title: chunk.web?.title || '',
+          uri: chunk.web?.uri || ''
+        })).filter((s: any) => s.uri);
+      }
+
+      return { text: response.text || '', sources };
+    }
+
+    // Fallback (should not be reached if providerType is google or groq)
     const provider = getAIClient('google');
     const { text } = await generateText({
       model: provider(modelId),
@@ -259,37 +301,6 @@ export function useAI() {
       temperature: options.temperature,
       maxTokens: finalMaxTokens,
       ...(options.jsonMode ? { responseFormat: { type: 'json' } } : {}),
-      ...(options.useSearch ? {
-        tools: {
-          web_search: {
-            description: 'Search the web for real-time market data, trends, and Adobe Stock insights.',
-            parameters: {
-              type: 'object',
-              properties: {
-                query: { type: 'string', description: 'The search query to find latest data.' }
-              },
-              required: ['query']
-            },
-            execute: async ({ query }: { query: string }) => {
-              try {
-                const ai = new GoogleGenAI({ apiKey: geminiApiKey || process.env.NEXT_PUBLIC_GEMINI_API_KEY! });
-                const response = await ai.models.generateContent({
-                  model: "gemini-3-flash-preview",
-                  contents: query,
-                  config: {
-                    tools: [{ googleSearch: {} }],
-                  },
-                });
-                return response.text || "No results found.";
-              } catch (e) {
-                console.error("Web Search Tool Error:", e);
-                return "Gagal mengambil data real-time. Melanjutkan dengan pengetahuan internal.";
-              }
-            }
-          }
-        },
-        maxSteps: 3
-      } : {}),
     } as any);
 
     return { text };

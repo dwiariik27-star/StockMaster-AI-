@@ -22,7 +22,7 @@ interface SettingsPanelProps {
   saveModel: (model: string) => void;
   onClose: () => void;
   getAIClient: () => any;
-  callAI: (options: any) => Promise<{ text: string }>;
+  callAI: (options: any) => Promise<{ text: string; sources?: any[] }>;
 }
 
 export function SettingsPanel({

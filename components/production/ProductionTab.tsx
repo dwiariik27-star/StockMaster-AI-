@@ -14,7 +14,7 @@ import { extractJSON } from '@/lib/utils';
 
 interface ProductionTabProps {
   getAIClient: () => any;
-  callAI: (options: any) => Promise<{ text: string }>;
+  callAI: (options: any) => Promise<{ text: string; sources?: any[] }>;
   selectedModel: string;
   selectedProvider: string;
   keyword: string;

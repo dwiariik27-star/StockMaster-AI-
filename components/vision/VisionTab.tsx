@@ -9,7 +9,7 @@ import { extractJSON } from '@/lib/utils';
 
 interface VisionTabProps {
   getAIClient: () => any;
-  callAI: (options: any) => Promise<{ text: string }>;
+  callAI: (options: any) => Promise<{ text: string; sources?: any[] }>;
   onSendToProduction: (prompt: any) => void;
 }
 

@@ -32,6 +32,8 @@ export interface ResearchResult {
   rejectionRisks: CategorizedList[];
   titleTemplate: string; 
   sources?: GroundingSource[];
+  visualTrends?: string[];
+  avoidCreating?: string[];
 }
 
 export interface VisionResult {

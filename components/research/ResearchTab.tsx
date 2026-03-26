@@ -10,7 +10,7 @@ import { extractJSON } from '@/lib/utils';
 
 interface ResearchTabProps {
   getAIClient: () => any;
-  callAI: (options: any) => Promise<{ text: string }>;
+  callAI: (options: any) => Promise<{ text: string; sources?: any[] }>;
   apiKey: string;
   selectedProvider: string;
   onSendToProduction: (nicheName: string) => void;
@@ -51,6 +51,8 @@ export function ResearchTab({ getAIClient, callAI, apiKey, selectedProvider, onS
       1. "Market Intelligence": Current trends, cultural shifts, and industry needs driving demand.
       2. "Niche Discovery": Identification of highly specific sub-niches (long-tail keywords) with high conversion potential.
       3. "Technical Excellence": Technical quality standards required for the niche to avoid rejection.
+      4. "Visual Composition Trends": Identify what framing, lighting, or copy space is currently selling.
+      5. "Saturation Warning": Explicitly identify what NOT to create because it's oversaturated.
       
       CRITICAL: REJECTION RISKS CATEGORIZATION:
       You MUST categorize 'rejectionRisks' into these 3 specific areas:
@@ -73,18 +75,27 @@ export function ResearchTab({ getAIClient, callAI, apiKey, selectedProvider, onS
         "subNiches": [{"name": string, "reason": string}],
         "visualRequirements": [{"category": string, "items": string[]}],
         "rejectionRisks": [{"category": string, "items": string[]}],
+        "visualTrends": string[],
+        "avoidCreating": string[],
         "titleTemplate": string,
         "seoTags": string[]
       }`;
 
-      const prompt = `Perform a deep microstock and Adobe Stock market intelligence analysis for the topic: "${researchTopic}". 
-      Apply "Niche Market Discovery" and "Blue Ocean Strategy" methods. 
+      const prompt = `Perform a highly advanced microstock and Adobe Stock market intelligence analysis for the topic: "${researchTopic}". 
+      Use real-time web search to gather current trends.
+      
+      Methodology:
+      1. Keyword Effectiveness Index (KEI) Simulation: Identify high search volume vs. low supply gaps.
+      2. Blue Ocean Strategy: Find uncontested sub-niches.
+      3. Visual Trend Analysis: Identify currently selling compositions, lighting, and copy-space requirements.
+      4. Saturation Warning: Identify what specific angles/subjects to AVOID because they are oversupplied.
+      
       Analyze market demand, competition levels, saturation, buyer personas (who buys this?), psychologically trending color palettes, and find "Blue Ocean" gaps where demand is high but supply/competition is low.
       Provide 5 most profitable "Blue Ocean" sub-niche recommendations with strong commercial justifications.
       
       Ensure all output is in English.`;
 
-      const { text } = await callAI({
+      const { text, sources } = await callAI({
         prompt,
         system: systemInstruction,
         temperature: 0.4,
@@ -112,6 +123,11 @@ export function ResearchTab({ getAIClient, callAI, apiKey, selectedProvider, onS
           if (typeof parsedResult.trendScore !== 'number') {
             console.error("Data hasil riset tidak lengkap (missing trendScore):", parsedResult);
             throw new Error("AI mengembalikan data yang tidak lengkap. Pastikan topik yang dimasukkan cukup spesifik.");
+          }
+
+          // Attach sources if available
+          if (sources && sources.length > 0) {
+            parsedResult.sources = sources;
           }
 
           setResearchResult(parsedResult as ResearchResult);
@@ -182,7 +198,19 @@ export function ResearchTab({ getAIClient, callAI, apiKey, selectedProvider, onS
                     <div className="grid grid-cols-2 gap-6 pt-6 border-t border-cyan-500/20">
                       <div className="space-y-1.5"><div className="flex items-center gap-2 text-cyan-500/70 text-[10px] uppercase tracking-widest font-semibold font-mono"><Activity className="w-3.5 h-3.5 text-fuchsia-500" /> Demand</div><div className="font-medium text-cyan-100 text-sm">{researchResult.demandLevel || '-'}</div></div>
                       <div className="space-y-1.5"><div className="flex items-center gap-2 text-cyan-500/70 text-[10px] uppercase tracking-widest font-semibold font-mono"><Target className="w-3.5 h-3.5 text-fuchsia-500" /> Competition</div><div className="font-medium text-cyan-100 text-sm">{researchResult.competitionLevel || '-'}</div></div>
-                      <div className="space-y-1.5"><div className="flex items-center gap-2 text-cyan-500/70 text-[10px] uppercase tracking-widest font-semibold font-mono"><AlertTriangle className="w-3.5 h-3.5 text-fuchsia-500" /> Saturation</div><div className="font-medium text-cyan-100 text-sm">{(researchResult.saturationIndex ?? 0)}% <span className="text-xs ml-1 text-cyan-500/70 font-normal">({(researchResult.saturationIndex ?? 0) > 70 ? 'High' : 'Healthy'})</span></div></div>
+                      <div className="space-y-1.5">
+                        <div className="flex items-center gap-2 text-cyan-500/70 text-[10px] uppercase tracking-widest font-semibold font-mono"><AlertTriangle className="w-3.5 h-3.5 text-fuchsia-500" /> Saturation</div>
+                        <div className="font-medium text-cyan-100 text-sm flex items-center gap-2">
+                          {(researchResult.saturationIndex ?? 0)}% 
+                          <span className={`text-[10px] px-2 py-0.5 rounded-full border ${
+                            (researchResult.saturationIndex ?? 0) > 70 ? 'bg-red-950/50 text-red-400 border-red-500/50' : 
+                            (researchResult.saturationIndex ?? 0) > 40 ? 'bg-yellow-950/50 text-yellow-400 border-yellow-500/50' : 
+                            'bg-emerald-950/50 text-emerald-400 border-emerald-500/50'
+                          }`}>
+                            {(researchResult.saturationIndex ?? 0) > 70 ? 'High Risk' : (researchResult.saturationIndex ?? 0) > 40 ? 'Medium' : 'Healthy'}
+                          </span>
+                        </div>
+                      </div>
                       <div className="space-y-1.5"><div className="flex items-center gap-2 text-cyan-500/70 text-[10px] uppercase tracking-widest font-semibold font-mono"><CalendarDays className="w-3.5 h-3.5 text-fuchsia-500" /> Seasonality</div><div className="font-medium text-cyan-100 text-sm">{researchResult.seasonality || '-'}</div></div>
                     </div>
                   </div>
@@ -254,6 +282,34 @@ export function ResearchTab({ getAIClient, callAI, apiKey, selectedProvider, onS
                     {researchResult.colorPalette?.map((color, i) => (<span key={i} className="px-3 py-1.5 bg-cyan-950/30 text-cyan-300 text-xs rounded-md border border-cyan-500/40 shadow-[0_0_8px_rgba(6,182,212,0.1)] font-mono flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-fuchsia-500 shadow-[0_0_5px_rgba(217,70,239,0.8)]"></div>{color}</span>))}
                   </div>
                 </div>
+
+                {researchResult.visualTrends && researchResult.visualTrends.length > 0 && (
+                  <div className="pt-6 border-t border-cyan-500/20">
+                    <div className="flex items-center gap-2 text-xs font-semibold mb-4 text-emerald-400 uppercase tracking-widest font-mono"><ImageIcon className="w-4 h-4 text-emerald-500" /> Current Visual Trends</div>
+                    <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {researchResult.visualTrends.map((trend, i) => (
+                        <li key={i} className="text-sm flex items-start gap-2 bg-emerald-950/10 p-3 rounded-lg border border-emerald-500/20">
+                          <span className="text-emerald-500 mt-0.5">✓</span>
+                          <span className="text-cyan-100/80 leading-snug">{trend}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {researchResult.avoidCreating && researchResult.avoidCreating.length > 0 && (
+                  <div className="pt-6 border-t border-cyan-500/20">
+                    <div className="flex items-center gap-2 text-xs font-semibold mb-4 text-orange-400 uppercase tracking-widest font-mono"><AlertTriangle className="w-4 h-4 text-orange-500" /> Saturation Warning: Do Not Create</div>
+                    <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {researchResult.avoidCreating.map((avoid, i) => (
+                        <li key={i} className="text-sm flex items-start gap-2 bg-orange-950/10 p-3 rounded-lg border border-orange-500/20">
+                          <span className="text-orange-500 mt-0.5">✕</span>
+                          <span className="text-cyan-100/80 leading-snug">{avoid}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -273,6 +329,23 @@ export function ResearchTab({ getAIClient, callAI, apiKey, selectedProvider, onS
                 <div className="flex flex-wrap gap-2">
                   {researchResult.seoTags?.map((tag, i) => (<span key={i} className="px-2.5 py-1 bg-[#050505] text-cyan-400 text-xs rounded-md border border-cyan-500/30 hover:border-cyan-400/80 hover:shadow-[0_0_10px_rgba(6,182,212,0.2)] transition-colors font-mono">{tag}</span>))}
                 </div>
+                
+                {researchResult.sources && researchResult.sources.length > 0 && (
+                  <div className="mt-6 pt-6 border-t border-cyan-500/20">
+                    <div className="flex items-center gap-2 text-[10px] font-semibold text-emerald-400 mb-3 uppercase tracking-widest font-mono">
+                      <Globe className="w-3.5 h-3.5" /> Live Web Sources
+                    </div>
+                    <ul className="space-y-2">
+                      {researchResult.sources.map((source, i) => (
+                        <li key={i} className="text-xs text-cyan-500/70 hover:text-cyan-300 transition-colors truncate">
+                          <a href={source.uri} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
+                            <span className="text-emerald-500/50">↗</span> {source.title || source.uri}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
