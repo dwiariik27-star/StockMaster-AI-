@@ -437,6 +437,28 @@ export function ProductionTab({
                     </SelectContent>
                   </Select>
                 </div>
+                <div className="flex flex-col gap-1.5">
+                  <Label className="text-[10px] uppercase tracking-wider text-cyan-500/70 font-semibold leading-tight font-mono">Camera Motion</Label>
+                  <Select value={cameraMotion} onValueChange={(val) => val && setCameraMotion(val)}>
+                    <SelectTrigger className="h-10 bg-[#050505] border-cyan-500/50 text-cyan-300 hover:bg-cyan-950/30 hover:border-cyan-400/50 transition-colors font-mono">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-[#050505] border-cyan-500/50 text-cyan-300 font-mono">
+                      {CAMERA_MOTION.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <Label className="text-[10px] uppercase tracking-wider text-cyan-500/70 font-semibold leading-tight font-mono">Lens Flare</Label>
+                  <Select value={lensFlare} onValueChange={(val) => val && setLensFlare(val)}>
+                    <SelectTrigger className="h-10 bg-[#050505] border-cyan-500/50 text-cyan-300 hover:bg-cyan-950/30 hover:border-cyan-400/50 transition-colors font-mono">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-[#050505] border-cyan-500/50 text-cyan-300 font-mono">
+                      {LENS_FLARE.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               <div className="space-y-2 pt-2 border-t border-cyan-500/30">
                 <Label className="text-xs text-fuchsia-400 font-bold flex items-center gap-1 font-mono"><Sparkles className="w-3 h-3 text-fuchsia-500" /> Target Auto-Batching (Max 1000)</Label>
