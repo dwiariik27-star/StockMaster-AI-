@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, Sparkles, Palette, Save, Copy, Download, ShieldAlert, Box, CheckCircle2, Paintbrush, Eye } from 'lucide-react';
+import { Loader2, Sparkles, Palette, Save, Copy, Download, ShieldAlert, Box, CheckCircle2, Paintbrush, Eye, Info } from 'lucide-react';
 import { toast } from 'sonner';
 import { GeneratedPrompt, CATEGORIES, LIGHTING_STYLES, CAMERA_ANGLES, COLOR_TONES, ASPECT_RATIOS, COMPOSITIONS, DEPTH_OF_FIELD, CAMERA_MOTION, LENS_FLARE, BOKEH_INTENSITY, FILM_GRAIN, CHROMATIC_ABERRATION, COLOR_BLEED } from '@/types';
 
@@ -41,7 +41,8 @@ export function ProductionTab({
   const [chromaticAberration, setChromaticAberration] = useState('Auto/AI Choice');
   const [colorBleed, setColorBleed] = useState('Auto/AI Choice');
   const [targetCount, setTargetCount] = useState<number>(50);
-  const [creativity, setCreativity] = useState<number>(70);
+  const [creativity, setCreativity] = useState<number>(55);
+  const [negativePromptBias, setNegativePromptBias] = useState<number>(80);
   const [currentCount, setCurrentCount] = useState<number>(0);
   const [isBatching, setIsBatching] = useState(false);
   const [batchStatus, setBatchStatus] = useState('');
@@ -152,19 +153,18 @@ ATURAN WAJIB NANO BANANA PRO (STORYTELLING & COMMERCIAL FOCUS):
 7. Optical & Film Emulation: Wajib integrasikan efek optik spesifik seperti Lens Flare, Bokeh Intensity, Film Grain, Chromatic Aberration, dan Color Bleed/Halation sesuai parameter. Gunakan istilah teknis ("anamorphic lens flare", "creamy swirly bokeh", "heavy ISO 3200 film grain", "subtle edge fringing", "cinematic halation on highlights").
 8. Color Grading & Film Stock: Wajib sebutkan tekstur emosional ("as if on 1980s color film, slightly grainy", "Cinematic color grading with muted teal tones").
 9. Materialitas & Tekstur: Jika ada produk/objek, definisikan fisik materialnya ("minimalist ceramic coffee mug", "matte plastic", "frosted glass").
-10. Tipografi (Jika ada teks): Gunakan tanda kutip untuk kata, sebutkan font, dan gaya (contoh: the word "GLOW" in a flowing, elegant Brush Script font).
+10. Tipografi & Integritas Teks (CRITICAL): Jika gambar membutuhkan teks, Anda WAJIB memastikan teks tersebut lengkap, rapi, dan bebas typo. Gunakan tanda kutip ganda untuk teks target (contoh: the word "SALE") dan definisikan gaya font secara teknis (contoh: "in a bold, clean, modern sans-serif font", "in a high-contrast elegant serif font"). Pastikan teks adalah fokus utama atau terintegrasi secara logis tanpa distorsi ("perfectly rendered letters, no spelling errors").
 11. Commercial Utility: Pastikan gambar memiliki nilai jual tinggi (contoh: "generous copy space on the left", "clean background for text overlay", "authentic lifestyle diversity").
 
-ATURAN NEGATIVE PROMPT (DYNAMIC & CONTEXTUAL SYNTHESIS):
-1. Base Rejections (WAJIB ADA DI SETIAP PROMPT): "watermark, text, signature, logo, trademark, copyright, blurry, cropped, out of focus, low quality, jpeg artifacts, noise, pixelated, ai generated, generic".
-2. Dynamic Contextual Rejections (SANGAT PENTING): Analisis subjek pada Positive Prompt secara mendalam dan tambahkan kata kunci negatif spesifik untuk mencegah kegagalan umum AI (AI hallucinations) pada subjek tersebut:
-   - Jika Manusia/Potret: "ugly, deformed, mutated, extra limbs, extra fingers, fused fingers, six fingers, poorly drawn face, asymmetrical eyes, unnatural teeth, plastic skin, elongated neck, disproportionate body, stiff pose, weird hands".
-   - Jika Arsitektur/Interior: "warped lines, impossible geometry, Escher-like structures, doors leading nowhere, mismatched perspective, leaning buildings, structural impossibility, crooked walls, weird reflections".
-   - Jika Makanan/Minuman: "unappetizing, moldy, plastic food, overly glossy, radioactive colors, floating ingredients, unidentifiable ingredients, messy plating, weird utensils, fused cutlery".
-   - Jika Alam/Lanskap: "neon green grass, oversaturated sky, fake plastic trees, two suns, unnatural water flow, repetitive patterns, fractal artifacts, weird clouds".
-   - Jika Kendaraan/Teknologi: "asymmetrical wheels, missing doors, nonsensical UI, fused mechanical parts, impossible physics, bent metal".
-   - Jika Hewan: "extra legs, weird snouts, human-like eyes, fused bodies, unnatural fur patterns, mutated anatomy".
-3. SYNTHESIS MANDATE: Anda WAJIB menggabungkan Base Rejections dengan Dynamic Contextual Rejections yang relevan menjadi SATU string comma-separated yang panjang dan komprehensif. Jangan pisahkan, jadikan satu kesatuan "negativePrompt" yang sangat kuat dan spesifik dengan tema gambar.
+        ATURAN NEGATIVE PROMPT (DEEP HALLUCINATION ANALYSIS - BIAS: ${negativePromptBias}%):
+        1. Base Rejections (MANDATORY): "watermark, text, signature, logo, trademark, copyright, blurry, cropped, out of focus, low quality, jpeg artifacts, noise, pixelated, ai generated, generic".
+        2. Deep Contextual Analysis (CRITICAL): Analisis subjek pada Positive Prompt secara mikroskopis. Gunakan intensitas ${negativePromptBias}% untuk menghasilkan kata kunci negatif yang sangat spesifik guna mencegah halusinasi AI yang unik untuk subjek tersebut:
+           - Jika Manusia/Potret: Fokus pada "micro-anatomical errors, iris distortion, skin plastic texture, unnatural joint angles, finger count, fingernail artifacts".
+           - Jika Arsitektur/Interior: Fokus pada "perspective convergence errors, floating furniture, non-Euclidean geometry, light leak artifacts, impossible shadows".
+           - Jika Makanan/Minuman: Fokus pada "unnatural viscosity, floating particles, impossible reflections on liquid, texture repetition, unappetizing color shifts".
+           - Jika Alam/Lanskap: Fokus pada "fractal repetition, impossible horizon lines, lighting direction mismatch, color banding in sky".
+        3. BIAS SCALING: Semakin tinggi bias (${negativePromptBias}%), semakin panjang dan teknis daftar negatif yang dihasilkan. Pada 100%, sertakan istilah teknis kegagalan render ("aliasing, moiré patterns, sub-surface scattering errors").
+        4. SYNTHESIS MANDATE: Gabungkan semua menjadi satu string "negativePrompt" yang komprehensif dan kohesif.
 
 ${parametricRules}
 Jika kategori adalah 'Minimalist Background', fokus pada Copy Space (60-70% area kosong).
@@ -427,6 +427,43 @@ ${parametricRules}`;
                   {creativity < 50 ? 'Konservatif: Variasi rendah, sangat patuh pada prompt dasar.' : 
                    creativity <= 100 ? 'Seimbang: Eksplorasi konsep baru dengan tetap menjaga relevansi.' : 
                    'Ekstrem: Variasi liar, ide out-of-the-box, risiko halusinasi lebih tinggi.'}
+                </p>
+              </div>
+              <div className="space-y-2 pt-2 border-t border-cyan-500/30">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <Label className="text-xs text-fuchsia-400 font-bold flex items-center gap-1 font-mono">
+                      <ShieldAlert className="w-3 h-3 text-fuchsia-500" /> Negative Prompt Bias
+                    </Label>
+                    <div className="group relative">
+                      <Info className="w-3 h-3 text-cyan-500/50 cursor-help" />
+                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-[#0a0a0a] border border-cyan-500/50 rounded text-[10px] text-cyan-300 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 shadow-[0_0_15px_rgba(6,182,212,0.3)] font-mono">
+                        Meningkatkan spesifisitas dan teknis dalam negative prompt. Mengurangi halusinasi AI tetapi mungkin membatasi output kreatif.
+                      </div>
+                    </div>
+                  </div>
+                  <span className="text-xs text-cyan-500/70 font-mono">{negativePromptBias}%</span>
+                </div>
+                <div className="space-y-1">
+                  <input 
+                    type="range" 
+                    min="0" 
+                    max="100" 
+                    step="5"
+                    value={negativePromptBias} 
+                    onChange={(e) => setNegativePromptBias(Number(e.target.value))}
+                    className="w-full h-1.5 bg-cyan-950/50 rounded-lg appearance-none cursor-pointer accent-fuchsia-500"
+                  />
+                  <div className="flex justify-between text-[8px] text-cyan-700 font-mono px-0.5">
+                    <span>0%</span>
+                    <span>50%</span>
+                    <span>100%</span>
+                  </div>
+                </div>
+                <p className="text-[10px] text-cyan-500/70 leading-tight font-mono">
+                  {negativePromptBias < 30 ? 'Minimal: Hanya penolakan dasar (watermark, dll).' : 
+                   negativePromptBias <= 70 ? 'Optimal: Analisis halusinasi standar untuk subjek.' : 
+                   'Agresif: Analisis kegagalan teknis mendalam & istilah render error.'}
                 </p>
               </div>
             </div>
