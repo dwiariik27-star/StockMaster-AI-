@@ -116,7 +116,6 @@ export function useAI() {
       prompt: options.prompt,
       system: options.system,
       temperature: options.temperature,
-      maxTokens: options.maxTokens,
       ...(options.jsonMode ? { responseFormat: { type: 'json' } } : {}),
     });
 

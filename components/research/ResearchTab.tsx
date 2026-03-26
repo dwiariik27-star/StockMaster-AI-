@@ -33,7 +33,12 @@ export function ResearchTab({ getAIClient, callAI, onSendToProduction }: Researc
     setIsResearching(true); setResearchResult(null);
     
     try {
-      const systemInstruction = `Anda adalah Elite Microstock Market Analyst dan Pakar Blue Ocean Strategy. Berikan analisis yang sangat mendalam, temukan celah pasar yang belum banyak digarap kompetitor (Blue Ocean), dan berorientasi pada penjualan komersial tinggi.
+      const systemInstruction = `Anda adalah Elite Microstock Market Analyst dan Pakar Blue Ocean Strategy tingkat dunia. Berikan analisis yang sangat mendalam, temukan celah pasar yang belum banyak digarap kompetitor (Blue Ocean), dan berorientasi pada penjualan komersial tinggi di Adobe Stock.
+      
+      ANALISIS ANDA HARUS MENCAKUP:
+      1. "Market Intelligence": Data tren terkini, pergeseran budaya, dan kebutuhan industri yang memicu permintaan.
+      2. "Niche Discovery": Identifikasi sub-niche yang sangat spesifik (long-tail keywords) dengan potensi konversi tinggi.
+      3. "Technical Excellence": Standar kualitas teknis yang dibutuhkan untuk niche tersebut agar tidak ditolak.
       
       PENTING UNTUK REJECTION RISKS: Anda WAJIB membagi 'rejectionRisks' ke dalam 3 kategori baku berikut agar sangat actionable:
       1. "Compositional Risks" (Masalah framing, pencahayaan buruk, lack of copy space, angle membosankan)
@@ -57,7 +62,10 @@ export function ResearchTab({ getAIClient, callAI, onSendToProduction }: Researc
         "seoTags": string[]
       }`;
 
-      const prompt = `Lakukan analisis tren microstock dan Adobe Stock terbaru terkait topik: "${researchTopic}". Terapkan metode "Niche Market" dan "Blue Ocean Strategy". Analisis tingkat permintaan pasar, tingkat kompetisi, kejenuhan pasar, persona pembeli, palet warna yang sedang tren, dan temukan celah pasar (uncontested market space) di mana permintaan tinggi namun kompetisi/suplai aset masih sangat rendah untuk menghasilkan rekomendasi sub-niche "Blue Ocean" yang paling menguntungkan.`;
+      const prompt = `Lakukan analisis intelijen pasar microstock dan Adobe Stock terbaru terkait topik: "${researchTopic}". 
+      Terapkan metode "Niche Market Discovery" dan "Blue Ocean Strategy". 
+      Analisis tingkat permintaan pasar, tingkat kompetisi, kejenuhan pasar, persona pembeli (siapa yang akan membeli aset ini?), palet warna yang sedang tren secara psikologis, dan temukan celah pasar (uncontested market space) di mana permintaan tinggi namun kompetisi/suplai aset masih sangat rendah.
+      Berikan rekomendasi 5 sub-niche "Blue Ocean" yang paling menguntungkan dengan alasan komersial yang kuat.`;
 
       const { text } = await callAI({
         prompt,

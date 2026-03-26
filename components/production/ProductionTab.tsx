@@ -48,7 +48,17 @@ export function ProductionTab({
   const [currentCount, setCurrentCount] = useState<number>(0);
   const [isBatching, setIsBatching] = useState(false);
   const [batchStatus, setBatchStatus] = useState('');
+  const [marketIntel, setMarketIntel] = useState<string[]>([]);
   const abortControllerRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    const savedIntel = localStorage.getItem('stockmaster_market_intel');
+    if (savedIntel) setMarketIntel(JSON.parse(savedIntel));
+  }, []);
+
+  useEffect(() => {
+    if (marketIntel.length > 0) localStorage.setItem('stockmaster_market_intel', JSON.stringify(marketIntel));
+  }, [marketIntel]);
 
   useEffect(() => {
     const savedPrompts = localStorage.getItem('stockmaster_prompts');
@@ -66,28 +76,38 @@ export function ProductionTab({
     setIsBatching(true);
     setCurrentCount(0);
     setGeneratedPrompts([]);
-    setBatchStatus('Menganalisis tema dinamis...');
+    setMarketIntel([]);
+    setBatchStatus('Melakukan Intelijen Pasar & Analisis Niche...');
     
     abortControllerRef.current = new AbortController();
     let accumulatedPrompts: GeneratedPrompt[] = [];
 
     try {
-      // 1. Generate Dynamic Themes based on Keyword and Category
+      // 1. Market Intelligence & Niche Discovery Phase
       let dynamicThemes: string[] = [];
       try {
-        const { text: themeText } = await callAI({
-          prompt: `Buat 10 variasi tema visual (thematic modifiers) yang sangat berbeda dan kreatif untuk kategori aset "${CATEGORIES.find(c => c.id === category)?.name}" dengan kata kunci utama: "${keyword}".
-          Setiap tema harus berupa 1-2 kalimat yang mendeskripsikan mood, gaya visual, atau angle penceritaan yang unik untuk stok komersial premium Adobe Stock.
-          Fokus pada variasi yang ekstrem (misal: dari minimalis terang hingga sinematik gelap, dari candid hingga konseptual surealis) agar prompt yang dihasilkan nantinya sangat beragam.`,
-          jsonMode: true
+        const { text: intelText } = await callAI({
+          prompt: `Sebagai Master Commercial Art Director, lakukan analisis intelijen pasar untuk kata kunci: "${keyword}" dalam kategori "${CATEGORIES.find(c => c.id === category)?.name}".
+          
+          TUGAS:
+          1. Identifikasi 5 sub-niche atau "angle" komersial yang memiliki permintaan tinggi (high demand) namun persaingan rendah (low competition) di Adobe Stock.
+          2. Untuk setiap sub-niche, buat 2 variasi tema visual yang kontras (Total 10 tema).
+          
+          FORMAT OUTPUT (JSON Array of Strings):
+          ["Sub-niche 1: Tema A - Deskripsi...", "Sub-niche 1: Tema B - Deskripsi...", ...]
+          
+          Fokus pada: "Utility Value", "Copy Space", "Authenticity", dan "Technical Excellence".`,
+          jsonMode: true,
+          maxTokens: 2000
         });
         
-        if (themeText) {
-          const cleanedThemeText = extractJSON(themeText);
-          dynamicThemes = JSON.parse(cleanedThemeText);
+        if (intelText) {
+          const cleanedIntelText = extractJSON(intelText);
+          dynamicThemes = JSON.parse(cleanedIntelText);
+          setMarketIntel(dynamicThemes);
         }
       } catch (e) {
-        console.error("Gagal generate dynamic themes, menggunakan fallback.", e);
+        console.error("Gagal generate market intel, menggunakan fallback.", e);
       }
 
       // Fallback if AI fails to return array
@@ -104,6 +124,7 @@ export function ProductionTab({
           "Dynamic Action: Angle ekstrem, motion blur, subjek tajam membeku.",
           "Luxury & Premium: Palet warna gelap, aksen emas, pencahayaan studio."
         ];
+        setMarketIntel(dynamicThemes);
       }
 
       const batches = Math.ceil(targetCount / 5);
@@ -134,28 +155,28 @@ export function ProductionTab({
         `;
 
         let systemInstruction = `Anda adalah Elite Creative Director dan Prompt Engineer ahli untuk Adobe Stock. Tugas Anda adalah menghasilkan ${batchSize} prompt gambar 4K (Nano Banana Pro) yang sangat presisi, fotorealistik, dan bernilai komersial tinggi.
-Setiap prompt WAJIB mematuhi kerangka kerja "Creative Director" dari Nano Banana: [Subject] + [Action] + [Storytelling Context] + [Composition & DoF] + [Lighting & Style] + [Optical & Film Emulation].
+Setiap prompt WAJIB mematuhi kerangka kerja "Creative Director" dari Nano Banana: [Subject] + [Action] + [Storytelling Context] + [Composition & DoF] + [Lighting & Style] + [Optical & Film Emulation] + [Commercial Utility].
 
 ATURAN WAJIB NANO BANANA PRO (STORYTELLING & COMMERCIAL FOCUS):
 1. Visual Storytelling: Gambar harus membangkitkan emosi atau menceritakan momen spesifik (candid, authentic) yang relevan untuk kampanye iklan atau editorial komersial.
 2. Subjek & Aksi: Mulai prompt dengan kata kerja yang kuat atau deskripsi subjek yang sangat spesifik sedang melakukan aksi bermakna.
 3. Gunakan "positive framing" (jelaskan apa yang Anda inginkan, BUKAN apa yang tidak Anda inginkan. Hindari kata "no").
-4. Desain Pencahayaan (Lighting): Wajib sebutkan setup studio ("three-point softbox") atau efek dramatis ("Chiaroscuro lighting with harsh, high contrast", "Golden hour backlighting creating long shadows").
-5. Kontrol Kamera, Lensa & DoF: Wajib sebutkan hardware/lensa dan Depth of Field ("85mm lens, shallow depth of field f/1.4 with creamy bokeh", "wide-angle lens f/8 everything in focus", "macro lens").
-6. Efek Gerak (Motion): Definisikan apakah gambar statis ("crisp, shot on tripod") atau dinamis ("motion blur on the subject", "handheld camera shake for documentary feel").
+4. Desain Pencahayaan (Lighting): Wajib sebutkan setup studio ("three-point softbox") atau efek dramatis ("Chiaroscuro lighting with harsh, high contrast", "Golden hour backlighting creating long shadows", "Volumetric lighting through haze").
+5. Kontrol Kamera, Lensa & DoF: Wajib sebutkan hardware/lensa dan Depth of Field ("85mm lens, shallow depth of field f/1.4 with creamy bokeh", "wide-angle 14mm lens f/8 everything in focus", "macro 100mm lens for extreme detail").
+6. Efek Gerak (Motion): Definisikan apakah gambar statis ("crisp, shot on tripod") atau dinamis ("motion blur on the subject", "panning shot with blurred background", "handheld camera shake for documentary feel").
 7. Optical & Film Emulation: Wajib integrasikan efek optik spesifik seperti Lens Flare, Bokeh Intensity, Film Grain, Chromatic Aberration, dan Color Bleed/Halation sesuai parameter. Gunakan istilah teknis ("anamorphic lens flare", "creamy swirly bokeh", "heavy ISO 3200 film grain", "subtle edge fringing", "cinematic halation on highlights").
-8. Color Grading & Film Stock: Wajib sebutkan tekstur emosional ("as if on 1980s color film, slightly grainy", "Cinematic color grading with muted teal tones").
-9. Materialitas & Tekstur: Jika ada produk/objek, definisikan fisik materialnya ("minimalist ceramic coffee mug", "matte plastic", "frosted glass").
-10. Tipografi & Integritas Teks (CRITICAL): Jika gambar membutuhkan teks, Anda WAJIB memastikan teks tersebut lengkap, rapi, dan bebas typo. Gunakan tanda kutip ganda untuk teks target (contoh: the word "SALE") dan definisikan gaya font secara teknis (contoh: "in a bold, clean, modern sans-serif font", "in a high-contrast elegant serif font"). Pastikan teks adalah fokus utama atau terintegrasi secara logis tanpa distorsi ("perfectly rendered letters, no spelling errors").
-11. Commercial Utility: Pastikan gambar memiliki nilai jual tinggi (contoh: "generous copy space on the left", "clean background for text overlay", "authentic lifestyle diversity").
+8. Color Grading & Film Stock: Wajib sebutkan tekstur emosional ("Kodak Portra 400 film emulation", "Fujifilm Superia aesthetic", "Cinematic color grading with muted teal and warm orange tones").
+9. Materialitas & Tekstur: Jika ada produk/objek, definisikan fisik materialnya ("minimalist ceramic coffee mug", "matte plastic texture", "frosted glass with condensation").
+10. Tipografi & Integritas Teks (CRITICAL): Jika gambar membutuhkan teks, Anda WAJIB memastikan teks tersebut lengkap, rapi, dan bebas typo. Gunakan tanda kutip ganda untuk teks target (contoh: the word "SALE") dan definisikan gaya font secara teknis (contoh: "in a bold, clean, modern sans-serif font", "in a high-contrast elegant serif font"). Pastikan teks adalah fokus utama atau terintegrasi secara logis tanpa distorsi.
+11. Commercial Utility: Pastikan gambar memiliki nilai jual tinggi (contoh: "generous copy space on the left", "clean background for text overlay", "authentic lifestyle diversity", "high-end commercial finish").
 
         ATURAN NEGATIVE PROMPT (DEEP HALLUCINATION ANALYSIS - BIAS: ${negativePromptBias}%):
-        1. Base Rejections (MANDATORY): "watermark, text, signature, logo, trademark, copyright, blurry, cropped, out of focus, low quality, jpeg artifacts, noise, pixelated, ai generated, generic".
+        1. Base Rejections (MANDATORY): "watermark, text, signature, logo, trademark, copyright, blurry, cropped, out of focus, low quality, jpeg artifacts, noise, pixelated, ai generated, generic, distorted face, extra limbs, fused fingers".
         2. Deep Contextual Analysis (CRITICAL): Analisis subjek pada Positive Prompt secara mikroskopis. Gunakan intensitas ${negativePromptBias}% untuk menghasilkan kata kunci negatif yang sangat spesifik guna mencegah halusinasi AI yang unik untuk subjek tersebut:
-           - Jika Manusia/Potret: Fokus pada "micro-anatomical errors, iris distortion, skin plastic texture, unnatural joint angles, finger count, fingernail artifacts".
-           - Jika Arsitektur/Interior: Fokus pada "perspective convergence errors, floating furniture, non-Euclidean geometry, light leak artifacts, impossible shadows".
-           - Jika Makanan/Minuman: Fokus pada "unnatural viscosity, floating particles, impossible reflections on liquid, texture repetition, unappetizing color shifts".
-           - Jika Alam/Lanskap: Fokus pada "fractal repetition, impossible horizon lines, lighting direction mismatch, color banding in sky".
+           - Jika Manusia/Potret: Fokus pada "micro-anatomical errors, iris distortion, skin plastic texture, unnatural joint angles, finger count, fingernail artifacts, asymmetrical eyes".
+           - Jika Arsitektur/Interior: Fokus pada "perspective convergence errors, floating furniture, non-Euclidean geometry, light leak artifacts, impossible shadows, warped walls".
+           - Jika Makanan/Minuman: Fokus pada "unnatural viscosity, floating particles, impossible reflections on liquid, texture repetition, unappetizing color shifts, plastic-looking food".
+           - Jika Alam/Lanskap: Fokus pada "fractal repetition, impossible horizon lines, lighting direction mismatch, color banding in sky, unnatural plant growth".
         3. BIAS SCALING: Semakin tinggi bias (${negativePromptBias}%), semakin panjang dan teknis daftar negatif yang dihasilkan. Pada 100%, sertakan istilah teknis kegagalan render ("aliasing, moiré patterns, sub-surface scattering errors").
         4. SYNTHESIS MANDATE: Gabungkan semua menjadi satu string "negativePrompt" yang komprehensif dan kohesif.
 
@@ -167,17 +188,17 @@ PENTING: Jika Anda adalah model penalaran (seperti DeepSeek R1), harap berikan p
 
         if (category === 'cinematic-video') {
           systemInstruction = `Anda adalah Elite Cinematic Director untuk Adobe Stock. Tugas Anda adalah menghasilkan ${batchSize} prompt video sinematik (Veo 3.1) yang sangat presisi dan bernilai komersial tinggi.
-Setiap prompt WAJIB mematuhi formula Veo 3.1: [Cinematography] + [Subject] + [Action] + [Context] + [Style & Ambiance].
+Setiap prompt WAJIB mematuhi formula Veo 3.1: [Cinematography] + [Subject] + [Action] + [Context] + [Style & Ambiance] + [Audio Orchestration].
 
 ATURAN WAJIB VEO 3.1:
-1. Cinematography (Bahasa Kamera): Wajib sebutkan pergerakan dan komposisi di awal prompt ("Dolly shot", "tracking shot", "crane shot starting low and ascending high", "aerial view", "slow pan", "POV shot", "Close-up with very shallow depth of field").
-2. Subject & Action: Identifikasi karakter utama dan deskripsikan apa yang mereka lakukan dengan detail.
-3. Context: Detailkan lingkungan dan elemen latar belakang.
-4. Style & Ambiance: Spesifikasikan estetika, mood, dan pencahayaan ("awe-inspiring, soft morning light", "melancholic mood with cool blue tones, moody, cinematic").
+1. Cinematography (Bahasa Kamera): Wajib sebutkan pergerakan dan komposisi di awal prompt ("Dolly shot", "tracking shot", "crane shot starting low and ascending high", "aerial view", "slow pan", "POV shot", "Close-up with very shallow depth of field", "Rack focus from foreground to background").
+2. Subject & Action: Identifikasi karakter utama dan deskripsikan apa yang mereka lakukan dengan detail mikro-ekspresi.
+3. Context: Detailkan lingkungan, cuaca, dan elemen latar belakang yang mendukung narasi.
+4. Style & Ambiance: Spesifikasikan estetika, mood, dan pencahayaan ("awe-inspiring, soft morning light", "melancholic mood with cool blue tones, moody, cinematic", "high-key commercial lighting").
 5. Directing the Soundstage (Audio): Wajib sertakan instruksi audio yang sinkron jika relevan:
    - Dialogue: Gunakan kutipan (contoh: A woman says, "We have to leave now.").
-   - Sound Effects (SFX): Deskripsikan suara dengan jelas (contoh: SFX: thunder cracks in the distance).
-   - Ambient noise: Definisikan soundscape latar (contoh: Ambient noise: the quiet hum of a starship bridge).
+   - Sound Effects (SFX): Deskripsikan suara dengan jelas (contoh: SFX: thunder cracks in the distance, SFX: the crisp sound of footsteps on gravel).
+   - Ambient noise: Definisikan soundscape latar (contoh: Ambient noise: the quiet hum of a starship bridge, Ambient noise: bustling city sounds).
 Sertakan orkestrasi soundstage dan durasi klip spesifik (4, 6, atau 8 detik).
 
 ${parametricRules}`;
@@ -493,6 +514,21 @@ ${parametricRules}`;
                   </div>
                   <p className="text-cyan-400 text-sm font-mono">{currentCount} / {targetCount} Prompts Generated</p>
                 </div>
+
+                {marketIntel.length > 0 && (
+                  <div className="p-4 bg-cyan-950/10 border border-cyan-500/20 rounded-lg">
+                    <h4 className="text-cyan-300 text-xs font-bold uppercase tracking-widest mb-3 flex items-center gap-2 font-mono">
+                      <ShieldAlert className="w-3.5 h-3.5 text-fuchsia-500" /> Market Intelligence Report
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      {marketIntel.map((intel, idx) => (
+                        <div key={idx} className="text-[10px] text-cyan-400/80 bg-[#050505] p-2 rounded border border-cyan-500/10 font-mono leading-tight">
+                          <span className="text-fuchsia-500 font-bold mr-1">#{idx + 1}</span> {intel}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {generatedPrompts.length > 0 ? (
                   <div>

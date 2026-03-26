@@ -49,14 +49,19 @@ export function VisionTab({ getAIClient, callAI, onSendToProduction }: VisionTab
     try {
       const base64Data = await fileToBase64(imageFile);
 
-      const systemInstruction = `Anda adalah Elite Art Director & Reverse Engineer untuk Adobe Stock. Tugas Anda adalah membedah gambar yang diberikan dan mengekstrak teknik teknisnya, lalu membuatkan Positive & Negative Prompt (Nano Banana Pro) untuk mereplikasi kualitas komersialnya.
+      const systemInstruction = `Anda adalah Elite Art Director, Master of Visual Semiotics, & Reverse Engineer untuk Adobe Stock. Tugas Anda adalah membedah gambar yang diberikan dan mengekstrak teknik teknisnya secara presisi, lalu membuatkan Positive & Negative Prompt (Nano Banana Pro) untuk mereplikasi kualitas komersialnya.
+      
+      ANALISIS ANDA HARUS MENCAKUP:
+      1. "Commercial Deconstruction": Mengapa gambar ini laku? Apa pesan psikologisnya?
+      2. "Technical Extraction": Detail pencahayaan (lighting setup), lensa (focal length), dan color grading (film stock emulation).
+      3. "Prompt Engineering": Rakit prompt yang menggunakan formula Nano Banana Pro Ultimate.
 
       ATURAN WAJIB NANO BANANA PRO UNTUK REVERSE ENGINEERING:
-      1. Positive Prompt WAJIB mematuhi kerangka: [Subject] + [Action] + [Storytelling Context] + [Composition & DoF] + [Lighting & Style] + [Optical & Film Emulation].
-      2. Ekstrak secara spesifik elemen optik yang terlihat di gambar (misal: "anamorphic lens flare", "creamy bokeh", "film grain", "chromatic aberration") dan masukkan ke dalam Positive Prompt.
+      1. Positive Prompt WAJIB mematuhi kerangka: [Subject] + [Action] + [Storytelling Context] + [Composition & DoF] + [Lighting & Style] + [Optical & Film Emulation] + [Commercial Utility].
+      2. Ekstrak secara spesifik elemen optik yang terlihat di gambar (misal: "anamorphic lens flare", "creamy bokeh", "film grain", "chromatic aberration", "cinematic halation") dan masukkan ke dalam Positive Prompt.
       3. Negative Prompt WAJIB menggunakan DYNAMIC CONTEXTUAL SYNTHESIS:
          - Mulai dengan Base Rejections: "watermark, text, signature, logo, trademark, copyright, blurry, cropped, out of focus, low quality, jpeg artifacts, noise, pixelated, ai generated, generic".
-         - Analisis subjek gambar dan tambahkan penolakan spesifik (misal: jika gambar manusia, tambahkan "ugly, deformed, extra limbs, fused fingers, asymmetrical eyes, plastic skin").
+         - Analisis subjek gambar dan tambahkan penolakan spesifik (misal: jika gambar manusia, tambahkan "ugly, deformed, extra limbs, fused fingers, asymmetrical eyes, plastic skin, bad anatomy").
          - Gabungkan semuanya menjadi SATU string comma-separated.
       
       Output harus dalam format JSON sesuai schema berikut:
@@ -78,7 +83,9 @@ export function VisionTab({ getAIClient, callAI, onSendToProduction }: VisionTab
       }`;
 
       const { text } = await callAI({
-        prompt: "Lakukan Reverse-Prompt Engineering pada gambar ini untuk keperluan Adobe Stock. Analisis mengapa komposisi ini laku secara komersial, ekstrak teknik teknisnya, dan buatkan Positive & Negative Prompt untuk mereplikasi gaya dan kualitas gambar ini (tanpa menjiplak subjek utamanya secara persis).",
+        prompt: `Lakukan Reverse-Prompt Engineering tingkat lanjut pada gambar ini untuk keperluan Adobe Stock. 
+        Bedah secara mendalam mengapa komposisi ini memiliki nilai komersial tinggi (Utility Value), ekstrak teknik teknisnya (lighting, lens, color), dan buatkan Positive & Negative Prompt yang sangat detail untuk mereplikasi gaya, mood, dan kualitas gambar ini tanpa menjiplak subjek utamanya secara persis. 
+        Fokuskan pada "Commercial Masterpiece" quality.`,
         image: { data: base64Data, mimeType: imageFile.type },
         system: systemInstruction,
         temperature: 0.4,
