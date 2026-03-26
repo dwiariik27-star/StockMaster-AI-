@@ -3,6 +3,7 @@ import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { createGroq } from '@ai-sdk/groq';
 import { generateText } from 'ai';
 import { toast } from 'sonner';
+import { GoogleGenAI } from "@google/genai";
 
 export type AIProvider = 'google' | 'groq';
 
@@ -147,7 +148,7 @@ export function useAI() {
     // --- Groq Key Rotation Logic ---
     if (providerType === 'groq') {
       const keys = groqApiKey.split(/[,\n]/).map(k => k.trim()).filter(Boolean);
-      if (keys.length === 0) throw new Error('Groq API Key not found.');
+      if (keys.length === 0) throw new Error('Groq API Key tidak ditemukan.');
 
       let lastError: any = null;
       // Try each key if we hit rate limits
@@ -181,20 +182,18 @@ export function useAI() {
                   },
                   execute: async ({ query }: { query: string }) => {
                     try {
-                      const searchRes = await generateText({
-                        model: createGoogleGenerativeAI({ apiKey: geminiApiKey || process.env.NEXT_PUBLIC_GEMINI_API_KEY! })('gemini-3-flash-preview'),
-                        prompt: `Search for this and provide a detailed summary of findings: ${query}`,
-                        tools: {
-                          google_search: {
-                            description: 'Search Google.',
-                            parameters: { type: 'object', properties: {} }
-                          }
-                        }
-                      } as any);
-                      return searchRes.text;
+                      const ai = new GoogleGenAI({ apiKey: geminiApiKey || process.env.NEXT_PUBLIC_GEMINI_API_KEY! });
+                      const response = await ai.models.generateContent({
+                        model: "gemini-3-flash-preview",
+                        contents: query,
+                        config: {
+                          tools: [{ googleSearch: {} }],
+                        },
+                      });
+                      return response.text || "No results found.";
                     } catch (e) {
                       console.error("Web Search Tool Error:", e);
-                      return "Failed to fetch real-time data. Continuing with internal knowledge.";
+                      return "Gagal mengambil data real-time. Melanjutkan dengan pengetahuan internal.";
                     }
                   }
                 }
@@ -210,7 +209,7 @@ export function useAI() {
           
           if (isRateLimit && i < keys.length - 1) {
             console.warn(`Groq Key [${keySnippet}] hit limit. Rotating to next key...`);
-            toast.info(`Groq Key limit reached. Rotating to next key... (${i + 2}/${keys.length})`);
+            toast.info(`Key Groq limit tercapai. Merotasi ke key berikutnya... (${i + 2}/${keys.length})`);
             continue; // Try next key
           }
           throw error; // If not rate limit or no more keys, throw
