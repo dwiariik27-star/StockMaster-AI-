@@ -69,18 +69,13 @@ export function ResearchTab({ getAIClient, callAI, apiKey, selectedProvider, onS
       Analisis tingkat permintaan pasar, tingkat kompetisi, kejenuhan pasar, persona pembeli (siapa yang akan membeli aset ini?), palet warna yang sedang tren secara psikologis, dan temukan celah pasar (uncontested market space) di mana permintaan tinggi namun kompetisi/suplai aset masih sangat rendah.
       Berikan rekomendasi 5 sub-niche "Blue Ocean" yang paling menguntungkan dengan alasan komersial yang kuat.`;
 
-      // Hybrid Research Mode: Gunakan Gemini untuk riset jika API Key tersedia, 
-      // meskipun provider utama adalah Groq (Llama).
-      const useHybridMode = selectedProvider === 'groq' && !!apiKey;
-      
       const { text } = await callAI({
         prompt,
         system: systemInstruction,
         temperature: 0.4,
         jsonMode: true,
         maxTokens: 4000,
-        provider: useHybridMode ? 'google' : selectedProvider,
-        useSearch: true // Aktifkan Google Search Grounding untuk Gemini
+        useSearch: true // Aktifkan Web Grounding (Gemini Native atau Groq via Tool)
       });
 
       if (text) {

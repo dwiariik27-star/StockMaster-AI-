@@ -149,6 +149,40 @@ export function useAI() {
           }
         }
       } : {}),
+      // Enable Web Grounding for Groq via Gemini Tool (if available)
+      ...(options.useSearch && providerType === 'groq' && (geminiApiKey || process.env.NEXT_PUBLIC_GEMINI_API_KEY) ? {
+        tools: {
+          web_search: {
+            description: 'Search the web for real-time market data, trends, and Adobe Stock insights.',
+            parameters: {
+              type: 'object',
+              properties: {
+                query: { type: 'string', description: 'The search query to find latest data.' }
+              },
+              required: ['query']
+            },
+            execute: async ({ query }: { query: string }) => {
+              try {
+                const searchRes = await generateText({
+                  model: getAIClient('google')('gemini-3-flash-preview'),
+                  prompt: `Search for this and provide a detailed summary of findings: ${query}`,
+                  tools: {
+                    google_search: {
+                      description: 'Search Google.',
+                      parameters: { type: 'object', properties: {} }
+                    }
+                  }
+                } as any);
+                return searchRes.text;
+              } catch (e) {
+                console.error("Web Search Tool Error:", e);
+                return "Gagal mengambil data real-time. Melanjutkan dengan pengetahuan internal.";
+              }
+            }
+          }
+        },
+        maxSteps: 3 // Allow Groq to call the search tool and then generate the final response
+      } : {}),
     } as any);
 
     return { text };
