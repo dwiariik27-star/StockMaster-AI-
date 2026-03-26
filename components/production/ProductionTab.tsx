@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from 'react';
-import { Type, ThinkingLevel } from '@google/genai';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -12,6 +11,7 @@ import { GeneratedPrompt, CATEGORIES, LIGHTING_STYLES, CAMERA_ANGLES, COLOR_TONE
 
 interface ProductionTabProps {
   getAIClient: () => any;
+  callAI: (options: any) => Promise<{ text: string }>;
   selectedModel: string;
   keyword: string;
   setKeyword: (kw: string) => void;
@@ -21,6 +21,7 @@ interface ProductionTabProps {
 
 export function ProductionTab({ 
   getAIClient, 
+  callAI,
   selectedModel, 
   keyword, 
   setKeyword,
@@ -67,31 +68,21 @@ export function ProductionTab({
     setBatchStatus('Menganalisis tema dinamis...');
     
     abortControllerRef.current = new AbortController();
-    const ai = getAIClient();
     let accumulatedPrompts: GeneratedPrompt[] = [];
 
     try {
       // 1. Generate Dynamic Themes based on Keyword and Category
       let dynamicThemes: string[] = [];
       try {
-        const themeResponse = await ai.models.generateContent({
-          model: selectedModel,
-          contents: `Buat 10 variasi tema visual (thematic modifiers) yang sangat berbeda dan kreatif untuk kategori aset "${CATEGORIES.find(c => c.id === category)?.name}" dengan kata kunci utama: "${keyword}".
+        const { text: themeText } = await callAI({
+          prompt: `Buat 10 variasi tema visual (thematic modifiers) yang sangat berbeda dan kreatif untuk kategori aset "${CATEGORIES.find(c => c.id === category)?.name}" dengan kata kunci utama: "${keyword}".
           Setiap tema harus berupa 1-2 kalimat yang mendeskripsikan mood, gaya visual, atau angle penceritaan yang unik untuk stok komersial premium Adobe Stock.
           Fokus pada variasi yang ekstrem (misal: dari minimalis terang hingga sinematik gelap, dari candid hingga konseptual surealis) agar prompt yang dihasilkan nantinya sangat beragam.`,
-          config: {
-            ...(selectedModel.startsWith('gemini-3') ? { thinkingConfig: { thinkingLevel: ThinkingLevel.LOW } } : {}),
-            responseMimeType: 'application/json',
-            responseSchema: {
-              type: Type.ARRAY,
-              items: { type: Type.STRING },
-              description: "Array berisi tepat 10 tema visual unik"
-            }
-          }
+          jsonMode: true
         });
         
-        if (themeResponse.text) {
-          dynamicThemes = JSON.parse(themeResponse.text);
+        if (themeText) {
+          dynamicThemes = JSON.parse(themeText);
         }
       } catch (e) {
         console.error("Gagal generate dynamic themes, menggunakan fallback.", e);
@@ -203,38 +194,20 @@ ${parametricRules}`;
         }
 
         const dynamicInstruction = `\n\n--- INSTRUKSI BATCH KE-${i+1} DARI ${batches} ---\nWAJIB BERIKAN VARIASI YANG 100% BERBEDA DARI BATCH SEBELUMNYA. \nFOKUS KREATIF UNTUK BATCH INI: "${currentTheme}"\nGunakan kombinasi subjek, angle, lighting, dan warna yang sangat acak dan unik berdasarkan fokus kreatif tersebut.\n${explorationInstruction}`;
-
         let retryCount = 0;
         const maxRetries = 3;
         let success = false;
-        let text = "";
+        let batchText = "";
 
         while (!success && retryCount < maxRetries) {
           try {
-            const response = await ai.models.generateContent({
-              model: selectedModel,
-              contents: `Hasilkan ${batchSize} prompt untuk kategori "${CATEGORIES.find(c => c.id === category)?.name}" dengan kata kunci: "${keyword}".`,
-              config: {
-                ...(selectedModel.startsWith('gemini-3') ? { thinkingConfig: { thinkingLevel: ThinkingLevel.LOW } } : {}),
-                systemInstruction: systemInstruction + dynamicInstruction,
-                temperature: currentTemp, // Dynamic temperature scaling
-                responseMimeType: 'application/json',
-                responseSchema: {
-                  type: Type.ARRAY,
-                  items: {
-                    type: Type.OBJECT,
-                    properties: {
-                      positivePrompt: { type: Type.STRING, description: "Prompt utama yang sangat detail (Bahasa Inggris)" },
-                      negativePrompt: { type: Type.STRING, description: "Negative prompt yang sangat dinamis dan spesifik dengan konteks positive prompt. Gabungan dari Base Rejections dan Dynamic Contextual Rejections (Bahasa Inggris)" },
-                      aspectRatio: { type: Type.STRING, description: "Rasio aspek yang paling optimal (misal: 16:9, 9:16, 1:1, 3:2)" }
-                    },
-                    required: ["positivePrompt", "negativePrompt", "aspectRatio"]
-                  },
-                  description: `Daftar ${batchSize} prompt masterpiece`
-                }
-              },
+            const { text } = await callAI({
+              prompt: `Hasilkan ${batchSize} prompt untuk kategori "${CATEGORIES.find(c => c.id === category)?.name}" dengan kata kunci: "${keyword}".`,
+              system: systemInstruction + dynamicInstruction,
+              temperature: currentTemp,
+              jsonMode: true
             });
-            text = response.text || "";
+            batchText = text || "";
             success = true;
           } catch (error: any) {
             if (error.status === 429 || error.message?.includes('429') || error.message?.includes('quota') || error.message?.includes('Too Many Requests')) {
@@ -250,12 +223,13 @@ ${parametricRules}`;
           }
         }
 
-        if (text) {
-          const newPrompts = JSON.parse(text);
+        if (batchText) {
+          const newPrompts = JSON.parse(batchText);
           accumulatedPrompts = [...accumulatedPrompts, ...newPrompts];
           setGeneratedPrompts(accumulatedPrompts);
           setCurrentCount(accumulatedPrompts.length);
         }
+
       }
       
       if (!abortControllerRef.current?.signal.aborted) {

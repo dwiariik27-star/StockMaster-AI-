@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Sparkles, TrendingUp, Eye, Palette, Key } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { useGemini } from '@/hooks/useGemini';
+import { useAI } from '@/hooks/useAI';
 import { SettingsPanel } from '@/components/settings/SettingsPanel';
 import { ResearchTab } from '@/components/research/ResearchTab';
 import { VisionTab } from '@/components/vision/VisionTab';
@@ -21,17 +21,25 @@ export default function StockMasterDashboard() {
 
   const {
     apiKey,
+    groqApiKey,
     saveApiKey,
+    saveGroqApiKey,
     clearApiKey,
+    clearGroqApiKey,
+    selectedProvider,
+    saveProvider,
     selectedModel,
     saveModel,
     getAIClient,
+    callAI,
     isMounted,
-  } = useGemini();
+  } = useAI();
 
   if (!isMounted) {
     return null; // Or a loading spinner
   }
+
+  const hasApiKey = selectedProvider === 'google' ? !!apiKey : !!groqApiKey;
 
   const handleSendToProduction = (nicheName: string) => {
     setKeyword(nicheName); 
@@ -58,20 +66,26 @@ export default function StockMasterDashboard() {
             </h1>
             <p className="text-cyan-500/70 mt-1.5 text-sm font-medium tracking-wide font-mono">Platform Intelijen Pasar & Produksi Masal Adobe Stock</p>
           </div>
-          <Button variant={apiKey ? "outline" : "default"} className={!apiKey ? "bg-cyan-500 text-black hover:bg-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.4)] font-bold font-mono" : "border-cyan-500/50 text-cyan-400 hover:bg-cyan-950/50 hover:text-cyan-300 font-mono"} onClick={() => setShowSettings(!showSettings)}>
-            <Key className="w-4 h-4 mr-2" /> {apiKey ? 'API Key Terpasang' : 'Set API Key (BYOK)'}
+          <Button variant={hasApiKey ? "outline" : "default"} className={!hasApiKey ? "bg-cyan-500 text-black hover:bg-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.4)] font-bold font-mono" : "border-cyan-500/50 text-cyan-400 hover:bg-cyan-950/50 hover:text-cyan-300 font-mono"} onClick={() => setShowSettings(!showSettings)}>
+            <Key className="w-4 h-4 mr-2" /> {hasApiKey ? 'API Key Terpasang' : 'Set API Key (BYOK)'}
           </Button>
         </header>
 
         {showSettings && (
           <SettingsPanel
             apiKey={apiKey}
+            groqApiKey={groqApiKey}
             saveApiKey={saveApiKey}
+            saveGroqApiKey={saveGroqApiKey}
             clearApiKey={clearApiKey}
+            clearGroqApiKey={clearGroqApiKey}
+            selectedProvider={selectedProvider}
+            saveProvider={saveProvider}
             selectedModel={selectedModel}
             saveModel={saveModel}
             onClose={() => setShowSettings(false)}
             getAIClient={getAIClient}
+            callAI={callAI}
           />
         )}
 
@@ -85,6 +99,7 @@ export default function StockMasterDashboard() {
           <TabsContent value="research" className="space-y-6 w-full">
             <ResearchTab 
               getAIClient={getAIClient} 
+              callAI={callAI}
               onSendToProduction={handleSendToProduction} 
             />
           </TabsContent>
@@ -92,6 +107,7 @@ export default function StockMasterDashboard() {
           <TabsContent value="vision" className="space-y-6 w-full">
             <VisionTab 
               getAIClient={getAIClient} 
+              callAI={callAI}
               onSendToProduction={handleSendVisionToProduction} 
             />
           </TabsContent>
@@ -99,6 +115,7 @@ export default function StockMasterDashboard() {
           <TabsContent value="production" className="space-y-6 w-full">
             <ProductionTab 
               getAIClient={getAIClient} 
+              callAI={callAI}
               selectedModel={selectedModel}
               keyword={keyword}
               setKeyword={setKeyword}

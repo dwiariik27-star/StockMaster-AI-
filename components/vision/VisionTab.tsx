@@ -1,5 +1,4 @@
 import { useState, useRef } from 'react';
-import { Type, ThinkingLevel } from '@google/genai';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2, Eye, Upload, Target, Sun, Camera, Paintbrush, Sparkles, ShieldAlert, Box, Rocket } from 'lucide-react';
@@ -9,10 +8,11 @@ import Image from 'next/image';
 
 interface VisionTabProps {
   getAIClient: () => any;
+  callAI: (options: any) => Promise<{ text: string }>;
   onSendToProduction: (prompt: any) => void;
 }
 
-export function VisionTab({ getAIClient, onSendToProduction }: VisionTabProps) {
+export function VisionTab({ getAIClient, callAI, onSendToProduction }: VisionTabProps) {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -46,74 +46,51 @@ export function VisionTab({ getAIClient, onSendToProduction }: VisionTabProps) {
     if (!imageFile) { toast.error('Silakan unggah gambar referensi.'); return; }
     setIsAnalyzing(true); setVisionResult(null);
     try {
-      const ai = getAIClient();
       const base64Data = await fileToBase64(imageFile);
 
-      const response = await ai.models.generateContent({
-        model: 'gemini-3-flash-preview', // Fallback to flash for better compatibility
-        contents: {
-          parts: [
-            { inlineData: { data: base64Data, mimeType: imageFile.type } },
-            { text: "Lakukan Reverse-Prompt Engineering pada gambar ini untuk keperluan Adobe Stock. Analisis mengapa komposisi ini laku secara komersial, ekstrak teknik teknisnya, dan buatkan Positive & Negative Prompt untuk mereplikasi gaya dan kualitas gambar ini (tanpa menjiplak subjek utamanya secara persis)." }
-          ]
-        },
-        config: {
-          thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
-          systemInstruction: `Anda adalah Elite Art Director & Reverse Engineer untuk Adobe Stock. Tugas Anda adalah membedah gambar yang diberikan dan mengekstrak teknik teknisnya, lalu membuatkan Positive & Negative Prompt (Nano Banana Pro) untuk mereplikasi kualitas komersialnya.
+      const systemInstruction = `Anda adalah Elite Art Director & Reverse Engineer untuk Adobe Stock. Tugas Anda adalah membedah gambar yang diberikan dan mengekstrak teknik teknisnya, lalu membuatkan Positive & Negative Prompt (Nano Banana Pro) untuk mereplikasi kualitas komersialnya.
 
-ATURAN WAJIB NANO BANANA PRO UNTUK REVERSE ENGINEERING:
-1. Positive Prompt WAJIB mematuhi kerangka: [Subject] + [Action] + [Storytelling Context] + [Composition & DoF] + [Lighting & Style] + [Optical & Film Emulation].
-2. Ekstrak secara spesifik elemen optik yang terlihat di gambar (misal: "anamorphic lens flare", "creamy bokeh", "film grain", "chromatic aberration") dan masukkan ke dalam Positive Prompt.
-3. Negative Prompt WAJIB menggunakan DYNAMIC CONTEXTUAL SYNTHESIS:
-   - Mulai dengan Base Rejections: "watermark, text, signature, logo, trademark, copyright, blurry, cropped, out of focus, low quality, jpeg artifacts, noise, pixelated, ai generated, generic".
-   - Analisis subjek gambar dan tambahkan penolakan spesifik (misal: jika gambar manusia, tambahkan "ugly, deformed, extra limbs, fused fingers, asymmetrical eyes, plastic skin").
-   - Gabungkan semuanya menjadi SATU string comma-separated.`,
-          temperature: 0.4,
-          responseMimeType: 'application/json',
-          responseSchema: {
-            type: Type.OBJECT,
-            properties: {
-              commercialDeconstruction: { type: Type.STRING, description: "Analisis mengapa komposisi/gaya gambar ini laku di pasar microstock." },
-              technicalExtraction: {
-                type: Type.OBJECT,
-                properties: {
-                  lighting: { type: Type.STRING, description: "Jenis pencahayaan (misal: Softbox, Rim light, Natural golden hour)" },
-                  lens: { type: Type.STRING, description: "Karakteristik lensa (misal: Macro f/2.8, Wide 16mm, Shallow DOF)" },
-                  colorGrading: { type: Type.STRING, description: "Palet warna dan grading (misal: Teal & Orange, High Contrast Monochrome)" }
-                },
-                required: ["lighting", "lens", "colorGrading"]
-              },
-              reverseEngineeredPrompt: {
-                type: Type.OBJECT,
-                properties: {
-                  positivePrompt: { type: Type.STRING, description: "Prompt utama yang sangat detail untuk mereplikasi gaya gambar ini (Bahasa Inggris)" },
-                  negativePrompt: { type: Type.STRING, description: "Elemen yang harus dihindari (Bahasa Inggris)" },
-                  aspectRatio: { type: Type.STRING, description: "Rasio aspek asli gambar ini (misal: 16:9, 3:2)" },
-                  title: { type: Type.STRING, description: "Judul komersial SEO (maks 70 karakter)" },
-                  keywords: { type: Type.ARRAY, items: { type: Type.STRING }, description: "25-30 kata kunci SEO" },
-                  categoryId: { type: Type.INTEGER, description: "ID Kategori Adobe Stock (1-21) yang paling cocok" }
-                },
-                required: ["positivePrompt", "negativePrompt", "aspectRatio", "title", "keywords", "categoryId"]
-              }
-            },
-            required: ["commercialDeconstruction", "technicalExtraction", "reverseEngineeredPrompt"]
-          }
+      ATURAN WAJIB NANO BANANA PRO UNTUK REVERSE ENGINEERING:
+      1. Positive Prompt WAJIB mematuhi kerangka: [Subject] + [Action] + [Storytelling Context] + [Composition & DoF] + [Lighting & Style] + [Optical & Film Emulation].
+      2. Ekstrak secara spesifik elemen optik yang terlihat di gambar (misal: "anamorphic lens flare", "creamy bokeh", "film grain", "chromatic aberration") dan masukkan ke dalam Positive Prompt.
+      3. Negative Prompt WAJIB menggunakan DYNAMIC CONTEXTUAL SYNTHESIS:
+         - Mulai dengan Base Rejections: "watermark, text, signature, logo, trademark, copyright, blurry, cropped, out of focus, low quality, jpeg artifacts, noise, pixelated, ai generated, generic".
+         - Analisis subjek gambar dan tambahkan penolakan spesifik (misal: jika gambar manusia, tambahkan "ugly, deformed, extra limbs, fused fingers, asymmetrical eyes, plastic skin").
+         - Gabungkan semuanya menjadi SATU string comma-separated.
+      
+      Output harus dalam format JSON sesuai schema berikut:
+      {
+        "commercialDeconstruction": string,
+        "technicalExtraction": {
+          "lighting": string,
+          "lens": string,
+          "colorGrading": string
+        },
+        "reverseEngineeredPrompt": {
+          "positivePrompt": string,
+          "negativePrompt": string,
+          "aspectRatio": string,
+          "title": string,
+          "keywords": string[],
+          "categoryId": number
         }
+      }`;
+
+      const { text } = await callAI({
+        prompt: "Lakukan Reverse-Prompt Engineering pada gambar ini untuk keperluan Adobe Stock. Analisis mengapa komposisi ini laku secara komersial, ekstrak teknik teknisnya, dan buatkan Positive & Negative Prompt untuk mereplikasi gaya dan kualitas gambar ini (tanpa menjiplak subjek utamanya secara persis).",
+        image: { data: base64Data, mimeType: imageFile.type },
+        system: systemInstruction,
+        temperature: 0.4,
+        jsonMode: true
       });
 
-      const text = response.text;
       if (text) {
         setVisionResult(JSON.parse(text));
         toast.success('Reverse-Engineering berhasil!');
       }
     } catch (error: any) {
-      const msg = error.message || '';
-      if (msg.includes('429') || msg.includes('RESOURCE_EXHAUSTED')) {
-        toast.error('Error 429 (Quota Exceeded): Kuota API Key Anda habis. Silakan periksa billing di Google AI Studio.');
-      } else {
-        toast.error('Gagal menganalisis gambar. Cek API Key Anda.');
-        console.error(error);
-      }
+      toast.error(`Gagal menganalisis gambar: ${error.message || 'Cek API Key Anda.'}`);
+      console.error(error);
     } finally {
       setIsAnalyzing(false);
     }

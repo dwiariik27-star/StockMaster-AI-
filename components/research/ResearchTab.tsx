@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { Type, ThinkingLevel } from '@google/genai';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -10,10 +9,11 @@ import { ResearchResult, GroundingSource } from '@/types';
 
 interface ResearchTabProps {
   getAIClient: () => any;
+  callAI: (options: any) => Promise<{ text: string }>;
   onSendToProduction: (nicheName: string) => void;
 }
 
-export function ResearchTab({ getAIClient, onSendToProduction }: ResearchTabProps) {
+export function ResearchTab({ getAIClient, callAI, onSendToProduction }: ResearchTabProps) {
   const [researchTopic, setResearchTopic] = useState('');
   const [isResearching, setIsResearching] = useState(false);
   const [researchResult, setResearchResult] = useState<ResearchResult | null>(null);
@@ -32,129 +32,47 @@ export function ResearchTab({ getAIClient, onSendToProduction }: ResearchTabProp
     setIsResearching(true); setResearchResult(null);
     
     try {
-      const ai = getAIClient();
+      const systemInstruction = `Anda adalah Elite Microstock Market Analyst dan Pakar Blue Ocean Strategy. Berikan analisis yang sangat mendalam, temukan celah pasar yang belum banyak digarap kompetitor (Blue Ocean), dan berorientasi pada penjualan komersial tinggi.
       
-      const baseConfig = {
-        thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
-        systemInstruction: `Anda adalah Elite Microstock Market Analyst dan Pakar Blue Ocean Strategy. Berikan analisis yang sangat mendalam, temukan celah pasar yang belum banyak digarap kompetitor (Blue Ocean), dan berorientasi pada penjualan komersial tinggi.
-        
-        PENTING UNTUK REJECTION RISKS: Anda WAJIB membagi 'rejectionRisks' ke dalam 3 kategori baku berikut agar sangat actionable:
-        1. "Compositional Risks" (Masalah framing, pencahayaan buruk, lack of copy space, angle membosankan)
-        2. "Technical Artifacts" (Cacat AI, anatomi aneh, noise, blur, over-sharpening, chromatic aberration berlebih)
-        3. "Content Violations" (Pelanggaran hak cipta, logo, trademark, properti pribadi, wajah tanpa rilis model)`,
+      PENTING UNTUK REJECTION RISKS: Anda WAJIB membagi 'rejectionRisks' ke dalam 3 kategori baku berikut agar sangat actionable:
+      1. "Compositional Risks" (Masalah framing, pencahayaan buruk, lack of copy space, angle membosankan)
+      2. "Technical Artifacts" (Cacat AI, anatomi aneh, noise, blur, over-sharpening, chromatic aberration berlebih)
+      3. "Content Violations" (Pelanggaran hak cipta, logo, trademark, properti pribadi, wajah tanpa rilis model)
+      
+      Output harus dalam format JSON sesuai schema berikut:
+      {
+        "trendScore": number,
+        "saturationIndex": number,
+        "demandLevel": string,
+        "competitionLevel": string,
+        "buyerPersona": string,
+        "seasonality": string,
+        "colorPalette": string[],
+        "analysis": string,
+        "subNiches": [{"name": string, "reason": string}],
+        "visualRequirements": [{"category": string, "items": string[]}],
+        "rejectionRisks": [{"category": string, "items": string[]}],
+        "titleTemplate": string,
+        "seoTags": string[]
+      }`;
+
+      const prompt = `Lakukan analisis tren microstock dan Adobe Stock terbaru terkait topik: "${researchTopic}". Terapkan metode "Niche Market" dan "Blue Ocean Strategy". Analisis tingkat permintaan pasar, tingkat kompetisi, kejenuhan pasar, persona pembeli, palet warna yang sedang tren, dan temukan celah pasar (uncontested market space) di mana permintaan tinggi namun kompetisi/suplai aset masih sangat rendah untuk menghasilkan rekomendasi sub-niche "Blue Ocean" yang paling menguntungkan.`;
+
+      const { text } = await callAI({
+        prompt,
+        system: systemInstruction,
         temperature: 0.4,
-        responseMimeType: 'application/json',
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            trendScore: { type: Type.INTEGER, description: "Skor potensi komersial (1-100)" },
-            saturationIndex: { type: Type.INTEGER, description: "Indeks kejenuhan pasar (1-100)." },
-            demandLevel: { type: Type.STRING, description: "Tinggi, Sedang, atau Rendah" },
-            competitionLevel: { type: Type.STRING, description: "Tinggi, Sedang, atau Rendah" },
-            buyerPersona: { type: Type.STRING, description: "Target pembeli utama aset ini" },
-            seasonality: { type: Type.STRING, description: "Evergreen atau Seasonal?" },
-            colorPalette: { type: Type.ARRAY, items: { type: Type.STRING }, description: "3-4 warna tren" },
-            analysis: { type: Type.STRING, description: "Analisis tajam mengapa topik ini laku dan bagaimana strategi Blue Ocean-nya" },
-            subNiches: {
-              type: Type.ARRAY,
-              items: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, reason: { type: Type.STRING } }, required: ["name", "reason"] },
-              description: "3-5 sub-niche 'Blue Ocean' spesifik (permintaan tinggi, kompetisi rendah)"
-            },
-            visualRequirements: {
-              type: Type.ARRAY,
-              items: {
-                type: Type.OBJECT,
-                properties: {
-                  category: { type: Type.STRING, description: "Kategori (misal: Lighting & Color, Composition, Subject Matter)" },
-                  items: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Daftar kebutuhan visual" }
-                },
-                required: ["category", "items"]
-              },
-              description: "Kebutuhan visual yang dikategorikan"
-            },
-            rejectionRisks: {
-              type: Type.ARRAY,
-              items: {
-                type: Type.OBJECT,
-                properties: {
-                  category: { type: Type.STRING, description: "Kategori (misal: Compositional Risks, Technical Artifacts, Content Violations)" },
-                  items: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Daftar risiko penolakan" }
-                },
-                required: ["category", "items"]
-              },
-              description: "Risiko penolakan yang dikategorikan"
-            },
-            titleTemplate: { type: Type.STRING, description: "Satu template judul SEO Adobe Stock (maks 70 karakter)" },
-            seoTags: { type: Type.ARRAY, items: { type: Type.STRING }, description: "10-15 kata kunci SEO" }
-          },
-          required: ["trendScore", "saturationIndex", "demandLevel", "competitionLevel", "buyerPersona", "seasonality", "colorPalette", "analysis", "subNiches", "visualRequirements", "rejectionRisks", "titleTemplate", "seoTags"]
-        }
-      };
-
-      const contents = `Lakukan analisis tren microstock dan Adobe Stock terbaru terkait topik: "${researchTopic}". Terapkan metode "Niche Market" dan "Blue Ocean Strategy". Analisis tingkat permintaan pasar, tingkat kompetisi, kejenuhan pasar, persona pembeli, palet warna yang sedang tren, dan temukan celah pasar (uncontested market space) di mana permintaan tinggi namun kompetisi/suplai aset masih sangat rendah untuk menghasilkan rekomendasi sub-niche "Blue Ocean" yang paling menguntungkan.`;
-
-      let response;
-      let usedFallback = false;
-
-      try {
-        // Attempt 1: With Google Search Grounding
-        response = await ai.models.generateContent({
-          model: 'gemini-3-flash-preview',
-          contents: contents,
-          config: {
-            ...baseConfig,
-            tools: [{ googleSearch: {} }],
-            systemInstruction: baseConfig.systemInstruction + "\n\nAnda MEMILIKI AKSES INTERNET. Wajib gunakan alat pencarian (Google Search) untuk mencari data tren Adobe Stock terbaru."
-          },
-        });
-      } catch (searchError: any) {
-        const msg = searchError.message || '';
-        if (msg.includes('429') || msg.includes('RESOURCE_EXHAUSTED') || msg.includes('quota')) {
-          console.warn("Google Search Grounding hit rate limit. Falling back to internal knowledge...");
-          usedFallback = true;
-          // Attempt 2: Fallback WITHOUT Google Search Grounding
-          response = await ai.models.generateContent({
-            model: 'gemini-3-flash-preview',
-            contents: contents,
-            config: {
-              ...baseConfig,
-              systemInstruction: baseConfig.systemInstruction + "\n\nGunakan pengetahuan internal Anda yang luas tentang tren desain dan microstock untuk memberikan analisis terbaik."
-            },
-          });
-        } else {
-          throw searchError; // Rethrow if it's not a quota issue
-        }
-      }
-
-      const text = response.text;
-      const chunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks;
-      const sources: GroundingSource[] = [];
-      if (chunks) {
-        chunks.forEach((chunk: any) => {
-          if (chunk.web?.uri && chunk.web?.title && !sources.find(s => s.uri === chunk.web.uri)) {
-            sources.push({ title: chunk.web.title, uri: chunk.web.uri });
-          }
-        });
-      }
+        jsonMode: true
+      });
 
       if (text) {
         const parsedResult = JSON.parse(text) as ResearchResult;
-        parsedResult.sources = sources;
         setResearchResult(parsedResult);
-        if (usedFallback) {
-          toast.success('Analisis berhasil menggunakan Internal AI Knowledge (Pencarian Web dinonaktifkan sementara karena limit API).');
-        } else {
-          toast.success('Analisis pasar super cerdas (Live Web) berhasil diselesaikan!');
-        }
+        toast.success('Analisis pasar berhasil diselesaikan!');
       }
     } catch (error: any) {
-      const msg = error.message || '';
-      if (msg.includes('429') || msg.includes('RESOURCE_EXHAUSTED')) {
-        toast.error('Error 429 (Quota Exceeded): Kuota API Key Anda benar-benar habis. Silakan periksa billing di Google AI Studio.');
-      } else {
-        toast.error('Gagal melakukan riset pasar. Cek API Key Anda.');
-        console.error(error);
-      }
+      toast.error(`Gagal melakukan riset pasar: ${error.message || 'Cek API Key Anda.'}`);
+      console.error(error);
     } finally {
       setIsResearching(false);
     }
