@@ -73,20 +73,45 @@ export function ProductionTab({
   ];
 
   useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
+
+  useEffect(() => {
     setActiveModel(selectedModel);
   }, [selectedModel]);
 
   useEffect(() => {
-    if (marketIntel.length > 0) localStorage.setItem('stockmaster_market_intel', JSON.stringify(marketIntel));
+    if (marketIntel.length > 0) {
+      try {
+        localStorage.setItem('stockmaster_market_intel', JSON.stringify(marketIntel));
+      } catch (e) {
+        console.warn('Failed to save market intel to localStorage (Quota Exceeded?)', e);
+      }
+    }
   }, [marketIntel]);
 
   useEffect(() => {
-    const savedPrompts = localStorage.getItem('stockmaster_prompts');
-    if (savedPrompts) setGeneratedPrompts(JSON.parse(savedPrompts));
+    try {
+      const savedPrompts = localStorage.getItem('stockmaster_prompts');
+      if (savedPrompts) setGeneratedPrompts(JSON.parse(savedPrompts));
+    } catch (e) {
+      console.warn('Failed to load prompts from localStorage', e);
+    }
   }, [setGeneratedPrompts]);
 
   useEffect(() => {
-    if (generatedPrompts.length > 0) localStorage.setItem('stockmaster_prompts', JSON.stringify(generatedPrompts));
+    if (generatedPrompts.length > 0) {
+      try {
+        localStorage.setItem('stockmaster_prompts', JSON.stringify(generatedPrompts));
+      } catch (e) {
+        console.warn('Failed to save prompts to localStorage (Quota Exceeded?)', e);
+        toast.error('Storage penuh. Prompt terbaru mungkin tidak tersimpan secara lokal.');
+      }
+    }
   }, [generatedPrompts]);
 
   const handleGenerate = async () => {

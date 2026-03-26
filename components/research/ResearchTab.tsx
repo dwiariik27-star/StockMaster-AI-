@@ -22,12 +22,22 @@ export function ResearchTab({ getAIClient, callAI, apiKey, selectedProvider, onS
   const [researchResult, setResearchResult] = useState<ResearchResult | null>(null);
 
   useEffect(() => {
-    const savedResearch = localStorage.getItem('stockmaster_research');
-    if (savedResearch) setResearchResult(JSON.parse(savedResearch));
+    try {
+      const savedResearch = localStorage.getItem('stockmaster_research');
+      if (savedResearch) setResearchResult(JSON.parse(savedResearch));
+    } catch (e) {
+      console.warn('Failed to load research from localStorage', e);
+    }
   }, []);
 
   useEffect(() => {
-    if (researchResult) localStorage.setItem('stockmaster_research', JSON.stringify(researchResult));
+    if (researchResult) {
+      try {
+        localStorage.setItem('stockmaster_research', JSON.stringify(researchResult));
+      } catch (e) {
+        console.warn('Failed to save research to localStorage (Quota Exceeded?)', e);
+      }
+    }
   }, [researchResult]);
 
   const handleResearch = async () => {

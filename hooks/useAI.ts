@@ -10,14 +10,14 @@ export type AIProvider = 'google' | 'groq';
 export function useAI() {
   const [geminiApiKey, setGeminiApiKey] = useState(() => {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('stockmaster_apikey') || '';
+      try { return localStorage.getItem('stockmaster_apikey') || ''; } catch (e) { return ''; }
     }
     return '';
   });
 
   const [groqApiKey, setGroqApiKey] = useState(() => {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('stockmaster_groq_apikey') || '';
+      try { return localStorage.getItem('stockmaster_groq_apikey') || ''; } catch (e) { return ''; }
     }
     return '';
   });
@@ -26,10 +26,12 @@ export function useAI() {
 
   const [selectedProvider, setSelectedProvider] = useState<AIProvider>(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('stockmaster_provider');
-      if (saved && (saved === 'google' || saved === 'groq')) {
-        return saved as AIProvider;
-      }
+      try {
+        const saved = localStorage.getItem('stockmaster_provider');
+        if (saved && (saved === 'google' || saved === 'groq')) {
+          return saved as AIProvider;
+        }
+      } catch (e) {}
       return 'google';
     }
     return 'google';
@@ -37,8 +39,10 @@ export function useAI() {
 
   const [selectedModel, setSelectedModel] = useState(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('stockmaster_model');
-      if (saved) return saved;
+      try {
+        const saved = localStorage.getItem('stockmaster_model');
+        if (saved) return saved;
+      } catch (e) {}
       return 'gemini-3-flash-preview';
     }
     return 'gemini-3-flash-preview';
@@ -55,27 +59,27 @@ export function useAI() {
 
   const saveGeminiApiKey = (key: string) => {
     setGeminiApiKey(key);
-    localStorage.setItem('stockmaster_apikey', key);
+    try { localStorage.setItem('stockmaster_apikey', key); } catch (e) {}
   };
 
   const saveGroqApiKey = (key: string) => {
     setGroqApiKey(key);
-    localStorage.setItem('stockmaster_groq_apikey', key);
+    try { localStorage.setItem('stockmaster_groq_apikey', key); } catch (e) {}
   };
 
   const clearGeminiApiKey = () => {
     setGeminiApiKey('');
-    localStorage.removeItem('stockmaster_apikey');
+    try { localStorage.removeItem('stockmaster_apikey'); } catch (e) {}
   };
 
   const clearGroqApiKey = () => {
     setGroqApiKey('');
-    localStorage.removeItem('stockmaster_groq_apikey');
+    try { localStorage.removeItem('stockmaster_groq_apikey'); } catch (e) {}
   };
 
   const saveProvider = (provider: AIProvider) => {
     setSelectedProvider(provider);
-    localStorage.setItem('stockmaster_provider', provider);
+    try { localStorage.setItem('stockmaster_provider', provider); } catch (e) {}
     
     // Set default model for the provider if current model is not compatible
     const isGroqModel = selectedModel.includes('llama') || selectedModel.includes('mixtral') || selectedModel.includes('gemma') || selectedModel.includes('deepseek');
@@ -90,7 +94,7 @@ export function useAI() {
 
   const saveModel = (model: string) => {
     setSelectedModel(model);
-    localStorage.setItem('stockmaster_model', model);
+    try { localStorage.setItem('stockmaster_model', model); } catch (e) {}
   };
 
   const getAIClient = (providerOverride?: AIProvider) => {
