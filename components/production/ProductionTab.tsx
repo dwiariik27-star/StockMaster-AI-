@@ -260,7 +260,6 @@ export function ProductionTab({
                 filmGrain,
                 chromaticAberration,
                 colorBleed,
-                negativePromptBias
               }) + dynamicInstruction,
               temperature: currentTemp,
               jsonMode: true,
@@ -355,7 +354,7 @@ export function ProductionTab({
     if (generatedPrompts.length === 0) return;
     
     const txtContent = generatedPrompts
-      .map(p => `${p.positivePrompt} --ar ${p.aspectRatio} --no ${p.negativePrompt}`)
+      .map(p => `${p.positivePrompt} --ar ${p.aspectRatio}`)
       .join('\n\n');
 
     const blob = new Blob([txtContent], { type: "text/plain;charset=utf-8" });
@@ -369,7 +368,7 @@ export function ProductionTab({
 
   const copyAllPrompts = () => {
     const textToCopy = generatedPrompts
-      .map(p => `${p.positivePrompt} --ar ${p.aspectRatio} --no ${p.negativePrompt}`)
+      .map(p => `${p.positivePrompt} --ar ${p.aspectRatio}`)
       .join('\n\n');
     navigator.clipboard.writeText(textToCopy);
     toast.success('All prompts copied to clipboard!');
@@ -379,7 +378,7 @@ export function ProductionTab({
     if (generatedPrompts.length === 0) return;
     
     let csvContent = "data:text/csv;charset=utf-8,";
-    csvContent += "Filename,Category,Keyword,Positive Prompt,Negative Prompt,Aspect Ratio,Commercial Score,Keywords\n";
+    csvContent += "Filename,Category,Keyword,Positive Prompt,Aspect Ratio,Commercial Score,Keywords\n";
     
     const categoryName = CATEGORIES.find(c => c.id === category)?.name || category;
     
@@ -388,12 +387,11 @@ export function ProductionTab({
       const cat = `"${categoryName.replace(/"/g, '""')}"`;
       const kw = `"${keyword.replace(/"/g, '""')}"`;
       const positive = `"${(p.positivePrompt || '').replace(/"/g, '""')}"`;
-      const negative = `"${(p.negativePrompt || '').replace(/"/g, '""')}"`;
       const ar = `"${(p.aspectRatio || '').replace(/"/g, '""')}"`;
       const score = p.commercialScore || 0;
       const keywordsList = `"${(p.keywords || []).join(', ').replace(/"/g, '""')}"`;
       
-      csvContent += `${filename},${cat},${kw},${positive},${negative},${ar},${score},${keywordsList}\n`;
+      csvContent += `${filename},${cat},${kw},${positive},${ar},${score},${keywordsList}\n`;
     });
 
     const encodedUri = encodeURI(csvContent);
@@ -475,43 +473,6 @@ export function ProductionTab({
                   onCheckedChange={setIsCohesive}
                   className="data-[state=checked]:bg-fuchsia-500"
                 />
-              </div>
-              <div className="space-y-2 pt-2 border-t border-cyan-500/30">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5">
-                    <Label className="text-xs text-fuchsia-400 font-bold flex items-center gap-1 font-mono">
-                      <ShieldAlert className="w-3 h-3 text-fuchsia-500" /> Negative Prompt Bias
-                    </Label>
-                    <div className="group relative">
-                      <Info className="w-3 h-3 text-cyan-500/50 cursor-help" />
-                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-[#0a0a0a] border border-cyan-500/50 rounded text-[10px] text-cyan-300 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 shadow-[0_0_15px_rgba(6,182,212,0.3)] font-mono">
-                        Meningkatkan spesifisitas dan teknis dalam negative prompt. Mengurangi halusinasi AI tetapi mungkin membatasi output kreatif.
-                      </div>
-                    </div>
-                  </div>
-                  <span className="text-xs text-cyan-500/70 font-mono">{negativePromptBias}%</span>
-                </div>
-                <div className="space-y-1">
-                  <input 
-                    type="range" 
-                    min="0" 
-                    max="100" 
-                    step="5"
-                    value={negativePromptBias} 
-                    onChange={(e) => setNegativePromptBias(Number(e.target.value))}
-                    className="w-full h-1.5 bg-cyan-950/50 rounded-lg appearance-none cursor-pointer accent-fuchsia-500"
-                  />
-                  <div className="flex justify-between text-[8px] text-cyan-700 font-mono px-0.5">
-                    <span>0%</span>
-                    <span>50%</span>
-                    <span>100%</span>
-                  </div>
-                </div>
-                <p className="text-[10px] text-cyan-500/70 leading-tight font-mono">
-                  {negativePromptBias < 30 ? 'Minimal: Hanya penolakan dasar (watermark, dll).' : 
-                   negativePromptBias <= 70 ? 'Optimal: Analisis halusinasi standar untuk subjek.' : 
-                   'Agresif: Analisis kegagalan teknis mendalam & istilah render error.'}
-                </p>
               </div>
             </div>
 
@@ -618,11 +579,6 @@ export function ProductionTab({
                             <p className="text-sm text-cyan-50 leading-relaxed bg-[#0a0a0a] p-3 rounded border border-cyan-500/30">{generatedPrompts[generatedPrompts.length - 1].positivePrompt}</p>
                             <Button size="icon" variant="ghost" className="absolute top-2 right-2 h-6 w-6 text-cyan-500 hover:text-cyan-300 hover:bg-cyan-950/50" onClick={() => { navigator.clipboard.writeText(generatedPrompts[generatedPrompts.length - 1].positivePrompt); toast.success('Prompt disalin!'); }}><Copy className="w-3 h-3" /></Button>
                           </div>
-                        </div>
-
-                        <div className="space-y-1">
-                          <Label className="text-[10px] uppercase tracking-wider text-fuchsia-400 flex items-center gap-1 font-mono"><ShieldAlert className="w-3 h-3" /> Negative Prompt (Avoid)</Label>
-                          <p className="text-xs text-fuchsia-200/80 leading-relaxed bg-fuchsia-950/10 p-3 rounded border border-fuchsia-500/20">{generatedPrompts[generatedPrompts.length - 1].negativePrompt}</p>
                         </div>
 
                         {generatedPrompts[generatedPrompts.length - 1].keywords && (
