@@ -1,5 +1,22 @@
 import { CATEGORIES } from '@/types';
 
+export const getCategoryNuance = (category: string) => {
+  switch (category) {
+    case 'commercial-photo':
+      return "Focus on: High-end commercial photography, sharp focus, authentic lifestyle, perfect skin texture, studio-quality lighting, commercial utility, copy space.";
+    case 'clean-vector':
+      return "Focus on: Flat design, clean lines, solid colors, vector aesthetic, minimal detail, high contrast, scalable, professional icon/illustration style.";
+    case 'minimalist-background':
+      return "Focus on: Minimalist aesthetic, clean textures, soft lighting, vast copy space, neutral color palette, high-end surface details, professional backdrop.";
+    case '3d-render':
+      return "Focus on: 3D render, ray-tracing, photorealistic materials (ceramic, matte plastic, metal), studio lighting, depth of field, high-end product visualization.";
+    case 'cinematic-video':
+      return "Focus on: Cinematic quality, 24fps motion blur, realistic lighting, narrative depth, professional color grading, high-end production value.";
+    default:
+      return "";
+  }
+};
+
 export interface PromptParams {
   keyword: string;
   category: string;
@@ -34,6 +51,8 @@ export const generateSystemInstruction = (size: number, isVideo: boolean, params
     - Color Bleed: ${params.colorBleed}
   `;
 
+  const categoryNuance = getCategoryNuance(params.category);
+  
   const anatomicalInstruction = `
     ANATOMICAL PRECISION (POSITIVE FRAMING):
     When depicting hands, fingers, or human interaction with objects, describe the pose, grip, and finger placement with precise, positive narrative detail. For example, instead of vague terms, use "fingers firmly gripping the watch strap," "thumb resting naturally on the screen," or "hand cradling the object."
@@ -41,6 +60,8 @@ export const generateSystemInstruction = (size: number, isVideo: boolean, params
 
   if (isVideo) {
     return `You are the Universal Master Cinematic Director for Adobe Stock. Your mission is to generate ${size} ultra-high-detail, 4K resolution (Veo 3.1) video prompts that are commercially viable, cinematic, and follow a strict LUXURY & HIGH-END standard.
+
+    CATEGORY NUANCE: ${categoryNuance}
 
     FORMULA: [Cinematography] + [Subject] + [Action] + [Context] + [Style & Ambiance]
 
@@ -58,6 +79,8 @@ export const generateSystemInstruction = (size: number, isVideo: boolean, params
   }
 
   return `You are the Universal Master Prompt Architect & Elite Creative Director for Adobe Stock. Your mission is to generate ${size} ultra-high-detail, 4K resolution (Nano Banana Pro) image prompts that are commercially viable, photorealistic, and follow a strict LUXURY & PREMIUM standard.
+
+  CATEGORY NUANCE: ${categoryNuance}
 
   FORMULA: [Subject] + [Action] + [Location/context] + [Composition] + [Style]
 
