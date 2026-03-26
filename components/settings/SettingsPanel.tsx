@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Trash2, ShieldAlert, Activity, Loader2, CheckCircle2, Cpu } from 'lucide-react';
+import { Trash2, ShieldAlert, Activity, Loader2, CheckCircle2, Cpu, Layers } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAI, AIProvider } from '@/hooks/useAI';
 
@@ -96,18 +97,39 @@ export function SettingsPanel({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="apikey" className="text-cyan-300 font-medium font-mono">
-                  {selectedProvider === 'google' ? 'Gemini API Key' : 'Groq API Key'}
+                <Label htmlFor="apikey" className="text-cyan-300 font-medium font-mono flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span>{selectedProvider === 'google' ? 'Gemini API Key' : 'Groq API Key (Bulk Supported)'}</span>
+                    {selectedProvider === 'groq' && groqApiKey && (
+                      <span className="px-1.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-400 text-[10px] border border-cyan-500/30 flex items-center gap-1">
+                        <Layers className="w-2.5 h-2.5" />
+                        {groqApiKey.split(/[,\n]/).filter(k => k.trim()).length} Keys Active
+                      </span>
+                    )}
+                  </div>
+                  {selectedProvider === 'groq' && (
+                    <span className="text-[10px] text-cyan-500/50 font-normal">Pisahkan dengan baris baru atau koma</span>
+                  )}
                 </Label>
                 <div className="flex gap-2">
-                  <Input 
-                    id="apikey" 
-                    type="password" 
-                    placeholder={selectedProvider === 'google' ? "AIzaSy..." : "gsk_..."}
-                    value={selectedProvider === 'google' ? apiKey : groqApiKey} 
-                    onChange={(e) => selectedProvider === 'google' ? saveApiKey(e.target.value) : saveGroqApiKey(e.target.value)} 
-                    className="bg-[#050505] border-cyan-500/50 text-cyan-50 focus-visible:ring-cyan-400/50 flex-1 font-mono text-sm"
-                  />
+                  {selectedProvider === 'google' ? (
+                    <Input 
+                      id="apikey" 
+                      type="password" 
+                      placeholder="AIzaSy..."
+                      value={apiKey} 
+                      onChange={(e) => saveApiKey(e.target.value)} 
+                      className="bg-[#050505] border-cyan-500/50 text-cyan-50 focus-visible:ring-cyan-400/50 flex-1 font-mono text-sm"
+                    />
+                  ) : (
+                    <Textarea 
+                      id="apikey" 
+                      placeholder="gsk_key1&#10;gsk_key2&#10;gsk_key3"
+                      value={groqApiKey} 
+                      onChange={(e) => saveGroqApiKey(e.target.value)} 
+                      className="bg-[#050505] border-cyan-500/50 text-cyan-50 focus-visible:ring-cyan-400/50 flex-1 font-mono text-xs min-h-[80px] resize-none"
+                    />
+                  )}
                   <Button 
                     variant="destructive" 
                     size="icon" 
@@ -115,7 +137,7 @@ export function SettingsPanel({
                       selectedProvider === 'google' ? clearApiKey() : clearGroqApiKey();
                       toast.success('API Key berhasil dihapus');
                     }}
-                    className="bg-red-950/30 text-red-400 hover:bg-red-900/50 border border-red-500/50"
+                    className="bg-red-950/30 text-red-400 hover:bg-red-900/50 border border-red-500/50 self-start"
                   >
                     <Trash2 className="w-4 h-4" />
                   </Button>

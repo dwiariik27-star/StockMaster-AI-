@@ -96,8 +96,19 @@ export function useAI() {
       if (!key) throw new Error('Gemini API Key tidak ditemukan.');
       return createGoogleGenerativeAI({ apiKey: key });
     } else {
-      if (!groqApiKey) throw new Error('Groq API Key tidak ditemukan.');
-      return createGroq({ apiKey: groqApiKey });
+      const trimmedKey = groqApiKey.trim();
+      if (!trimmedKey) throw new Error('Groq API Key tidak ditemukan.');
+      
+      // Support for Bulk API Keys (Load Balancing)
+      // Split by comma or newline, then trim and filter empty strings
+      const keys = trimmedKey.split(/[,\n]/).map(k => k.trim()).filter(Boolean);
+      
+      if (keys.length === 0) throw new Error('Groq API Key tidak valid.');
+      
+      // Pick a random key from the list
+      const selectedKey = keys[Math.floor(Math.random() * keys.length)];
+      
+      return createGroq({ apiKey: selectedKey });
     }
   };
 
