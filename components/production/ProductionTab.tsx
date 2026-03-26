@@ -237,6 +237,9 @@ ${parametricRules}`;
             text = response.text || "";
             success = true;
           } catch (error: any) {
+            if (error.status === 404 || error.message?.includes('404') || error.message?.includes('NOT_FOUND')) {
+              throw new Error(`Model "${selectedModel}" tidak ditemukan atau tidak mendukung pembuatan teks. Silakan ganti ke Gemini 3.1 Flash Lite di Pengaturan.`);
+            }
             if (error.status === 429 || error.message?.includes('429') || error.message?.includes('quota') || error.message?.includes('Too Many Requests')) {
               retryCount++;
               if (retryCount >= maxRetries) {
