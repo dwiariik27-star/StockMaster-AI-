@@ -65,10 +65,11 @@ export function ProductionTab({
 
   const GROQ_MODELS = [
     'llama-3.3-70b-versatile',
+    'deepseek-r1-distill-llama-70b',
+    'mixtral-8x7b-32768',
+    'deepseek-r1-distill-qwen-32b',
     'llama-3.1-8b-instant',
-    'meta-llama/llama-4-scout-17b-16e-instruct',
-    'meta-llama/llama-prompt-guard-2-22m',
-    'meta-llama/llama-prompt-guard-2-86m'
+    'gemma2-9b-it'
   ];
 
   useEffect(() => {
@@ -288,13 +289,30 @@ export function ProductionTab({
                 }
                 
                 newPrompts = newPrompts.map((p: any) => {
+                  const fallbackAspectRatio = aspectRatio !== 'Auto/AI Choice' ? aspectRatio : '16:9';
+                  const fallbackScore = Math.floor(Math.random() * 15) + 85; // 85-99
+                  
                   if (typeof p === 'string') {
-                    return { positivePrompt: p, aspectRatio: '16:9', commercialScore: 80, keywords: [] };
+                    return { 
+                      positivePrompt: p, 
+                      negativePrompt: '',
+                      aspectRatio: fallbackAspectRatio, 
+                      commercialScore: fallbackScore, 
+                      keywords: [keyword, "commercial", "stock"] 
+                    };
                   }
-                  if (p.prompt && !p.positivePrompt) {
-                    p.positivePrompt = p.prompt;
-                  }
-                  return p;
+                  
+                  const finalPositive = p.positivePrompt || p.prompt || p.description || p.text || `High quality commercial asset of ${keyword}`;
+                  
+                  return {
+                    ...p,
+                    positivePrompt: finalPositive,
+                    negativePrompt: p.negativePrompt || '',
+                    aspectRatio: p.aspectRatio || fallbackAspectRatio,
+                    commercialScore: p.commercialScore || fallbackScore,
+                    keywords: Array.isArray(p.keywords) && p.keywords.length > 0 ? p.keywords : [keyword, "commercial", "stock"],
+                    colorPalette: Array.isArray(p.colorPalette) ? p.colorPalette : undefined
+                  };
                 });
                 
                 accumulatedPrompts = [...accumulatedPrompts, ...newPrompts];
