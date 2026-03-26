@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Loader2, Globe, Activity, Target, AlertTriangle, CalendarDays, ImageIcon, ShieldAlert, Droplet, Tags, Copy, FileText, Rocket } from 'lucide-react';
+import { Loader2, Globe, Activity, Target, AlertTriangle, CalendarDays, ImageIcon, ShieldAlert, Droplet, Tags, Copy, FileText, Rocket, TrendingUp } from 'lucide-react';
 import { toast } from 'sonner';
 import { ResearchResult, GroundingSource } from '@/types';
 import { extractJSON } from '@/lib/utils';
@@ -11,10 +11,12 @@ import { extractJSON } from '@/lib/utils';
 interface ResearchTabProps {
   getAIClient: () => any;
   callAI: (options: any) => Promise<{ text: string }>;
+  apiKey: string;
+  selectedProvider: string;
   onSendToProduction: (nicheName: string) => void;
 }
 
-export function ResearchTab({ getAIClient, callAI, onSendToProduction }: ResearchTabProps) {
+export function ResearchTab({ getAIClient, callAI, apiKey, selectedProvider, onSendToProduction }: ResearchTabProps) {
   const [researchTopic, setResearchTopic] = useState('');
   const [isResearching, setIsResearching] = useState(false);
   const [researchResult, setResearchResult] = useState<ResearchResult | null>(null);
@@ -67,18 +69,47 @@ export function ResearchTab({ getAIClient, callAI, onSendToProduction }: Researc
       Analisis tingkat permintaan pasar, tingkat kompetisi, kejenuhan pasar, persona pembeli (siapa yang akan membeli aset ini?), palet warna yang sedang tren secara psikologis, dan temukan celah pasar (uncontested market space) di mana permintaan tinggi namun kompetisi/suplai aset masih sangat rendah.
       Berikan rekomendasi 5 sub-niche "Blue Ocean" yang paling menguntungkan dengan alasan komersial yang kuat.`;
 
+      // Hybrid Research Mode: Gunakan Gemini untuk riset jika API Key tersedia, 
+      // meskipun provider utama adalah Groq (Llama).
+      const useHybridMode = selectedProvider === 'groq' && !!apiKey;
+      
       const { text } = await callAI({
         prompt,
         system: systemInstruction,
         temperature: 0.4,
-        jsonMode: true
+        jsonMode: true,
+        maxTokens: 4000,
+        provider: useHybridMode ? 'google' : selectedProvider,
+        useSearch: true // Aktifkan Google Search Grounding untuk Gemini
       });
 
       if (text) {
-        const cleanedText = extractJSON(text);
-        const parsedResult = JSON.parse(cleanedText) as ResearchResult;
-        setResearchResult(parsedResult);
-        toast.success('Analisis pasar berhasil diselesaikan!');
+        try {
+          const cleanedText = extractJSON(text);
+          console.log("Extracted JSON:", cleanedText);
+          let parsedResult = JSON.parse(cleanedText);
+          
+          // Jika AI mengembalikan array, ambil elemen pertama (biasanya objek riset)
+          if (Array.isArray(parsedResult) && parsedResult.length > 0) {
+            parsedResult = parsedResult[0];
+          }
+          
+          // Validasi minimal untuk memastikan data tidak kosong dan memiliki struktur yang benar
+          if (!parsedResult || typeof parsedResult !== 'object') {
+            throw new Error("Hasil riset bukan merupakan objek data yang valid.");
+          }
+
+          if (typeof parsedResult.trendScore !== 'number') {
+            console.error("Data hasil riset tidak lengkap (missing trendScore):", parsedResult);
+            throw new Error("AI mengembalikan data yang tidak lengkap. Pastikan topik yang dimasukkan cukup spesifik.");
+          }
+
+          setResearchResult(parsedResult as ResearchResult);
+          toast.success('Analisis pasar berhasil diselesaikan!');
+        } catch (parseError: any) {
+          console.error("Gagal parse research JSON:", parseError, "Original text:", text);
+          toast.error(`Gagal memproses hasil riset: ${parseError.message || 'Format tidak valid'}`);
+        }
       }
     } catch (error: any) {
       toast.error(`Gagal melakukan riset pasar: ${error.message || 'Cek API Key Anda.'}`);
@@ -113,27 +144,36 @@ export function ResearchTab({ getAIClient, callAI, onSendToProduction }: Researc
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Bento Grid Analytics */}
             <Card className="md:col-span-2 bg-[#0a0a0a] border-cyan-500/30 text-cyan-50 relative overflow-hidden shadow-[0_0_15px_rgba(6,182,212,0.05)]">
-              <div className="absolute top-4 right-4 bg-cyan-950/80 text-cyan-300 text-[10px] px-2.5 py-1 rounded-full border border-cyan-500/50 shadow-[0_0_10px_rgba(6,182,212,0.2)] flex items-center gap-1.5 font-mono uppercase tracking-wider backdrop-blur-sm">
-                <span className={`w-1.5 h-1.5 rounded-full ${researchResult.sources && researchResult.sources.length > 0 ? 'bg-emerald-500/80 shadow-[0_0_8px_rgba(16,185,129,0.4)]' : 'bg-fuchsia-500/80 shadow-[0_0_8px_rgba(217,70,239,0.4)]'}`}></span> {researchResult.sources && researchResult.sources.length > 0 ? 'Live Web Grounded' : 'Internal AI Knowledge'}
-              </div>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b border-cyan-900/50 mb-4">
+                <div>
+                  <CardTitle className="text-cyan-300 flex items-center gap-2 font-mono"><TrendingUp className="w-5 h-5 text-fuchsia-500 drop-shadow-[0_0_5px_rgba(217,70,239,0.5)]" /> Market Intelligence Report</CardTitle>
+                  <CardDescription className="text-cyan-500/70 text-[10px] mt-1 font-mono uppercase tracking-widest">Analisis mendalam berdasarkan data pasar terbaru.</CardDescription>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="bg-cyan-950/80 text-cyan-300 text-[10px] px-2.5 py-1 rounded-full border border-cyan-500/50 shadow-[0_0_10px_rgba(6,182,212,0.2)] flex items-center gap-1.5 font-mono uppercase tracking-wider backdrop-blur-sm">
+                    <span className={`w-1.5 h-1.5 rounded-full ${researchResult.sources && researchResult.sources.length > 0 ? 'bg-emerald-500/80 shadow-[0_0_8px_rgba(16,185,129,0.4)]' : 'bg-fuchsia-500/80 shadow-[0_0_8px_rgba(217,70,239,0.4)]'}`}></span> {researchResult.sources && researchResult.sources.length > 0 ? 'Live Web Grounded' : 'Internal AI Knowledge'}
+                  </div>
+                  <Button variant="outline" size="sm" onClick={() => { setResearchResult(null); localStorage.removeItem('stockmaster_research'); toast.success('Data riset dibersihkan'); }} className="h-7 text-[10px] text-red-400 border-red-500/50 hover:text-red-300 hover:bg-red-950/50 font-mono px-2">Clear</Button>
+                </div>
+              </CardHeader>
               <CardContent className="p-6">
                 <div className="flex flex-col md:flex-row items-center gap-8">
                   <div className="flex flex-col items-center justify-center">
                     <div className="w-28 h-28 rounded-full border border-fuchsia-500/50 shadow-[0_0_20px_rgba(217,70,239,0.15)] flex items-center justify-center bg-[#050505]">
-                      <span className="text-5xl font-light text-fuchsia-400 drop-shadow-[0_0_8px_rgba(217,70,239,0.5)] tracking-tighter font-mono">{researchResult.trendScore}</span>
+                      <span className="text-5xl font-light text-fuchsia-400 drop-shadow-[0_0_8px_rgba(217,70,239,0.5)] tracking-tighter font-mono">{researchResult.trendScore ?? 0}</span>
                     </div>
                     <span className="text-[10px] text-cyan-500/70 mt-3 uppercase tracking-widest font-semibold font-mono">Trend Score</span>
                   </div>
                   <div className="space-y-4 flex-1 w-full">
                     <div>
                       <h3 className="text-xl font-semibold mb-1 text-cyan-300 font-mono">Commercial Analysis</h3>
-                      <p className="text-cyan-100/80 text-sm leading-relaxed">{researchResult.analysis}</p>
+                      <p className="text-cyan-100/80 text-sm leading-relaxed">{researchResult.analysis || 'Tidak ada analisis tersedia.'}</p>
                     </div>
                     <div className="grid grid-cols-2 gap-6 pt-6 border-t border-cyan-500/20">
-                      <div className="space-y-1.5"><div className="flex items-center gap-2 text-cyan-500/70 text-[10px] uppercase tracking-widest font-semibold font-mono"><Activity className="w-3.5 h-3.5 text-fuchsia-500" /> Demand</div><div className="font-medium text-cyan-100 text-sm">{researchResult.demandLevel}</div></div>
-                      <div className="space-y-1.5"><div className="flex items-center gap-2 text-cyan-500/70 text-[10px] uppercase tracking-widest font-semibold font-mono"><Target className="w-3.5 h-3.5 text-fuchsia-500" /> Competition</div><div className="font-medium text-cyan-100 text-sm">{researchResult.competitionLevel}</div></div>
-                      <div className="space-y-1.5"><div className="flex items-center gap-2 text-cyan-500/70 text-[10px] uppercase tracking-widest font-semibold font-mono"><AlertTriangle className="w-3.5 h-3.5 text-fuchsia-500" /> Saturation</div><div className="font-medium text-cyan-100 text-sm">{researchResult.saturationIndex}% <span className="text-xs ml-1 text-cyan-500/70 font-normal">({researchResult.saturationIndex > 70 ? 'High' : 'Healthy'})</span></div></div>
-                      <div className="space-y-1.5"><div className="flex items-center gap-2 text-cyan-500/70 text-[10px] uppercase tracking-widest font-semibold font-mono"><CalendarDays className="w-3.5 h-3.5 text-fuchsia-500" /> Seasonality</div><div className="font-medium text-cyan-100 text-sm">{researchResult.seasonality}</div></div>
+                      <div className="space-y-1.5"><div className="flex items-center gap-2 text-cyan-500/70 text-[10px] uppercase tracking-widest font-semibold font-mono"><Activity className="w-3.5 h-3.5 text-fuchsia-500" /> Demand</div><div className="font-medium text-cyan-100 text-sm">{researchResult.demandLevel || '-'}</div></div>
+                      <div className="space-y-1.5"><div className="flex items-center gap-2 text-cyan-500/70 text-[10px] uppercase tracking-widest font-semibold font-mono"><Target className="w-3.5 h-3.5 text-fuchsia-500" /> Competition</div><div className="font-medium text-cyan-100 text-sm">{researchResult.competitionLevel || '-'}</div></div>
+                      <div className="space-y-1.5"><div className="flex items-center gap-2 text-cyan-500/70 text-[10px] uppercase tracking-widest font-semibold font-mono"><AlertTriangle className="w-3.5 h-3.5 text-fuchsia-500" /> Saturation</div><div className="font-medium text-cyan-100 text-sm">{(researchResult.saturationIndex ?? 0)}% <span className="text-xs ml-1 text-cyan-500/70 font-normal">({(researchResult.saturationIndex ?? 0) > 70 ? 'High' : 'Healthy'})</span></div></div>
+                      <div className="space-y-1.5"><div className="flex items-center gap-2 text-cyan-500/70 text-[10px] uppercase tracking-widest font-semibold font-mono"><CalendarDays className="w-3.5 h-3.5 text-fuchsia-500" /> Seasonality</div><div className="font-medium text-cyan-100 text-sm">{researchResult.seasonality || '-'}</div></div>
                     </div>
                   </div>
                 </div>
@@ -148,7 +188,7 @@ export function ResearchTab({ getAIClient, callAI, onSendToProduction }: Researc
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {researchResult.subNiches.map((niche, i) => (
+                  {researchResult.subNiches?.map((niche, i) => (
                     <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border border-cyan-500/20 bg-[#050505] hover:border-cyan-400/60 hover:shadow-[0_0_15px_rgba(6,182,212,0.15)] transition-all duration-300 gap-4 group">
                       <div className="space-y-1.5 flex-1">
                         <div className="font-medium text-cyan-100 flex items-center gap-3 text-sm"><span className="w-6 h-6 rounded-full bg-cyan-950/50 text-cyan-300 flex items-center justify-center text-[10px] font-mono border border-cyan-500/50 shadow-[0_0_8px_rgba(6,182,212,0.3)]">{i+1}</span>{niche.name}</div>
@@ -201,7 +241,7 @@ export function ResearchTab({ getAIClient, callAI, onSendToProduction }: Researc
                 <div className="pt-6 border-t border-cyan-500/20">
                   <div className="flex items-center gap-2 text-xs font-semibold mb-4 text-cyan-400 uppercase tracking-widest font-mono"><Droplet className="w-4 h-4 text-fuchsia-500" /> Trending Colors</div>
                   <div className="flex flex-wrap gap-2.5">
-                    {researchResult.colorPalette.map((color, i) => (<span key={i} className="px-3 py-1.5 bg-cyan-950/30 text-cyan-300 text-xs rounded-md border border-cyan-500/40 shadow-[0_0_8px_rgba(6,182,212,0.1)] font-mono flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-fuchsia-500 shadow-[0_0_5px_rgba(217,70,239,0.8)]"></div>{color}</span>))}
+                    {researchResult.colorPalette?.map((color, i) => (<span key={i} className="px-3 py-1.5 bg-cyan-950/30 text-cyan-300 text-xs rounded-md border border-cyan-500/40 shadow-[0_0_8px_rgba(6,182,212,0.1)] font-mono flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-fuchsia-500 shadow-[0_0_5px_rgba(217,70,239,0.8)]"></div>{color}</span>))}
                   </div>
                 </div>
               </CardContent>
@@ -221,7 +261,7 @@ export function ResearchTab({ getAIClient, callAI, onSendToProduction }: Researc
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
-                  {researchResult.seoTags.map((tag, i) => (<span key={i} className="px-2.5 py-1 bg-[#050505] text-cyan-400 text-xs rounded-md border border-cyan-500/30 hover:border-cyan-400/80 hover:shadow-[0_0_10px_rgba(6,182,212,0.2)] transition-colors font-mono">{tag}</span>))}
+                  {researchResult.seoTags?.map((tag, i) => (<span key={i} className="px-2.5 py-1 bg-[#050505] text-cyan-400 text-xs rounded-md border border-cyan-500/30 hover:border-cyan-400/80 hover:shadow-[0_0_10px_rgba(6,182,212,0.2)] transition-colors font-mono">{tag}</span>))}
                 </div>
               </CardContent>
             </Card>

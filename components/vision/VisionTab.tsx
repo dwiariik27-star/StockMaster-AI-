@@ -93,9 +93,14 @@ export function VisionTab({ getAIClient, callAI, onSendToProduction }: VisionTab
       });
 
       if (text) {
-        const cleanedText = extractJSON(text);
-        setVisionResult(JSON.parse(cleanedText));
-        toast.success('Reverse-Engineering berhasil!');
+        try {
+          const cleanedText = extractJSON(text);
+          setVisionResult(JSON.parse(cleanedText));
+          toast.success('Reverse-Engineering berhasil!');
+        } catch (parseError) {
+          console.error("Gagal parse vision JSON:", parseError, "Original text:", text);
+          toast.error('Gagal memproses hasil analisis AI. Format tidak valid.');
+        }
       }
     } catch (error: any) {
       toast.error(`Gagal menganalisis gambar: ${error.message || 'Cek API Key Anda.'}`);

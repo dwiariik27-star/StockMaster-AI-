@@ -17,6 +17,9 @@ export interface GeneratedPrompt {
   positivePrompt: string; 
   negativePrompt: string; 
   aspectRatio: string; 
+  commercialScore: number;
+  keywords: string[];
+  colorPalette?: string[];
 }
 
 export interface ResearchResult {

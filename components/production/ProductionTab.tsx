@@ -4,8 +4,9 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, Sparkles, Palette, Save, Copy, Download, ShieldAlert, Box, CheckCircle2, Paintbrush, Eye, Info } from 'lucide-react';
+import { Loader2, Sparkles, Palette, Save, Copy, Download, ShieldAlert, Box, CheckCircle2, Paintbrush, Eye, Info, Target } from 'lucide-react';
 import { toast } from 'sonner';
 import { GeneratedPrompt, CATEGORIES, LIGHTING_STYLES, CAMERA_ANGLES, COLOR_TONES, ASPECT_RATIOS, COMPOSITIONS, DEPTH_OF_FIELD, CAMERA_MOTION, LENS_FLARE, BOKEH_INTENSITY, FILM_GRAIN, CHROMATIC_ABERRATION, COLOR_BLEED } from '@/types';
 import { extractJSON } from '@/lib/utils';
@@ -14,6 +15,7 @@ interface ProductionTabProps {
   getAIClient: () => any;
   callAI: (options: any) => Promise<{ text: string }>;
   selectedModel: string;
+  selectedProvider: string;
   keyword: string;
   setKeyword: (kw: string) => void;
   generatedPrompts: GeneratedPrompt[];
@@ -24,6 +26,7 @@ export function ProductionTab({
   getAIClient, 
   callAI,
   selectedModel, 
+  selectedProvider,
   keyword, 
   setKeyword,
   generatedPrompts,
@@ -47,6 +50,7 @@ export function ProductionTab({
   const [negativePromptBias, setNegativePromptBias] = useState<number>(80);
   const [currentCount, setCurrentCount] = useState<number>(0);
   const [isBatching, setIsBatching] = useState(false);
+  const [isCohesive, setIsCohesive] = useState(false);
   const [batchStatus, setBatchStatus] = useState('');
   const [marketIntel, setMarketIntel] = useState<string[]>([]);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -94,6 +98,7 @@ export function ProductionTab({
           2. Untuk setiap sub-niche, buat 2 variasi tema visual yang kontras (Total 10 tema).
           
           FORMAT OUTPUT (JSON Array of Strings):
+          WAJIB: Hanya berikan array JSON murni tanpa teks penjelasan di awal atau akhir.
           ["Sub-niche 1: Tema A - Deskripsi...", "Sub-niche 1: Tema B - Deskripsi...", ...]
           
           Fokus pada: "Utility Value", "Copy Space", "Authenticity", dan "Technical Excellence".`,
@@ -102,47 +107,72 @@ export function ProductionTab({
         });
         
         if (intelText) {
-          const cleanedIntelText = extractJSON(intelText);
-          dynamicThemes = JSON.parse(cleanedIntelText);
-          setMarketIntel(dynamicThemes);
+          try {
+            const cleanedIntelText = extractJSON(intelText);
+            console.log("Production Market Intel JSON:", cleanedIntelText);
+            let parsedIntel = JSON.parse(cleanedIntelText);
+            
+            if (Array.isArray(parsedIntel)) {
+              dynamicThemes = parsedIntel;
+            } else if (parsedIntel && typeof parsedIntel === 'object') {
+              const arrayProp = Object.values(parsedIntel).find(v => Array.isArray(v)) as string[];
+              if (arrayProp) {
+                dynamicThemes = arrayProp;
+              } else {
+                dynamicThemes = Object.values(parsedIntel).map(v => typeof v === 'string' ? v : JSON.stringify(v));
+              }
+            } else if (typeof parsedIntel === 'string') {
+              dynamicThemes = [parsedIntel];
+            }
+
+            if (!Array.isArray(dynamicThemes) || dynamicThemes.length === 0) {
+              throw new Error("Market intel output is not a valid array");
+            }
+            setMarketIntel(dynamicThemes);
+          } catch (parseError) {
+            console.error("Gagal parse market intel JSON:", parseError, "Original text:", intelText);
+            // Fallback inside catch
+            dynamicThemes = [
+              "Authentic Lifestyle & Diversity: Fokus pada momen candid, emosi natural.",
+              "Minimalist Corporate: Ruang kerja modern, clean desk, pencahayaan alami.",
+              "Cinematic Moody: Pencahayaan dramatis, kontras tinggi, warna deep cinematic.",
+              "Hyper-Realistic Macro: Detail ekstrem pada tekstur, ketajaman luar biasa.",
+              "Abstract Data & Tech: Visualisasi konsep masa depan, glowing lines, neon.",
+              "Sustainable & Eco-Friendly: Palet warna bumi, material organik.",
+              "Neon Nightlife/Cyberpunk: Warna berani, pantulan cahaya, energi malam.",
+              "Zen & Wellness: Komposisi simetris, warna pastel lembut, elemen alam.",
+              "Dynamic Action: Angle ekstrem, motion blur, subjek tajam membeku.",
+              "Luxury & Premium: Palet warna gelap, aksen emas, pencahayaan studio."
+            ];
+            setMarketIntel(dynamicThemes);
+          }
         }
       } catch (e) {
         console.error("Gagal generate market intel, menggunakan fallback.", e);
-      }
-
-      // Fallback if AI fails to return array
-      if (!Array.isArray(dynamicThemes) || dynamicThemes.length === 0) {
-        dynamicThemes = [
-          "Authentic Lifestyle & Diversity: Fokus pada momen candid, emosi natural.",
-          "Minimalist Corporate: Ruang kerja modern, clean desk, pencahayaan alami.",
-          "Cinematic Moody: Pencahayaan dramatis, kontras tinggi, warna deep cinematic.",
-          "Hyper-Realistic Macro: Detail ekstrem pada tekstur, ketajaman luar biasa.",
-          "Abstract Data & Tech: Visualisasi konsep masa depan, glowing lines, neon.",
-          "Sustainable & Eco-Friendly: Palet warna bumi, material organik.",
-          "Neon Nightlife/Cyberpunk: Warna berani, pantulan cahaya, energi malam.",
-          "Zen & Wellness: Komposisi simetris, warna pastel lembut, elemen alam.",
-          "Dynamic Action: Angle ekstrem, motion blur, subjek tajam membeku.",
-          "Luxury & Premium: Palet warna gelap, aksen emas, pencahayaan studio."
-        ];
-        setMarketIntel(dynamicThemes);
-      }
-
-      const batches = Math.ceil(targetCount / 5);
-      
-      for (let i = 0; i < batches; i++) {
-        if (abortControllerRef.current?.signal.aborted) {
-          toast.info('Auto-Batching dihentikan oleh pengguna.');
-          break;
+        if (!dynamicThemes || dynamicThemes.length === 0) {
+          dynamicThemes = [
+            "Authentic Lifestyle & Diversity: Fokus pada momen candid, emosi natural.",
+            "Minimalist Corporate: Ruang kerja modern, clean desk, pencahayaan alami.",
+            "Cinematic Moody: Pencahayaan dramatis, kontras tinggi, warna deep cinematic.",
+            "Hyper-Realistic Macro: Detail ekstrem pada tekstur, ketajaman luar biasa.",
+            "Abstract Data & Tech: Visualisasi konsep masa depan, glowing lines, neon.",
+            "Sustainable & Eco-Friendly: Palet warna bumi, material organik.",
+            "Neon Nightlife/Cyberpunk: Warna berani, pantulan cahaya, energi malam.",
+            "Zen & Wellness: Komposisi simetris, warna pastel lembut, elemen alam.",
+            "Dynamic Action: Angle ekstrem, motion blur, subjek tajam membeku.",
+            "Luxury & Premium: Palet warna gelap, aksen emas, pencahayaan studio."
+          ];
+          setMarketIntel(dynamicThemes);
         }
+      }
 
-        setBatchStatus(`Generating batch ${i + 1} of ${batches}...`);
-        const batchSize = Math.min(5, targetCount - accumulatedPrompts.length);
-        
+      const getSystemInstruction = (size: number) => {
         const parametricRules = `
-          ATURAN PARAMETRIK (WAJIB DIPATUHI JIKA BUKAN 'Auto/AI Choice'):
+          PARAMETRIC CONTROLS (USER OVERRIDES):
           - Lighting Style: ${lightingStyle}
           - Camera Angle: ${cameraAngle}
           - Color Tone: ${colorTone}
+          - Aspect Ratio: ${aspectRatio}
           - Composition: ${composition}
           - Depth of Field: ${depthOfField}
           - Camera Motion: ${cameraMotion}
@@ -150,11 +180,10 @@ export function ProductionTab({
           - Bokeh Intensity: ${bokehIntensity}
           - Film Grain: ${filmGrain}
           - Chromatic Aberration: ${chromaticAberration}
-          - Color Bleed/Halation: ${colorBleed}
-          - Aspect Ratio: ${aspectRatio} (Jika bukan Auto, pastikan komposisi prompt mendukung rasio ini dan outputkan rasio ini persis di field aspectRatio)
+          - Color Bleed: ${colorBleed}
         `;
 
-        let systemInstruction = `Anda adalah Elite Creative Director dan Prompt Engineer ahli untuk Adobe Stock. Tugas Anda adalah menghasilkan ${batchSize} prompt gambar 4K (Nano Banana Pro) yang sangat presisi, fotorealistik, dan bernilai komersial tinggi.
+        let base = `Anda adalah Elite Creative Director dan Prompt Engineer ahli untuk Adobe Stock. Tugas Anda adalah menghasilkan ${size} prompt gambar 4K (Nano Banana Pro) yang sangat presisi, fotorealistik, dan bernilai komersial tinggi.
 Setiap prompt WAJIB mematuhi kerangka kerja "Creative Director" dari Nano Banana: [Subject] + [Action] + [Storytelling Context] + [Composition & DoF] + [Lighting & Style] + [Optical & Film Emulation] + [Commercial Utility].
 
 ATURAN WAJIB NANO BANANA PRO (STORYTELLING & COMMERCIAL FOCUS):
@@ -170,15 +199,28 @@ ATURAN WAJIB NANO BANANA PRO (STORYTELLING & COMMERCIAL FOCUS):
 10. Tipografi & Integritas Teks (CRITICAL): Jika gambar membutuhkan teks, Anda WAJIB memastikan teks tersebut lengkap, rapi, dan bebas typo. Gunakan tanda kutip ganda untuk teks target (contoh: the word "SALE") dan definisikan gaya font secara teknis (contoh: "in a bold, clean, modern sans-serif font", "in a high-contrast elegant serif font"). Pastikan teks adalah fokus utama atau terintegrasi secara logis tanpa distorsi.
 11. Commercial Utility: Pastikan gambar memiliki nilai jual tinggi (contoh: "generous copy space on the left", "clean background for text overlay", "authentic lifestyle diversity", "high-end commercial finish").
 
-        ATURAN NEGATIVE PROMPT (DEEP HALLUCINATION ANALYSIS - BIAS: ${negativePromptBias}%):
-        1. Base Rejections (MANDATORY): "watermark, text, signature, logo, trademark, copyright, blurry, cropped, out of focus, low quality, jpeg artifacts, noise, pixelated, ai generated, generic, distorted face, extra limbs, fused fingers".
-        2. Deep Contextual Analysis (CRITICAL): Analisis subjek pada Positive Prompt secara mikroskopis. Gunakan intensitas ${negativePromptBias}% untuk menghasilkan kata kunci negatif yang sangat spesifik guna mencegah halusinasi AI yang unik untuk subjek tersebut:
-           - Jika Manusia/Potret: Fokus pada "micro-anatomical errors, iris distortion, skin plastic texture, unnatural joint angles, finger count, fingernail artifacts, asymmetrical eyes".
-           - Jika Arsitektur/Interior: Fokus pada "perspective convergence errors, floating furniture, non-Euclidean geometry, light leak artifacts, impossible shadows, warped walls".
-           - Jika Makanan/Minuman: Fokus pada "unnatural viscosity, floating particles, impossible reflections on liquid, texture repetition, unappetizing color shifts, plastic-looking food".
-           - Jika Alam/Lanskap: Fokus pada "fractal repetition, impossible horizon lines, lighting direction mismatch, color banding in sky, unnatural plant growth".
-        3. BIAS SCALING: Semakin tinggi bias (${negativePromptBias}%), semakin panjang dan teknis daftar negatif yang dihasilkan. Pada 100%, sertakan istilah teknis kegagalan render ("aliasing, moiré patterns, sub-surface scattering errors").
-        4. SYNTHESIS MANDATE: Gabungkan semua menjadi satu string "negativePrompt" yang komprehensif dan kohesif.
+WAJIB: Output harus berupa JSON array murni. Jangan tambahkan teks penjelasan, pembukaan, atau penutup. Jangan gunakan blok kode markdown (seperti \`\`\`json). Langsung berikan array JSON.
+
+ATURAN NEGATIVE PROMPT (DEEP HALLUCINATION ANALYSIS - BIAS: ${negativePromptBias}%):
+1. Base Rejections (MANDATORY): "watermark, text, signature, logo, trademark, copyright, blurry, cropped, out of focus, low quality, jpeg artifacts, noise, pixelated, ai generated, generic, distorted face, extra limbs, fused fingers".
+2. Deep Contextual Analysis (CRITICAL): Analisis subjek pada Positive Prompt secara mikroskopis. Gunakan intensitas ${negativePromptBias}% untuk menghasilkan kata kunci negatif yang sangat spesifik guna mencegah halusinasi AI yang unik untuk subjek tersebut.
+3. BIAS SCALING: Semakin tinggi bias (${negativePromptBias}%), semakin panjang dan teknis daftar negatif yang dihasilkan.
+4. SYNTHESIS MANDATE: Gabungkan semua menjadi satu string "negativePrompt" yang komprehensif.
+
+INTELIJEN KOMERSIAL & SEO:
+1. Commercial Score: Berikan skor 0-100 berdasarkan potensi penjualan di Adobe Stock (Utility, Trend, Quality).
+2. Keyword Expansion: Berikan 50 kata kunci SEO yang paling relevan dan memiliki volume pencarian tinggi untuk gambar tersebut.
+3. Color Palette: Berikan 5 kode warna HEX yang paling harmonis dan mendukung mood visual prompt tersebut.
+
+Output harus dalam format JSON array of objects:
+{
+  "positivePrompt": string,
+  "negativePrompt": string,
+  "aspectRatio": string,
+  "commercialScore": number,
+  "keywords": string[],
+  "colorPalette": string[]
+}
 
 ${parametricRules}
 Jika kategori adalah 'Minimalist Background', fokus pada Copy Space (60-70% area kosong).
@@ -187,26 +229,55 @@ Jika kategori adalah 'Clean Vector', fokus pada flat design, clean lines.
 PENTING: Jika Anda adalah model penalaran (seperti DeepSeek R1), harap berikan proses berpikir yang sangat singkat dan langsung ke inti agar tidak melebihi batas token output. Fokuskan token Anda pada kualitas prompt JSON.`;
 
         if (category === 'cinematic-video') {
-          systemInstruction = `Anda adalah Elite Cinematic Director untuk Adobe Stock. Tugas Anda adalah menghasilkan ${batchSize} prompt video sinematik (Veo 3.1) yang sangat presisi dan bernilai komersial tinggi.
+          base = `Anda adalah Elite Cinematic Director untuk Adobe Stock. Tugas Anda adalah menghasilkan ${size} prompt video sinematik (Veo 3.1) yang sangat presisi dan bernilai komersial tinggi.
 Setiap prompt WAJIB mematuhi formula Veo 3.1: [Cinematography] + [Subject] + [Action] + [Context] + [Style & Ambiance] + [Audio Orchestration].
 
 ATURAN WAJIB VEO 3.1:
 1. Cinematography (Bahasa Kamera): Wajib sebutkan pergerakan dan komposisi di awal prompt ("Dolly shot", "tracking shot", "crane shot starting low and ascending high", "aerial view", "slow pan", "POV shot", "Close-up with very shallow depth of field", "Rack focus from foreground to background").
 2. Subject & Action: Identifikasi karakter utama dan deskripsikan apa yang mereka lakukan dengan detail mikro-ekspresi.
 3. Context: Detailkan lingkungan, cuaca, dan elemen latar belakang yang mendukung narasi.
-4. Style & Ambiance: Spesifikasikan estetika, mood, dan pencahayaan ("awe-inspiring, soft morning light", "melancholic mood with cool blue tones, moody, cinematic", "high-key commercial lighting").
+4. Style & Ambiance: Spesifikasikan estetika, mood, and pencahayaan ("awe-inspiring, soft morning light", "melancholic mood with cool blue tones, moody, cinematic", "high-key commercial lighting").
 5. Directing the Soundstage (Audio): Wajib sertakan instruksi audio yang sinkron jika relevan:
    - Dialogue: Gunakan kutipan (contoh: A woman says, "We have to leave now.").
    - Sound Effects (SFX): Deskripsikan suara dengan jelas (contoh: SFX: thunder cracks in the distance, SFX: the crisp sound of footsteps on gravel).
    - Ambient noise: Definisikan soundscape latar (contoh: Ambient noise: the quiet hum of a starship bridge, Ambient noise: bustling city sounds).
 Sertakan orkestrasi soundstage dan durasi klip spesifik (4, 6, atau 8 detik).
 
+INTELIJEN KOMERSIAL & SEO:
+1. Commercial Score: Berikan skor 0-100 berdasarkan potensi penjualan di Adobe Stock (Utility, Trend, Quality).
+2. Keyword Expansion: Berikan 50 kata kunci SEO yang paling relevan dan memiliki volume pencarian tinggi untuk video tersebut.
+3. Color Palette: Berikan 5 kode warna HEX yang paling harmonis dan mendukung mood visual prompt tersebut.
+
+Output harus dalam format JSON array of objects:
+{
+  "positivePrompt": string,
+  "negativePrompt": string,
+  "aspectRatio": string,
+  "commercialScore": number,
+  "keywords": string[],
+  "colorPalette": string[]
+}
+
 ${parametricRules}`;
         }
+        return base;
+      };
 
+      let batchIndex = 0;
+      while (accumulatedPrompts.length < targetCount) {
+        if (abortControllerRef.current?.signal.aborted) {
+          toast.info('Auto-Batching dihentikan oleh pengguna.');
+          break;
+        }
+
+        const remaining = targetCount - accumulatedPrompts.length;
+        let currentBatchSize = Math.min(5, remaining);
+        
+        setBatchStatus(`Generating batch... (${accumulatedPrompts.length}/${targetCount})`);
+        
         const baseTemp = creativity / 100;
-        const currentTemp = Math.min(baseTemp + (i / Math.max(1, batches - 1)) * 0.4, 2.0);
-        const currentTheme = dynamicThemes[i % dynamicThemes.length];
+        const currentTemp = Math.min(baseTemp + (batchIndex / Math.max(1, Math.ceil(targetCount / 5))) * 0.4, 2.0);
+        const currentTheme = dynamicThemes[batchIndex % dynamicThemes.length];
 
         let explorationInstruction = "";
         if (creativity < 50) {
@@ -217,45 +288,75 @@ ${parametricRules}`;
           explorationInstruction = "PENTING: Eksplorasi konsep secara radikal! Gunakan kombinasi elemen yang tidak biasa, surealis, atau sangat artistik yang masih memiliki nilai jual.";
         }
 
-        const dynamicInstruction = `\n\n--- INSTRUKSI BATCH KE-${i+1} DARI ${batches} ---\nWAJIB BERIKAN VARIASI YANG 100% BERBEDA DARI BATCH SEBELUMNYA. \nFOKUS KREATIF UNTUK BATCH INI: "${currentTheme}"\nGunakan kombinasi subjek, angle, lighting, dan warna yang sangat acak dan unik berdasarkan fokus kreatif tersebut.\n${explorationInstruction}`;
-        let retryCount = 0;
-        const maxRetries = 3;
-        let success = false;
-        let batchText = "";
+        const cohesiveInstruction = isCohesive ? `
+          WAJIB: Gunakan "Consistency Anchor". Pastikan semua prompt dalam batch ini menggunakan subjek/model yang sama (misal: "the same middle-aged Asian woman with short hair"), pakaian yang sama, dan di lokasi yang sama, namun dengan sudut kamera, ekspresi, dan aksi yang berbeda untuk menciptakan koleksi yang kohesif.
+        ` : "";
 
-        while (!success && retryCount < maxRetries) {
+        const dynamicInstruction = `\n\n--- INSTRUKSI BATCH ---\nWAJIB BERIKAN VARIASI YANG 100% BERBEDA DARI SEBELUMNYA. \nFOKUS KREATIF UNTUK BATCH INI: "${currentTheme}"\n${cohesiveInstruction}\nGunakan kombinasi subjek, angle, lighting, dan warna yang sangat acak dan unik berdasarkan fokus kreatif tersebut.\n${explorationInstruction}`;
+        
+        let retryCount = 0;
+        const maxRetries = 2;
+        let batchSuccess = false;
+
+        while (!batchSuccess && retryCount <= maxRetries) {
           try {
-            const { text } = await callAI({
-              prompt: `Hasilkan ${batchSize} prompt untuk kategori "${CATEGORIES.find(c => c.id === category)?.name}" dengan kata kunci: "${keyword}".`,
-              system: systemInstruction + dynamicInstruction,
+            const { text: batchText } = await callAI({
+              prompt: `Hasilkan ${currentBatchSize} prompt untuk kategori "${CATEGORIES.find(c => c.id === category)?.name}" dengan kata kunci: "${keyword}".`,
+              system: getSystemInstruction(currentBatchSize) + dynamicInstruction,
               temperature: currentTemp,
               jsonMode: true,
-              maxTokens: 8000 // Memberikan ruang cukup untuk thinking + output JSON
+              maxTokens: selectedProvider === 'groq' ? 4000 : 12000
             });
-            batchText = text || "";
-            success = true;
-          } catch (error: any) {
-            if (error.status === 429 || error.message?.includes('429') || error.message?.includes('quota') || error.message?.includes('Too Many Requests')) {
-              retryCount++;
-              if (retryCount >= maxRetries) {
-                throw new Error(`Rate limit exceeded. Gagal setelah ${maxRetries} percobaan.`);
+
+            if (batchText) {
+              try {
+                const cleanedBatchText = extractJSON(batchText);
+                let newPrompts = JSON.parse(cleanedBatchText);
+                
+                if (!Array.isArray(newPrompts)) {
+                  if (newPrompts && typeof newPrompts === 'object' && ('positivePrompt' in newPrompts || 'prompt' in newPrompts)) {
+                    newPrompts = [newPrompts];
+                  } else if (newPrompts && typeof newPrompts === 'object') {
+                    const arrayProp = Object.values(newPrompts).find(v => Array.isArray(v));
+                    if (arrayProp) {
+                      newPrompts = arrayProp;
+                    } else {
+                      throw new Error("Batch output is not an array");
+                    }
+                  } else {
+                    throw new Error("Batch output is not an array");
+                  }
+                }
+                
+                accumulatedPrompts = [...accumulatedPrompts, ...newPrompts];
+                setGeneratedPrompts(accumulatedPrompts);
+                setCurrentCount(accumulatedPrompts.length);
+                batchSuccess = true;
+
+                // Delay lebih lama untuk Groq agar tidak kena TPM rate limit (6000 TPM limit)
+                if (selectedProvider === 'groq') {
+                  await new Promise(resolve => setTimeout(resolve, 3000));
+                }
+              } catch (parseError) {
+                console.error("Gagal parse batch JSON:", parseError, "Original text:", batchText);
+                throw parseError;
               }
-              setBatchStatus(`Rate limit hit. Retrying batch ${i + 1} (${retryCount}/${maxRetries})...`);
-              await new Promise(resolve => setTimeout(resolve, 3000 * retryCount)); // Exponential backoff
+            }
+          } catch (error: any) {
+            console.error(`Batch attempt ${retryCount + 1} failed:`, error);
+            retryCount++;
+            
+            if (retryCount <= maxRetries) {
+              currentBatchSize = Math.max(1, Math.floor(currentBatchSize / 2));
+              setBatchStatus(`Retrying with smaller batch size (${currentBatchSize})...`);
+              await new Promise(resolve => setTimeout(resolve, 2000 * retryCount));
             } else {
-              throw error;
+              toast.error(`Gagal memproses batch. Melanjutkan ke batch berikutnya...`);
+              batchSuccess = true; 
             }
           }
         }
-
-        if (batchText) {
-          const cleanedBatchText = extractJSON(batchText);
-          const newPrompts = JSON.parse(cleanedBatchText);
-          accumulatedPrompts = [...accumulatedPrompts, ...newPrompts];
-          setGeneratedPrompts(accumulatedPrompts);
-          setCurrentCount(accumulatedPrompts.length);
-        }
-
+        batchIndex++;
       }
       
       if (!abortControllerRef.current?.signal.aborted) {
@@ -309,7 +410,7 @@ ${parametricRules}`;
     if (generatedPrompts.length === 0) return;
     
     let csvContent = "data:text/csv;charset=utf-8,";
-    csvContent += "Filename,Category,Keyword,Positive Prompt,Negative Prompt,Aspect Ratio\n";
+    csvContent += "Filename,Category,Keyword,Positive Prompt,Negative Prompt,Aspect Ratio,Commercial Score,Keywords\n";
     
     const categoryName = CATEGORIES.find(c => c.id === category)?.name || category;
     
@@ -320,8 +421,10 @@ ${parametricRules}`;
       const positive = `"${(p.positivePrompt || '').replace(/"/g, '""')}"`;
       const negative = `"${(p.negativePrompt || '').replace(/"/g, '""')}"`;
       const ar = `"${(p.aspectRatio || '').replace(/"/g, '""')}"`;
+      const score = p.commercialScore || 0;
+      const keywordsList = `"${(p.keywords || []).join(', ').replace(/"/g, '""')}"`;
       
-      csvContent += `${filename},${cat},${kw},${positive},${negative},${ar}\n`;
+      csvContent += `${filename},${cat},${kw},${positive},${negative},${ar},${score},${keywordsList}\n`;
     });
 
     const encodedUri = encodeURI(csvContent);
@@ -429,6 +532,18 @@ ${parametricRules}`;
                    'Ekstrem: Variasi liar, ide out-of-the-box, risiko halusinasi lebih tinggi.'}
                 </p>
               </div>
+
+              <div className="flex items-center justify-between pt-2 border-t border-cyan-500/30">
+                <div className="space-y-0.5">
+                  <Label className="text-xs text-cyan-400 font-bold font-mono">Cohesive Collection Mode</Label>
+                  <p className="text-[10px] text-cyan-500/70 font-mono">Gunakan model/objek yang sama dalam satu batch.</p>
+                </div>
+                <Switch 
+                  checked={isCohesive} 
+                  onCheckedChange={setIsCohesive}
+                  className="data-[state=checked]:bg-fuchsia-500"
+                />
+              </div>
               <div className="space-y-2 pt-2 border-t border-cyan-500/30">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5">
@@ -521,7 +636,7 @@ ${parametricRules}`;
                       <ShieldAlert className="w-3.5 h-3.5 text-fuchsia-500" /> Market Intelligence Report
                     </h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                      {marketIntel.map((intel, idx) => (
+                      {marketIntel?.map((intel, idx) => (
                         <div key={idx} className="text-[10px] text-cyan-400/80 bg-[#050505] p-2 rounded border border-cyan-500/10 font-mono leading-tight">
                           <span className="text-fuchsia-500 font-bold mr-1">#{idx + 1}</span> {intel}
                         </div>
@@ -540,13 +655,28 @@ ${parametricRules}`;
                         PROMPT #{generatedPrompts.length}
                       </div>
                       <div className="space-y-4 mt-2">
-                        <div className="flex flex-col md:flex-row gap-4">
+                        <div className="flex flex-wrap items-center gap-3">
                           <div className="space-y-1">
                             <Label className="text-[10px] uppercase tracking-wider text-cyan-500/70 font-mono">Aspect Ratio</Label>
                             <div className="inline-flex items-center gap-1.5 px-2 py-1 bg-cyan-950/30 border border-cyan-500/40 rounded text-xs font-medium text-cyan-300 font-mono shadow-[0_0_8px_rgba(6,182,212,0.1)]">
                               <Box className="w-3 h-3 text-fuchsia-500" /> {generatedPrompts[generatedPrompts.length - 1].aspectRatio}
                             </div>
                           </div>
+                          <div className="space-y-1">
+                            <Label className="text-[10px] uppercase tracking-wider text-cyan-500/70 font-mono">Commercial Score</Label>
+                            <div className="inline-flex items-center gap-1.5 px-2 py-1 bg-fuchsia-950/30 border border-fuchsia-500/40 rounded text-xs font-bold text-fuchsia-400 font-mono shadow-[0_0_8px_rgba(217,70,239,0.2)]">
+                              <Target className="w-3 h-3" /> {generatedPrompts[generatedPrompts.length - 1].commercialScore}%
+                            </div>
+                          </div>
+                          {(generatedPrompts[generatedPrompts.length - 1].positivePrompt.toLowerCase().includes('copy space') || 
+                            generatedPrompts[generatedPrompts.length - 1].positivePrompt.toLowerCase().includes('minimalist')) && (
+                            <div className="space-y-1">
+                              <Label className="text-[10px] uppercase tracking-wider text-emerald-500/70 font-mono">Utility Badge</Label>
+                              <div className="inline-flex items-center gap-1.5 px-2 py-1 bg-emerald-950/30 border border-emerald-500/40 rounded text-[10px] font-bold text-emerald-400 font-mono shadow-[0_0_8px_rgba(16,185,129,0.2)]">
+                                <Sparkles className="w-3 h-3" /> HIGH UTILITY
+                              </div>
+                            </div>
+                          )}
                         </div>
 
                         <div className="space-y-1">
@@ -561,6 +691,40 @@ ${parametricRules}`;
                           <Label className="text-[10px] uppercase tracking-wider text-fuchsia-400 flex items-center gap-1 font-mono"><ShieldAlert className="w-3 h-3" /> Negative Prompt (Avoid)</Label>
                           <p className="text-xs text-fuchsia-200/80 leading-relaxed bg-fuchsia-950/10 p-3 rounded border border-fuchsia-500/20">{generatedPrompts[generatedPrompts.length - 1].negativePrompt}</p>
                         </div>
+
+                        {generatedPrompts[generatedPrompts.length - 1].keywords && (
+                          <div className="space-y-1">
+                            <Label className="text-[10px] uppercase tracking-wider text-cyan-500/70 font-mono">SEO Keywords (Top 50)</Label>
+                            <div className="flex flex-wrap gap-1 max-h-24 overflow-y-auto p-2 bg-[#050505] rounded border border-cyan-500/10 custom-scrollbar">
+                              {generatedPrompts[generatedPrompts.length - 1].keywords?.map((kw, idx) => (
+                                <span key={idx} className="text-[9px] bg-cyan-950/30 text-cyan-500/70 px-1.5 py-0.5 rounded border border-cyan-500/10 font-mono">
+                                  {kw}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {generatedPrompts[generatedPrompts.length - 1].colorPalette && (
+                          <div className="space-y-1">
+                            <Label className="text-[10px] uppercase tracking-wider text-cyan-500/70 font-mono">Color Palette Suggester</Label>
+                            <div className="flex gap-2 p-2 bg-[#050505] rounded border border-cyan-500/10">
+                              {generatedPrompts[generatedPrompts.length - 1].colorPalette?.map((color, idx) => (
+                                <div 
+                                  key={idx} 
+                                  className="w-8 h-8 rounded border border-white/10 shadow-sm transition-transform hover:scale-110 cursor-pointer" 
+                                  style={{ backgroundColor: color }}
+                                  title={color}
+                                  onClick={() => { navigator.clipboard.writeText(color); toast.success(`HEX ${color} disalin!`); }}
+                                />
+                              ))}
+                              <div className="flex flex-col justify-center ml-2">
+                                <span className="text-[10px] text-cyan-500/70 font-mono uppercase tracking-widest">Visual Harmony</span>
+                                <span className="text-[8px] text-cyan-500/40 font-mono">Click to copy HEX</span>
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                     

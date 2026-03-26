@@ -89,8 +89,9 @@ export function useAI() {
     localStorage.setItem('stockmaster_model', model);
   };
 
-  const getAIClient = () => {
-    if (selectedProvider === 'google') {
+  const getAIClient = (providerOverride?: AIProvider) => {
+    const provider = providerOverride || selectedProvider;
+    if (provider === 'google') {
       const key = geminiApiKey || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
       if (!key) throw new Error('Gemini API Key tidak ditemukan.');
       return createGoogleGenerativeAI({ apiKey: key });
@@ -106,18 +107,49 @@ export function useAI() {
     temperature?: number;
     jsonMode?: boolean;
     model?: string;
+    provider?: AIProvider;
     maxTokens?: number;
+    useSearch?: boolean;
   }) => {
-    const provider = getAIClient();
-    const modelId = options.model || selectedModel;
+    const providerType = options.provider || selectedProvider;
+    const provider = getAIClient(providerType);
     
+    let modelId = options.model;
+    if (!modelId) {
+      if (providerType === 'google') {
+        modelId = selectedModel.includes('gemini') ? selectedModel : 'gemini-3-flash-preview';
+      } else {
+        modelId = (selectedModel.includes('llama') || selectedModel.includes('mixtral') || selectedModel.includes('gemma') || selectedModel.includes('deepseek')) 
+          ? selectedModel 
+          : 'llama-3.3-70b-versatile';
+      }
+    }
+    
+    // Groq models have lower output token limits (usually 4096-8192)
+    // Gemini can handle much more. We adjust maxTokens to avoid errors.
+    let finalMaxTokens = options.maxTokens;
+    if (providerType === 'groq') {
+      // Limit to 8192 for Groq to be safe, or 4096 if not specified
+      finalMaxTokens = Math.min(options.maxTokens || 4096, 8192);
+    }
+
     const { text } = await generateText({
       model: provider(modelId),
       prompt: options.prompt,
       system: options.system,
       temperature: options.temperature,
+      maxTokens: finalMaxTokens,
       ...(options.jsonMode ? { responseFormat: { type: 'json' } } : {}),
-    });
+      // Enable Google Search Grounding for Gemini if requested
+      ...(options.useSearch && providerType === 'google' ? {
+        tools: {
+          google_search: {
+            description: 'Search Google for the latest market trends and Adobe Stock data.',
+            parameters: { type: 'object', properties: {} }
+          }
+        }
+      } : {}),
+    } as any);
 
     return { text };
   };

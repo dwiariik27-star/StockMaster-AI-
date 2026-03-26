@@ -100,6 +100,8 @@ export default function StockMasterDashboard() {
             <ResearchTab 
               getAIClient={getAIClient} 
               callAI={callAI}
+              apiKey={apiKey}
+              selectedProvider={selectedProvider}
               onSendToProduction={handleSendToProduction} 
             />
           </TabsContent>
@@ -117,6 +119,7 @@ export default function StockMasterDashboard() {
               getAIClient={getAIClient} 
               callAI={callAI}
               selectedModel={selectedModel}
+              selectedProvider={selectedProvider}
               keyword={keyword}
               setKeyword={setKeyword}
               generatedPrompts={generatedPrompts}

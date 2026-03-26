@@ -141,18 +141,15 @@ export function SettingsPanel({
                   <SelectContent className="bg-[#050505] border-cyan-500/50 text-cyan-50 font-mono">
                     {selectedProvider === 'google' ? (
                       <>
-                        <SelectItem value="gemini-3.1-flash-lite-preview">Gemini 3.1 Flash Lite</SelectItem>
-                        <SelectItem value="gemini-3-flash-preview">Gemini 3.0 Flash</SelectItem>
-                        <SelectItem value="gemini-3.1-pro-preview">Gemini 3.1 Pro</SelectItem>
+                        <SelectItem value="gemini-3.1-flash-lite-preview">Gemini 3.1 Flash Lite (Fastest)</SelectItem>
+                        <SelectItem value="gemini-3-flash-preview">Gemini 3.0 Flash (Balanced)</SelectItem>
+                        <SelectItem value="gemini-3.1-pro-preview">Gemini 3.1 Pro (Most Powerful)</SelectItem>
                       </>
                     ) : (
                       <>
-                        <SelectItem value="llama-3.3-70b-versatile">Llama 3.3 70B Versatile (Stable Pro)</SelectItem>
-                        <SelectItem value="llama-3.3-70b-specdec">Llama 3.3 70B Specdec (Fast Pro)</SelectItem>
-                        <SelectItem value="deepseek-r1-distill-qwen-32b">DeepSeek R1 (Qwen 32B)</SelectItem>
-                        <SelectItem value="llama-3.1-8b-instant">Llama 3.1 8B Instant</SelectItem>
-                        <SelectItem value="gemma2-9b-it">Gemma 2 9B (Creative)</SelectItem>
-                        <SelectItem value="mixtral-8x7b-32768">Mixtral 8x7B</SelectItem>
+                        <SelectItem value="llama-3.3-70b-versatile">Llama 3.3 70B (Best Overall - Production)</SelectItem>
+                        <SelectItem value="deepseek-r1-distill-qwen-32b">DeepSeek R1 Qwen 32B (Best Reasoning - Production)</SelectItem>
+                        <SelectItem value="llama-3.1-8b-instant">Llama 3.1 8B (Fastest & Highest Limits - Production)</SelectItem>
                       </>
                     )}
                   </SelectContent>
