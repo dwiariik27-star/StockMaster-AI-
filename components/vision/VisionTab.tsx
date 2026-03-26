@@ -96,7 +96,13 @@ export function VisionTab({ getAIClient, callAI, onSendToProduction }: VisionTab
       if (text) {
         try {
           const cleanedText = extractJSON(text);
-          setVisionResult(JSON.parse(cleanedText));
+          let parsedResult = JSON.parse(cleanedText);
+          
+          if (Array.isArray(parsedResult) && parsedResult.length > 0) {
+            parsedResult = parsedResult[0];
+          }
+          
+          setVisionResult(parsedResult);
           toast.success('Reverse-Engineering successful!');
         } catch (parseError) {
           console.error("Failed to parse vision JSON:", parseError, "Original text:", text);

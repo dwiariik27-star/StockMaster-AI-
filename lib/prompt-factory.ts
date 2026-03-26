@@ -75,7 +75,8 @@ export const generateSystemInstruction = (size: number, isVideo: boolean, params
     ${anatomicalInstruction}
     
     LANGUAGE MANDATE: All prompts MUST be in English.
-    OUTPUT FORMAT: Return ONLY a raw JSON array. No explanations.`;
+    OUTPUT FORMAT: Return ONLY a raw JSON array. No explanations, no markdown code blocks.
+    JSON Schema: [{ "title": string, "positivePrompt": string, "aspectRatio": string, "commercialScore": number, "keywords": string[], "colorPalette": string[] }]`;
   }
 
   return `You are the Universal Master Prompt Architect & Elite Creative Director for Adobe Stock. Your mission is to generate ${size} ultra-high-detail, 4K resolution (Nano Banana Pro) image prompts that are commercially viable, photorealistic, and follow a strict LUXURY & PREMIUM standard.

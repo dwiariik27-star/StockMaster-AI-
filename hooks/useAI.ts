@@ -127,6 +127,7 @@ export function useAI() {
     provider?: AIProvider;
     maxTokens?: number;
     useSearch?: boolean;
+    image?: { data: string; mimeType: string };
   }) => {
     const providerType = options.provider || selectedProvider;
     
@@ -146,6 +147,16 @@ export function useAI() {
     if (providerType === 'groq') {
       finalMaxTokens = Math.min(options.maxTokens || 4096, 8192);
     }
+
+    const messages = options.image ? [
+      {
+        role: 'user' as const,
+        content: [
+          { type: 'text' as const, text: options.prompt },
+          { type: 'image' as const, image: `data:${options.image.mimeType};base64,${options.image.data}` }
+        ]
+      }
+    ] : undefined;
 
     // --- Groq Key Rotation Logic ---
     if (providerType === 'groq') {
@@ -169,7 +180,7 @@ export function useAI() {
           
           const { text } = await generateText({
             model: provider(modelId),
-            prompt: options.prompt,
+            ...(messages ? { messages } : { prompt: options.prompt }),
             system: options.system,
             temperature: options.temperature,
             maxTokens: finalMaxTokens,
@@ -233,18 +244,41 @@ export function useAI() {
     const provider = getAIClient('google');
     const { text } = await generateText({
       model: provider(modelId),
-      prompt: options.prompt,
+      ...(messages ? { messages } : { prompt: options.prompt }),
       system: options.system,
       temperature: options.temperature,
       maxTokens: finalMaxTokens,
       ...(options.jsonMode ? { responseFormat: { type: 'json' } } : {}),
       ...(options.useSearch ? {
         tools: {
-          google_search: {
-            description: 'Search Google for the latest market trends and Adobe Stock data.',
-            parameters: { type: 'object', properties: {} }
+          web_search: {
+            description: 'Search the web for real-time market data, trends, and Adobe Stock insights.',
+            parameters: {
+              type: 'object',
+              properties: {
+                query: { type: 'string', description: 'The search query to find latest data.' }
+              },
+              required: ['query']
+            },
+            execute: async ({ query }: { query: string }) => {
+              try {
+                const ai = new GoogleGenAI({ apiKey: geminiApiKey || process.env.NEXT_PUBLIC_GEMINI_API_KEY! });
+                const response = await ai.models.generateContent({
+                  model: "gemini-3-flash-preview",
+                  contents: query,
+                  config: {
+                    tools: [{ googleSearch: {} }],
+                  },
+                });
+                return response.text || "No results found.";
+              } catch (e) {
+                console.error("Web Search Tool Error:", e);
+                return "Gagal mengambil data real-time. Melanjutkan dengan pengetahuan internal.";
+              }
+            }
           }
-        }
+        },
+        maxSteps: 3
       } : {}),
     } as any);
 

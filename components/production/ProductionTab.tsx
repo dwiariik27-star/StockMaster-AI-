@@ -287,6 +287,16 @@ export function ProductionTab({
                   }
                 }
                 
+                newPrompts = newPrompts.map((p: any) => {
+                  if (typeof p === 'string') {
+                    return { positivePrompt: p, aspectRatio: '16:9', commercialScore: 80, keywords: [] };
+                  }
+                  if (p.prompt && !p.positivePrompt) {
+                    p.positivePrompt = p.prompt;
+                  }
+                  return p;
+                });
+                
                 accumulatedPrompts = [...accumulatedPrompts, ...newPrompts];
                 setGeneratedPrompts(accumulatedPrompts);
                 setCurrentCount(accumulatedPrompts.length);
