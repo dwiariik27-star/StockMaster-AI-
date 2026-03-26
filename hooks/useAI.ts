@@ -74,9 +74,12 @@ export function useAI() {
     localStorage.setItem('stockmaster_provider', provider);
     
     // Set default model for the provider if current model is not compatible
-    if (provider === 'groq' && !selectedModel.includes('llama')) {
+    const isGroqModel = selectedModel.includes('llama') || selectedModel.includes('mixtral') || selectedModel.includes('gemma') || selectedModel.includes('deepseek');
+    const isGoogleModel = selectedModel.includes('gemini');
+
+    if (provider === 'groq' && !isGroqModel) {
       saveModel('llama-3.3-70b-versatile');
-    } else if (provider === 'google' && !selectedModel.includes('gemini')) {
+    } else if (provider === 'google' && !isGoogleModel) {
       saveModel('gemini-3-flash-preview');
     }
   };
@@ -103,6 +106,7 @@ export function useAI() {
     temperature?: number;
     jsonMode?: boolean;
     model?: string;
+    maxTokens?: number;
   }) => {
     const provider = getAIClient();
     const modelId = options.model || selectedModel;
@@ -112,6 +116,7 @@ export function useAI() {
       prompt: options.prompt,
       system: options.system,
       temperature: options.temperature,
+      maxTokens: options.maxTokens,
       ...(options.jsonMode ? { responseFormat: { type: 'json' } } : {}),
     });
 

@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Loader2, Globe, Activity, Target, AlertTriangle, CalendarDays, ImageIcon, ShieldAlert, Droplet, Tags, Copy, FileText, Rocket } from 'lucide-react';
 import { toast } from 'sonner';
 import { ResearchResult, GroundingSource } from '@/types';
+import { extractJSON } from '@/lib/utils';
 
 interface ResearchTabProps {
   getAIClient: () => any;
@@ -66,7 +67,8 @@ export function ResearchTab({ getAIClient, callAI, onSendToProduction }: Researc
       });
 
       if (text) {
-        const parsedResult = JSON.parse(text) as ResearchResult;
+        const cleanedText = extractJSON(text);
+        const parsedResult = JSON.parse(cleanedText) as ResearchResult;
         setResearchResult(parsedResult);
         toast.success('Analisis pasar berhasil diselesaikan!');
       }

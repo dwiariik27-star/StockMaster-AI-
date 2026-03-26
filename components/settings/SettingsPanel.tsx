@@ -147,8 +147,11 @@ export function SettingsPanel({
                       </>
                     ) : (
                       <>
-                        <SelectItem value="llama-3.3-70b-versatile">Llama 3.3 70B Versatile</SelectItem>
+                        <SelectItem value="llama-3.3-70b-versatile">Llama 3.3 70B Versatile (Stable Pro)</SelectItem>
+                        <SelectItem value="llama-3.3-70b-specdec">Llama 3.3 70B Specdec (Fast Pro)</SelectItem>
+                        <SelectItem value="deepseek-r1-distill-qwen-32b">DeepSeek R1 (Qwen 32B)</SelectItem>
                         <SelectItem value="llama-3.1-8b-instant">Llama 3.1 8B Instant</SelectItem>
+                        <SelectItem value="gemma2-9b-it">Gemma 2 9B (Creative)</SelectItem>
                         <SelectItem value="mixtral-8x7b-32768">Mixtral 8x7B</SelectItem>
                       </>
                     )}

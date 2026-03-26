@@ -8,6 +8,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Loader2, Sparkles, Palette, Save, Copy, Download, ShieldAlert, Box, CheckCircle2, Paintbrush, Eye, Info } from 'lucide-react';
 import { toast } from 'sonner';
 import { GeneratedPrompt, CATEGORIES, LIGHTING_STYLES, CAMERA_ANGLES, COLOR_TONES, ASPECT_RATIOS, COMPOSITIONS, DEPTH_OF_FIELD, CAMERA_MOTION, LENS_FLARE, BOKEH_INTENSITY, FILM_GRAIN, CHROMATIC_ABERRATION, COLOR_BLEED } from '@/types';
+import { extractJSON } from '@/lib/utils';
 
 interface ProductionTabProps {
   getAIClient: () => any;
@@ -82,7 +83,8 @@ export function ProductionTab({
         });
         
         if (themeText) {
-          dynamicThemes = JSON.parse(themeText);
+          const cleanedThemeText = extractJSON(themeText);
+          dynamicThemes = JSON.parse(cleanedThemeText);
         }
       } catch (e) {
         console.error("Gagal generate dynamic themes, menggunakan fallback.", e);
@@ -104,7 +106,7 @@ export function ProductionTab({
         ];
       }
 
-      const batches = Math.ceil(targetCount / 10);
+      const batches = Math.ceil(targetCount / 5);
       
       for (let i = 0; i < batches; i++) {
         if (abortControllerRef.current?.signal.aborted) {
@@ -113,7 +115,7 @@ export function ProductionTab({
         }
 
         setBatchStatus(`Generating batch ${i + 1} of ${batches}...`);
-        const batchSize = Math.min(10, targetCount - accumulatedPrompts.length);
+        const batchSize = Math.min(5, targetCount - accumulatedPrompts.length);
         
         const parametricRules = `
           ATURAN PARAMETRIK (WAJIB DIPATUHI JIKA BUKAN 'Auto/AI Choice'):
@@ -160,7 +162,8 @@ ATURAN WAJIB NANO BANANA PRO (STORYTELLING & COMMERCIAL FOCUS):
 ${parametricRules}
 Jika kategori adalah 'Minimalist Background', fokus pada Copy Space (60-70% area kosong).
 Jika kategori adalah '3D Render', fokus pada Materialitas (matte plastic, frosted glass).
-Jika kategori adalah 'Clean Vector', fokus pada flat design, clean lines.`;
+Jika kategori adalah 'Clean Vector', fokus pada flat design, clean lines.
+PENTING: Jika Anda adalah model penalaran (seperti DeepSeek R1), harap berikan proses berpikir yang sangat singkat dan langsung ke inti agar tidak melebihi batas token output. Fokuskan token Anda pada kualitas prompt JSON.`;
 
         if (category === 'cinematic-video') {
           systemInstruction = `Anda adalah Elite Cinematic Director untuk Adobe Stock. Tugas Anda adalah menghasilkan ${batchSize} prompt video sinematik (Veo 3.1) yang sangat presisi dan bernilai komersial tinggi.
@@ -205,7 +208,8 @@ ${parametricRules}`;
               prompt: `Hasilkan ${batchSize} prompt untuk kategori "${CATEGORIES.find(c => c.id === category)?.name}" dengan kata kunci: "${keyword}".`,
               system: systemInstruction + dynamicInstruction,
               temperature: currentTemp,
-              jsonMode: true
+              jsonMode: true,
+              maxTokens: 8000 // Memberikan ruang cukup untuk thinking + output JSON
             });
             batchText = text || "";
             success = true;
@@ -224,7 +228,8 @@ ${parametricRules}`;
         }
 
         if (batchText) {
-          const newPrompts = JSON.parse(batchText);
+          const cleanedBatchText = extractJSON(batchText);
+          const newPrompts = JSON.parse(cleanedBatchText);
           accumulatedPrompts = [...accumulatedPrompts, ...newPrompts];
           setGeneratedPrompts(accumulatedPrompts);
           setCurrentCount(accumulatedPrompts.length);

@@ -5,6 +5,7 @@ import { Loader2, Eye, Upload, Target, Sun, Camera, Paintbrush, Sparkles, Shield
 import { toast } from 'sonner';
 import { VisionResult } from '@/types';
 import Image from 'next/image';
+import { extractJSON } from '@/lib/utils';
 
 interface VisionTabProps {
   getAIClient: () => any;
@@ -85,7 +86,8 @@ export function VisionTab({ getAIClient, callAI, onSendToProduction }: VisionTab
       });
 
       if (text) {
-        setVisionResult(JSON.parse(text));
+        const cleanedText = extractJSON(text);
+        setVisionResult(JSON.parse(cleanedText));
         toast.success('Reverse-Engineering berhasil!');
       }
     } catch (error: any) {
