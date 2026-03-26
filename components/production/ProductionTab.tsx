@@ -94,14 +94,14 @@ export function ProductionTab({
           prompt: `Sebagai Master Commercial Art Director, lakukan analisis intelijen pasar untuk kata kunci: "${keyword}" dalam kategori "${CATEGORIES.find(c => c.id === category)?.name}".
           
           TUGAS:
-          1. Identifikasi 5 sub-niche atau "angle" komersial yang memiliki permintaan tinggi (high demand) namun persaingan rendah (low competition) di Adobe Stock.
-          2. Untuk setiap sub-niche, buat 2 variasi tema visual yang kontras (Total 10 tema).
+          1. Identifikasi 5 sub-niche atau "angle" komersial yang memiliki permintaan tinggi (high demand) namun persaingan rendah (low competition) di Adobe Stock, dengan fokus pada estetika LUXURY dan HIGH-DETAIL.
+          2. Untuk setiap sub-niche, buat 2 variasi tema visual yang kontras namun tetap dalam standar premium (Total 10 tema).
           
           FORMAT OUTPUT (JSON Array of Strings):
           WAJIB: Hanya berikan array JSON murni tanpa teks penjelasan di awal atau akhir.
           ["Sub-niche 1: Tema A - Deskripsi...", "Sub-niche 1: Tema B - Deskripsi...", ...]
           
-          Fokus pada: "Utility Value", "Copy Space", "Authenticity", dan "Technical Excellence".`,
+          Fokus pada: "Luxury Utility", "Premium Copy Space", "High-End Authenticity", dan "Technical Perfection".`,
           jsonMode: true,
           maxTokens: 2000
         });
@@ -133,16 +133,16 @@ export function ProductionTab({
             console.error("Gagal parse market intel JSON:", parseError, "Original text:", intelText);
             // Fallback inside catch
             dynamicThemes = [
-              "Authentic Lifestyle & Diversity: Fokus pada momen candid, emosi natural.",
-              "Minimalist Corporate: Ruang kerja modern, clean desk, pencahayaan alami.",
-              "Cinematic Moody: Pencahayaan dramatis, kontras tinggi, warna deep cinematic.",
-              "Hyper-Realistic Macro: Detail ekstrem pada tekstur, ketajaman luar biasa.",
-              "Abstract Data & Tech: Visualisasi konsep masa depan, glowing lines, neon.",
-              "Sustainable & Eco-Friendly: Palet warna bumi, material organik.",
-              "Neon Nightlife/Cyberpunk: Warna berani, pantulan cahaya, energi malam.",
-              "Zen & Wellness: Komposisi simetris, warna pastel lembut, elemen alam.",
-              "Dynamic Action: Angle ekstrem, motion blur, subjek tajam membeku.",
-              "Luxury & Premium: Palet warna gelap, aksen emas, pencahayaan studio."
+              "Elite Authentic Lifestyle: Fokus pada kemewahan sehari-hari, emosi natural yang elegan.",
+              "Ultra-Minimalist Executive: Ruang kerja high-end, material premium, pencahayaan arsitektural.",
+              "Cinematic Luxury Noir: Pencahayaan dramatis, kontras tinggi, palet warna deep jewel tones.",
+              "Hyper-Realistic Premium Macro: Detail ekstrem pada material mewah (emas, sutra, kristal).",
+              "Sophisticated Tech & Data: Visualisasi masa depan yang bersih, glowing lines, estetika Apple-esque.",
+              "Sustainable Luxury: Material organik premium, palet warna bumi yang diredam, kemewahan ramah lingkungan.",
+              "Exclusive Nightlife: Warna berani yang terkurasi, pantulan cahaya pada permukaan mewah, energi malam kelas atas.",
+              "Zen Sanctuary & Wellness: Komposisi simetris sempurna, warna pastel premium, elemen spa mewah.",
+              "Dynamic High-End Action: Angle ekstrem yang elegan, motion blur halus, subjek tajam membeku.",
+              "Pure Luxury & Opulence: Palet warna gelap/emas, pencahayaan studio kelas dunia, materialitas tanpa cela."
             ];
             setMarketIntel(dynamicThemes);
           }
@@ -151,16 +151,16 @@ export function ProductionTab({
         console.error("Gagal generate market intel, menggunakan fallback.", e);
         if (!dynamicThemes || dynamicThemes.length === 0) {
           dynamicThemes = [
-            "Authentic Lifestyle & Diversity: Fokus pada momen candid, emosi natural.",
-            "Minimalist Corporate: Ruang kerja modern, clean desk, pencahayaan alami.",
-            "Cinematic Moody: Pencahayaan dramatis, kontras tinggi, warna deep cinematic.",
-            "Hyper-Realistic Macro: Detail ekstrem pada tekstur, ketajaman luar biasa.",
-            "Abstract Data & Tech: Visualisasi konsep masa depan, glowing lines, neon.",
-            "Sustainable & Eco-Friendly: Palet warna bumi, material organik.",
-            "Neon Nightlife/Cyberpunk: Warna berani, pantulan cahaya, energi malam.",
-            "Zen & Wellness: Komposisi simetris, warna pastel lembut, elemen alam.",
-            "Dynamic Action: Angle ekstrem, motion blur, subjek tajam membeku.",
-            "Luxury & Premium: Palet warna gelap, aksen emas, pencahayaan studio."
+            "Elite Authentic Lifestyle: Fokus pada kemewahan sehari-hari, emosi natural yang elegan.",
+            "Ultra-Minimalist Executive: Ruang kerja high-end, material premium, pencahayaan arsitektural.",
+            "Cinematic Luxury Noir: Pencahayaan dramatis, kontras tinggi, palet warna deep jewel tones.",
+            "Hyper-Realistic Premium Macro: Detail ekstrem pada material mewah (emas, sutra, kristal).",
+            "Sophisticated Tech & Data: Visualisasi masa depan yang bersih, glowing lines, estetika Apple-esque.",
+            "Sustainable Luxury: Material organik premium, palet warna bumi yang diredam, kemewahan ramah lingkungan.",
+            "Exclusive Nightlife: Warna berani yang terkurasi, pantulan cahaya pada permukaan mewah, energi malam kelas atas.",
+            "Zen Sanctuary & Wellness: Komposisi simetris sempurna, warna pastel premium, elemen spa mewah.",
+            "Dynamic High-End Action: Angle ekstrem yang elegan, motion blur halus, subjek tajam membeku.",
+            "Pure Luxury & Opulence: Palet warna gelap/emas, pencahayaan studio kelas dunia, materialitas tanpa cela."
           ];
           setMarketIntel(dynamicThemes);
         }
@@ -183,21 +183,21 @@ export function ProductionTab({
           - Color Bleed: ${colorBleed}
         `;
 
-        let base = `Anda adalah Elite Creative Director dan Prompt Engineer ahli untuk Adobe Stock. Tugas Anda adalah menghasilkan ${size} prompt gambar 4K (Nano Banana Pro) yang sangat presisi, fotorealistik, dan bernilai komersial tinggi.
+        let base = `Anda adalah Elite Creative Director dan Prompt Engineer ahli untuk Adobe Stock. Tugas Anda adalah menghasilkan ${size} prompt gambar 4K (Nano Banana Pro) yang sangat presisi, fotorealistik, dan bernilai komersial tinggi dengan standar LUXURY & PREMIUM.
+
 Setiap prompt WAJIB mematuhi kerangka kerja "Creative Director" dari Nano Banana: [Subject] + [Action] + [Storytelling Context] + [Composition & DoF] + [Lighting & Style] + [Optical & Film Emulation] + [Commercial Utility].
 
-ATURAN WAJIB NANO BANANA PRO (STORYTELLING & COMMERCIAL FOCUS):
-1. Visual Storytelling: Gambar harus membangkitkan emosi atau menceritakan momen spesifik (candid, authentic) yang relevan untuk kampanye iklan atau editorial komersial.
-2. Subjek & Aksi: Mulai prompt dengan kata kerja yang kuat atau deskripsi subjek yang sangat spesifik sedang melakukan aksi bermakna.
-3. Gunakan "positive framing" (jelaskan apa yang Anda inginkan, BUKAN apa yang tidak Anda inginkan. Hindari kata "no").
-4. Desain Pencahayaan (Lighting): Wajib sebutkan setup studio ("three-point softbox") atau efek dramatis ("Chiaroscuro lighting with harsh, high contrast", "Golden hour backlighting creating long shadows", "Volumetric lighting through haze").
-5. Kontrol Kamera, Lensa & DoF: Wajib sebutkan hardware/lensa dan Depth of Field ("85mm lens, shallow depth of field f/1.4 with creamy bokeh", "wide-angle 14mm lens f/8 everything in focus", "macro 100mm lens for extreme detail").
-6. Efek Gerak (Motion): Definisikan apakah gambar statis ("crisp, shot on tripod") atau dinamis ("motion blur on the subject", "panning shot with blurred background", "handheld camera shake for documentary feel").
-7. Optical & Film Emulation: Wajib integrasikan efek optik spesifik seperti Lens Flare, Bokeh Intensity, Film Grain, Chromatic Aberration, dan Color Bleed/Halation sesuai parameter. Gunakan istilah teknis ("anamorphic lens flare", "creamy swirly bokeh", "heavy ISO 3200 film grain", "subtle edge fringing", "cinematic halation on highlights").
-8. Color Grading & Film Stock: Wajib sebutkan tekstur emosional ("Kodak Portra 400 film emulation", "Fujifilm Superia aesthetic", "Cinematic color grading with muted teal and warm orange tones").
-9. Materialitas & Tekstur: Jika ada produk/objek, definisikan fisik materialnya ("minimalist ceramic coffee mug", "matte plastic texture", "frosted glass with condensation").
-10. Tipografi & Integritas Teks (CRITICAL): Jika gambar membutuhkan teks, Anda WAJIB memastikan teks tersebut lengkap, rapi, dan bebas typo. Gunakan tanda kutip ganda untuk teks target (contoh: the word "SALE") dan definisikan gaya font secara teknis (contoh: "in a bold, clean, modern sans-serif font", "in a high-contrast elegant serif font"). Pastikan teks adalah fokus utama atau terintegrasi secara logis tanpa distorsi.
-11. Commercial Utility: Pastikan gambar memiliki nilai jual tinggi (contoh: "generous copy space on the left", "clean background for text overlay", "authentic lifestyle diversity", "high-end commercial finish").
+ATURAN WAJIB ADOBE STOCK LUXURY STANDARDS:
+1. Visual Storytelling: Gambar harus membangkitkan emosi aspirasional, mewah, dan eksklusif. Fokus pada momen "high-end lifestyle" yang autentik.
+2. Detail Mikroskopis: Deskripsikan tekstur dengan sangat mendalam. Gunakan istilah seperti "micro-textures", "pore-level detail", "fine fabric weave", "intricate craftsmanship".
+3. Materialitas Mewah: Integrasikan material premium: "polished Carrara marble", "brushed champagne gold", "supple Italian leather", "raw Thai silk", "hand-blown crystal", "sustainably sourced exotic wood".
+4. Pencahayaan High-End: Gunakan setup pencahayaan yang canggih: "Rembrandt lighting with soft fill", "Global illumination with subtle bounce", "Studio butterfly lighting", "Natural light through large floor-to-ceiling windows with soft diffusion".
+5. Kontrol Kamera & Lensa (Medium Format Look): Simulasikan kualitas kamera Medium Format (Hasselblad/Phase One). Gunakan "80mm f/1.9 medium format lens", "extremely high dynamic range", "natural color science", "smooth tonal transitions".
+6. Komposisi & Copy Space: Pastikan komposisi sangat seimbang (Rule of Thirds, Golden Ratio) dengan "intentional copy space" untuk penempatan teks iklan premium.
+7. Color Palette Sophisticated: Gunakan palet warna yang elegan: "muted earth tones", "monochromatic luxury", "deep jewel tones (emerald, sapphire, ruby)", "minimalist neutral palette (beige, taupe, charcoal)".
+8. Optical & Film Emulation: Gunakan efek optik yang halus dan mahal: "subtle anamorphic lens flare", "creamy circular bokeh", "fine-grained film stock (Kodak Portra 160)", "natural halation on highlights".
+9. Tipografi & Integritas Teks: Jika ada teks, gunakan font serif elegan atau sans-serif modern yang bersih. Teks harus terlihat seperti bagian dari desain produk mewah yang nyata.
+10. Commercial Utility: Targetkan pasar "Luxury Real Estate", "High-End Tech", "Premium Wellness", "Gourmet Culinary", dan "Elite Corporate".
 
 WAJIB: Output harus berupa JSON array murni. Jangan tambahkan teks penjelasan, pembukaan, atau penutup. Jangan gunakan blok kode markdown (seperti \`\`\`json). Langsung berikan array JSON.
 
@@ -223,24 +223,25 @@ Output harus dalam format JSON array of objects:
 }
 
 ${parametricRules}
-Jika kategori adalah 'Minimalist Background', fokus pada Copy Space (60-70% area kosong).
-Jika kategori adalah '3D Render', fokus pada Materialitas (matte plastic, frosted glass).
-Jika kategori adalah 'Clean Vector', fokus pada flat design, clean lines.
+Jika kategori adalah 'Minimalist Background', fokus pada Copy Space (60-70% area kosong) dengan tekstur mewah (misal: fine linen, polished stone).
+Jika kategori adalah '3D Render', fokus pada Materialitas (matte gold, frosted glass, liquid metal).
+Jika kategori adalah 'Clean Vector', fokus pada minimalisme elegan, garis tipis presisi, palet warna premium.
 PENTING: Jika Anda adalah model penalaran (seperti DeepSeek R1), harap berikan proses berpikir yang sangat singkat dan langsung ke inti agar tidak melebihi batas token output. Fokuskan token Anda pada kualitas prompt JSON.`;
 
         if (category === 'cinematic-video') {
-          base = `Anda adalah Elite Cinematic Director untuk Adobe Stock. Tugas Anda adalah menghasilkan ${size} prompt video sinematik (Veo 3.1) yang sangat presisi dan bernilai komersial tinggi.
+          base = `Anda adalah Elite Cinematic Director untuk Adobe Stock. Tugas Anda adalah menghasilkan ${size} prompt video sinematik (Veo 3.1) yang sangat presisi dan bernilai komersial tinggi dengan estetika LUXURY & HIGH-END.
+
 Setiap prompt WAJIB mematuhi formula Veo 3.1: [Cinematography] + [Subject] + [Action] + [Context] + [Style & Ambiance] + [Audio Orchestration].
 
-ATURAN WAJIB VEO 3.1:
-1. Cinematography (Bahasa Kamera): Wajib sebutkan pergerakan dan komposisi di awal prompt ("Dolly shot", "tracking shot", "crane shot starting low and ascending high", "aerial view", "slow pan", "POV shot", "Close-up with very shallow depth of field", "Rack focus from foreground to background").
-2. Subject & Action: Identifikasi karakter utama dan deskripsikan apa yang mereka lakukan dengan detail mikro-ekspresi.
-3. Context: Detailkan lingkungan, cuaca, dan elemen latar belakang yang mendukung narasi.
-4. Style & Ambiance: Spesifikasikan estetika, mood, and pencahayaan ("awe-inspiring, soft morning light", "melancholic mood with cool blue tones, moody, cinematic", "high-key commercial lighting").
-5. Directing the Soundstage (Audio): Wajib sertakan instruksi audio yang sinkron jika relevan:
-   - Dialogue: Gunakan kutipan (contoh: A woman says, "We have to leave now.").
-   - Sound Effects (SFX): Deskripsikan suara dengan jelas (contoh: SFX: thunder cracks in the distance, SFX: the crisp sound of footsteps on gravel).
-   - Ambient noise: Definisikan soundscape latar (contoh: Ambient noise: the quiet hum of a starship bridge, Ambient noise: bustling city sounds).
+ATURAN WAJIB VEO 3.1 LUXURY STANDARDS:
+1. Cinematography (High-End Motion): Gunakan pergerakan kamera yang sangat halus dan terencana: "Slow-motion tracking shot at 120fps", "Elegant crane shot descending", "Smooth gimbal-stabilized follow shot", "Cinematic rack focus between high-end objects".
+2. Subject & Action: Subjek harus memancarkan keanggunan, profesionalisme, atau kemewahan. Aksi harus terlihat natural namun berkelas.
+3. Context: Lingkungan harus terlihat mahal dan terkurasi: "modern architectural masterpiece", "private jet interior", "luxury spa sanctuary", "high-end boutique atelier".
+4. Style & Ambiance: Gunakan pencahayaan sinematik yang kaya: "Golden hour glow with anamorphic flares", "Moody noir lighting with deep shadows and soft highlights", "Bright, airy high-key commercial aesthetic".
+5. Directing the Soundstage (Audio): Sertakan instruksi audio yang premium:
+   - Dialogue: Suara yang tenang, berwibawa, atau ramah.
+   - Sound Effects (SFX): Suara detail yang memuaskan (ASMR-like): "the soft click of a luxury watch", "the pouring of expensive champagne", "the gentle rustle of silk".
+   - Ambient noise: Soundscape yang tenang dan terkurasi.
 Sertakan orkestrasi soundstage dan durasi klip spesifik (4, 6, atau 8 detik).
 
 INTELIJEN KOMERSIAL & SEO:
@@ -458,54 +459,17 @@ ${parametricRules}`;
             
             <div className="pt-6 border-t border-cyan-500/30 space-y-5">
               <Label className="text-xs font-bold text-fuchsia-400 uppercase tracking-wider flex items-center gap-2 font-mono"><Paintbrush className="w-3.5 h-3.5 text-fuchsia-500" /> Parametric Controls</Label>
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-5">
-                <div className="flex flex-col justify-end gap-1.5 h-full">
-                  <Label className="text-[10px] uppercase tracking-wider text-cyan-500/70 font-semibold leading-tight font-mono">Lighting Style</Label>
-                  <Select value={lightingStyle} onValueChange={(val) => val && setLightingStyle(val)}><SelectTrigger className="h-9 text-xs bg-[#050505] border-cyan-500/30 text-cyan-300 hover:bg-cyan-950/30 hover:border-cyan-400/50 transition-colors font-mono"><SelectValue /></SelectTrigger><SelectContent className="bg-[#050505] border-cyan-500/50 text-cyan-300 font-mono">{LIGHTING_STYLES.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}</SelectContent></Select>
-                </div>
-                <div className="flex flex-col justify-end gap-1.5 h-full">
-                  <Label className="text-[10px] uppercase tracking-wider text-cyan-500/70 font-semibold leading-tight font-mono">Camera Angle</Label>
-                  <Select value={cameraAngle} onValueChange={(val) => val && setCameraAngle(val)}><SelectTrigger className="h-9 text-xs bg-[#050505] border-cyan-500/30 text-cyan-300 hover:bg-cyan-950/30 hover:border-cyan-400/50 transition-colors font-mono"><SelectValue /></SelectTrigger><SelectContent className="bg-[#050505] border-cyan-500/50 text-cyan-300 font-mono">{CAMERA_ANGLES.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}</SelectContent></Select>
-                </div>
-                <div className="flex flex-col justify-end gap-1.5 h-full">
-                  <Label className="text-[10px] uppercase tracking-wider text-cyan-500/70 font-semibold leading-tight font-mono">Color Tone</Label>
-                  <Select value={colorTone} onValueChange={(val) => val && setColorTone(val)}><SelectTrigger className="h-9 text-xs bg-[#050505] border-cyan-500/30 text-cyan-300 hover:bg-cyan-950/30 hover:border-cyan-400/50 transition-colors font-mono"><SelectValue /></SelectTrigger><SelectContent className="bg-[#050505] border-cyan-500/50 text-cyan-300 font-mono">{COLOR_TONES.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}</SelectContent></Select>
-                </div>
-                <div className="flex flex-col justify-end gap-1.5 h-full">
-                  <Label className="text-[10px] uppercase tracking-wider text-cyan-500/70 font-semibold leading-tight font-mono">Composition</Label>
-                  <Select value={composition} onValueChange={(val) => val && setComposition(val)}><SelectTrigger className="h-9 text-xs bg-[#050505] border-cyan-500/30 text-cyan-300 hover:bg-cyan-950/30 hover:border-cyan-400/50 transition-colors font-mono"><SelectValue /></SelectTrigger><SelectContent className="bg-[#050505] border-cyan-500/50 text-cyan-300 font-mono">{COMPOSITIONS.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}</SelectContent></Select>
-                </div>
-                <div className="flex flex-col justify-end gap-1.5 h-full">
-                  <Label className="text-[10px] uppercase tracking-wider text-cyan-500/70 font-semibold leading-tight font-mono">Depth of Field</Label>
-                  <Select value={depthOfField} onValueChange={(val) => val && setDepthOfField(val)}><SelectTrigger className="h-9 text-xs bg-[#050505] border-cyan-500/30 text-cyan-300 hover:bg-cyan-950/30 hover:border-cyan-400/50 transition-colors font-mono"><SelectValue /></SelectTrigger><SelectContent className="bg-[#050505] border-cyan-500/50 text-cyan-300 font-mono">{DEPTH_OF_FIELD.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}</SelectContent></Select>
-                </div>
-                <div className="flex flex-col justify-end gap-1.5 h-full">
-                  <Label className="text-[10px] uppercase tracking-wider text-cyan-500/70 font-semibold leading-tight font-mono">Camera Motion</Label>
-                  <Select value={cameraMotion} onValueChange={(val) => val && setCameraMotion(val)}><SelectTrigger className="h-9 text-xs bg-[#050505] border-cyan-500/30 text-cyan-300 hover:bg-cyan-950/30 hover:border-cyan-400/50 transition-colors font-mono"><SelectValue /></SelectTrigger><SelectContent className="bg-[#050505] border-cyan-500/50 text-cyan-300 font-mono">{CAMERA_MOTION.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}</SelectContent></Select>
-                </div>
-                <div className="flex flex-col justify-end gap-1.5 h-full">
-                  <Label className="text-[10px] uppercase tracking-wider text-cyan-500/70 font-semibold leading-tight font-mono">Lens Flare</Label>
-                  <Select value={lensFlare} onValueChange={(val) => val && setLensFlare(val)}><SelectTrigger className="h-9 text-xs bg-[#050505] border-cyan-500/30 text-cyan-300 hover:bg-cyan-950/30 hover:border-cyan-400/50 transition-colors font-mono"><SelectValue /></SelectTrigger><SelectContent className="bg-[#050505] border-cyan-500/50 text-cyan-300 font-mono">{LENS_FLARE.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}</SelectContent></Select>
-                </div>
-                <div className="flex flex-col justify-end gap-1.5 h-full">
-                  <Label className="text-[10px] uppercase tracking-wider text-cyan-500/70 font-semibold leading-tight font-mono">Bokeh Intensity</Label>
-                  <Select value={bokehIntensity} onValueChange={(val) => val && setBokehIntensity(val)}><SelectTrigger className="h-9 text-xs bg-[#050505] border-cyan-500/30 text-cyan-300 hover:bg-cyan-950/30 hover:border-cyan-400/50 transition-colors font-mono"><SelectValue /></SelectTrigger><SelectContent className="bg-[#050505] border-cyan-500/50 text-cyan-300 font-mono">{BOKEH_INTENSITY.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}</SelectContent></Select>
-                </div>
-                <div className="flex flex-col justify-end gap-1.5 h-full">
-                  <Label className="text-[10px] uppercase tracking-wider text-cyan-500/70 font-semibold leading-tight font-mono">Film Grain</Label>
-                  <Select value={filmGrain} onValueChange={(val) => val && setFilmGrain(val)}><SelectTrigger className="h-9 text-xs bg-[#050505] border-cyan-500/30 text-cyan-300 hover:bg-cyan-950/30 hover:border-cyan-400/50 transition-colors font-mono"><SelectValue /></SelectTrigger><SelectContent className="bg-[#050505] border-cyan-500/50 text-cyan-300 font-mono">{FILM_GRAIN.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}</SelectContent></Select>
-                </div>
-                <div className="flex flex-col justify-end gap-1.5 h-full">
-                  <Label className="text-[10px] uppercase tracking-wider text-cyan-500/70 font-semibold leading-tight font-mono">Chromatic Aberration</Label>
-                  <Select value={chromaticAberration} onValueChange={(val) => val && setChromaticAberration(val)}><SelectTrigger className="h-9 text-xs bg-[#050505] border-cyan-500/30 text-cyan-300 hover:bg-cyan-950/30 hover:border-cyan-400/50 transition-colors font-mono"><SelectValue /></SelectTrigger><SelectContent className="bg-[#050505] border-cyan-500/50 text-cyan-300 font-mono">{CHROMATIC_ABERRATION.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}</SelectContent></Select>
-                </div>
-                <div className="flex flex-col justify-end gap-1.5 h-full">
-                  <Label className="text-[10px] uppercase tracking-wider text-cyan-500/70 font-semibold leading-tight font-mono">Color Bleed</Label>
-                  <Select value={colorBleed} onValueChange={(val) => val && setColorBleed(val)}><SelectTrigger className="h-9 text-xs bg-[#050505] border-cyan-500/30 text-cyan-300 hover:bg-cyan-950/30 hover:border-cyan-400/50 transition-colors font-mono"><SelectValue /></SelectTrigger><SelectContent className="bg-[#050505] border-cyan-500/50 text-cyan-300 font-mono">{COLOR_BLEED.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}</SelectContent></Select>
-                </div>
-                <div className="flex flex-col justify-end gap-1.5 h-full">
+              <div className="space-y-4">
+                <div className="flex flex-col gap-1.5">
                   <Label className="text-[10px] uppercase tracking-wider text-cyan-500/70 font-semibold leading-tight font-mono">Aspect Ratio</Label>
-                  <Select value={aspectRatio} onValueChange={(val) => val && setAspectRatio(val)}><SelectTrigger className="h-9 text-xs bg-[#050505] border-cyan-500/30 text-cyan-300 hover:bg-cyan-950/30 hover:border-cyan-400/50 transition-colors font-mono"><SelectValue /></SelectTrigger><SelectContent className="bg-[#050505] border-cyan-500/50 text-cyan-300 font-mono">{ASPECT_RATIOS.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}</SelectContent></Select>
+                  <Select value={aspectRatio} onValueChange={(val) => val && setAspectRatio(val)}>
+                    <SelectTrigger className="h-10 bg-[#050505] border-cyan-500/50 text-cyan-300 hover:bg-cyan-950/30 hover:border-cyan-400/50 transition-colors font-mono">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-[#050505] border-cyan-500/50 text-cyan-300 font-mono">
+                      {ASPECT_RATIOS.map(s => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
               <div className="space-y-2 pt-2 border-t border-cyan-500/30">

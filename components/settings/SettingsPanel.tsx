@@ -147,9 +147,11 @@ export function SettingsPanel({
                       </>
                     ) : (
                       <>
-                        <SelectItem value="llama-3.3-70b-versatile">Llama 3.3 70B (Best Overall - Production)</SelectItem>
-                        <SelectItem value="deepseek-r1-distill-qwen-32b">DeepSeek R1 Qwen 32B (Best Reasoning - Production)</SelectItem>
-                        <SelectItem value="llama-3.1-8b-instant">Llama 3.1 8B (Fastest & Highest Limits - Production)</SelectItem>
+                        <SelectItem value="llama-3.3-70b-versatile">Llama 3.3 70B (Versatile)</SelectItem>
+                        <SelectItem value="llama-3.1-8b-instant">Llama 3.1 8B (Instant)</SelectItem>
+                        <SelectItem value="meta-llama/llama-4-scout-17b-16e-instruct">Llama 4 Scout 17B (Next-Gen)</SelectItem>
+                        <SelectItem value="meta-llama/llama-prompt-guard-2-22m">Llama Prompt Guard 2 (22M)</SelectItem>
+                        <SelectItem value="meta-llama/llama-prompt-guard-2-86m">Llama Prompt Guard 2 (86M)</SelectItem>
                       </>
                     )}
                   </SelectContent>
