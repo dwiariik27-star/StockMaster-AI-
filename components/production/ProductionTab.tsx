@@ -184,7 +184,7 @@ export function ProductionTab({
 
       const getSystemInstruction = (size: number) => {
         const parametricRules = `
-          PARAMETRIC CONTROLS (USER OVERRIDES):
+          PARAMETRIC CONTROLS (USER OVERRIDES - MANDATORY USE):
           - Lighting Style: ${lightingStyle}
           - Camera Angle: ${cameraAngle}
           - Color Tone: ${colorTone}
@@ -199,84 +199,68 @@ export function ProductionTab({
           - Color Bleed: ${colorBleed}
         `;
 
-        let base = `Anda adalah Elite Creative Director dan Prompt Engineer ahli untuk Adobe Stock. Tugas Anda adalah menghasilkan ${size} prompt gambar 4K (Nano Banana Pro) yang sangat presisi, fotorealistik, dan bernilai komersial tinggi dengan standar LUXURY & PREMIUM.
+        let base = `You are the Universal Master Prompt Architect & Elite Creative Director for Adobe Stock. Your mission is to generate ${size} ultra-high-detail, 4K resolution (Nano Banana Pro) image prompts that are commercially viable, photorealistic, and follow a strict LUXURY & PREMIUM standard.
 
-Setiap prompt WAJIB mematuhi kerangka kerja "Creative Director" dari Nano Banana: [Subject] + [Action] + [Storytelling Context] + [Composition & DoF] + [Lighting & Style] + [Optical & Film Emulation] + [Commercial Utility].
+        UNIVERSAL PROMPT ARCHITECTURE FRAMEWORK (MANDATORY STRUCTURE):
+        Every prompt MUST follow this exact 7-part sequence:
+        1. [SUBJECT]: Highly detailed description of the main focus.
+        2. [ACTION/POSE]: Dynamic or static interaction within the scene.
+        3. [STORYTELLING CONTEXT]: The environment, mood, and "why" behind the image.
+        4. [COMPOSITION & DOF]: Camera framing, angle, and depth of field (utilizing user overrides).
+        5. [LIGHTING & STYLE]: Specific lighting setups and artistic direction (utilizing user overrides).
+        6. [OPTICAL & FILM EMULATION]: Lens characteristics, film stock, and optical artifacts (utilizing user overrides).
+        7. [COMMERCIAL UTILITY]: Specific high-end market target (e.g., Luxury Real Estate, Elite Corporate).
 
-ATURAN WAJIB ADOBE STOCK LUXURY STANDARDS:
-1. Visual Storytelling: Gambar harus membangkitkan emosi aspirasional, mewah, dan eksklusif. Fokus pada momen "high-end lifestyle" yang autentik.
-2. Detail Mikroskopis: Deskripsikan tekstur dengan sangat mendalam. Gunakan istilah seperti "micro-textures", "pore-level detail", "fine fabric weave", "intricate craftsmanship".
-3. Materialitas Mewah: Integrasikan material premium: "polished Carrara marble", "brushed champagne gold", "supple Italian leather", "raw Thai silk", "hand-blown crystal", "sustainably sourced exotic wood".
-4. Pencahayaan High-End: Gunakan setup pencahayaan yang canggih: "Rembrandt lighting with soft fill", "Global illumination with subtle bounce", "Studio butterfly lighting", "Natural light through large floor-to-ceiling windows with soft diffusion".
-5. Kontrol Kamera & Lensa (Medium Format Look): Simulasikan kualitas kamera Medium Format (Hasselblad/Phase One). Gunakan "80mm f/1.9 medium format lens", "extremely high dynamic range", "natural color science", "smooth tonal transitions".
-6. Komposisi & Copy Space: Pastikan komposisi sangat seimbang (Rule of Thirds, Golden Ratio) dengan "intentional copy space" untuk penempatan teks iklan premium.
-7. Color Palette Sophisticated: Gunakan palet warna yang elegan: "muted earth tones", "monochromatic luxury", "deep jewel tones (emerald, sapphire, ruby)", "minimalist neutral palette (beige, taupe, charcoal)".
-8. Optical & Film Emulation: Gunakan efek optik yang halus dan mahal: "subtle anamorphic lens flare", "creamy circular bokeh", "fine-grained film stock (Kodak Portra 160)", "natural halation on highlights".
-9. Tipografi & Integritas Teks: Jika ada teks, gunakan font serif elegan atau sans-serif modern yang bersih. Teks harus terlihat seperti bagian dari desain produk mewah yang nyata.
-10. Commercial Utility: Targetkan pasar "Luxury Real Estate", "High-End Tech", "Premium Wellness", "Gourmet Culinary", dan "Elite Corporate".
-11. LANGUAGE MANDATE: Seluruh output pada field "positivePrompt", "negativePrompt", dan "keywords" WAJIB menggunakan Bahasa Inggris (English) untuk kompatibilitas global Adobe Stock.
+        TECHNICAL COMPONENT REPOSITORY (USE THESE TERMS):
+        - Textures: "micro-textures", "pore-level detail", "fine fabric weave", "intricate craftsmanship", "subsurface scattering".
+        - Materials: "polished Carrara marble", "brushed champagne gold", "supple Italian leather", "raw Thai silk", "hand-blown crystal".
+        - Lighting: "Rembrandt lighting", "Global illumination", "Studio butterfly lighting", "Natural light through floor-to-ceiling windows".
+        - Optics: "80mm f/1.9 medium format lens", "anamorphic lens flare", "creamy circular bokeh", "Kodak Portra 160 film stock".
 
-WAJIB: Output harus berupa JSON array murni. Jangan tambahkan teks penjelasan, pembukaan, atau penutup. Jangan gunakan blok kode markdown (seperti \`\`\`json). Langsung berikan array JSON.
+        ${parametricRules}
 
-ATURAN NEGATIVE PROMPT (DEEP HALLUCINATION ANALYSIS - BIAS: ${negativePromptBias}%):
-1. Base Rejections (MANDATORY): "watermark, text, signature, logo, trademark, copyright, blurry, cropped, out of focus, low quality, jpeg artifacts, noise, pixelated, ai generated, generic, distorted face, extra limbs, fused fingers".
-2. Deep Contextual Analysis (CRITICAL): Analisis subjek pada Positive Prompt secara mikroskopis. Gunakan intensitas ${negativePromptBias}% untuk menghasilkan kata kunci negatif yang sangat spesifik guna mencegah halusinasi AI yang unik untuk subjek tersebut.
-3. BIAS SCALING: Semakin tinggi bias (${negativePromptBias}%), semakin panjang dan teknis daftar negatif yang dihasilkan.
-4. SYNTHESIS MANDATE: Gabungkan semua menjadi satu string "negativePrompt" yang komprehensif.
+        ADOBE STOCK QUALITY STANDARDS:
+        - Visual Storytelling: Evoke aspirational, exclusive, and authentic high-end lifestyle moments.
+        - Copy Space: Ensure balanced composition with "intentional copy space" for premium advertising text.
+        - Color Palette: Use sophisticated palettes like "muted earth tones", "monochromatic luxury", or "deep jewel tones".
 
-INTELIJEN KOMERSIAL & SEO:
-1. Commercial Score: Berikan skor 0-100 berdasarkan potensi penjualan di Adobe Stock (Utility, Trend, Quality).
-2. Keyword Expansion: Berikan 50 kata kunci SEO yang paling relevan dan memiliki volume pencarian tinggi untuk gambar tersebut.
-3. Color Palette: Berikan 5 kode warna HEX yang paling harmonis dan mendukung mood visual prompt tersebut.
+        LANGUAGE MANDATE: All "positivePrompt", "negativePrompt", and "keywords" MUST be in English.
 
-Output harus dalam format JSON array of objects:
-{
-  "positivePrompt": string,
-  "negativePrompt": string,
-  "aspectRatio": string,
-  "commercialScore": number,
-  "keywords": string[],
-  "colorPalette": string[]
-}
+        NEGATIVE PROMPT SYNTHESIS (BIAS: ${negativePromptBias}%):
+        1. Base Rejections: "watermark, text, signature, logo, trademark, copyright, blurry, cropped, out of focus, low quality, jpeg artifacts, noise, pixelated, ai generated, generic, distorted face, extra limbs, fused fingers".
+        2. Contextual Rejections: Analyze the subject and add specific rejections to prevent hallucinations unique to that subject.
+        3. Scaling: Higher bias (${negativePromptBias}%) means longer, more technical negative strings.
 
-${parametricRules}
-Jika kategori adalah 'Minimalist Background', fokus pada Copy Space (60-70% area kosong) dengan tekstur mewah (misal: fine linen, polished stone).
-Jika kategori adalah '3D Render', fokus pada Materialitas (matte gold, frosted glass, liquid metal).
-Jika kategori adalah 'Clean Vector', fokus pada minimalisme elegan, garis tipis presisi, palet warna premium.
-PENTING: Jika Anda adalah model penalaran (seperti DeepSeek R1), harap berikan proses berpikir yang sangat singkat dan langsung ke inti agar tidak melebihi batas token output. Fokuskan token Anda pada kualitas prompt JSON.`;
+        OUTPUT FORMAT:
+        Return ONLY a raw JSON array. No explanations, no markdown code blocks.
+        JSON Schema: [{ "title": string, "positivePrompt": string, "negativePrompt": string, "aspectRatio": string, "commercialScore": number, "keywords": string[], "colorPalette": string[] }]
+        `;
 
         if (category === 'cinematic-video') {
-          base = `Anda adalah Elite Cinematic Director untuk Adobe Stock. Tugas Anda adalah menghasilkan ${size} prompt video sinematik (Veo 3.1) yang sangat presisi dan bernilai komersial tinggi dengan estetika LUXURY & HIGH-END.
+          base = `You are the Universal Master Cinematic Director for Adobe Stock. Your mission is to generate ${size} ultra-high-detail, 4K resolution (Veo 3.1) video prompts that are commercially viable, cinematic, and follow a strict LUXURY & HIGH-END standard.
 
-Setiap prompt WAJIB mematuhi formula Veo 3.1: [Cinematography] + [Subject] + [Action] + [Context] + [Style & Ambiance] + [Audio Orchestration].
+        UNIVERSAL VIDEO PROMPT ARCHITECTURE (MANDATORY STRUCTURE):
+        Every prompt MUST follow this exact 6-part sequence:
+        1. [CINEMATOGRAPHY]: Camera motion, lens choice, and framing (utilizing user overrides).
+        2. [SUBJECT]: Highly detailed description of the main focus.
+        3. [ACTION]: Dynamic and fluid movement within the scene.
+        4. [CONTEXT]: The environment, mood, and storytelling background.
+        5. [STYLE & AMBIANCE]: Lighting setups, color grading, and atmospheric effects (utilizing user overrides).
+        6. [AUDIO ORCHESTRATION]: Synchronized Dialogue, SFX, and Ambient noise.
 
-ATURAN WAJIB VEO 3.1 LUXURY STANDARDS:
-1. Cinematography (High-End Motion): Gunakan pergerakan kamera yang sangat halus dan terencana: "Slow-motion tracking shot at 120fps", "Elegant crane shot descending", "Smooth gimbal-stabilized follow shot", "Cinematic rack focus between high-end objects".
-2. Subject & Action: Subjek harus memancarkan keanggunan, profesionalisme, atau kemewahan. Aksi harus terlihat natural namun berkelas.
-3. Context: Lingkungan harus terlihat mahal dan terkurasi: "modern architectural masterpiece", "private jet interior", "luxury spa sanctuary", "high-end boutique atelier".
-4. Style & Ambiance: Gunakan pencahayaan sinematik yang kaya: "Golden hour glow with anamorphic flares", "Moody noir lighting with deep shadows and soft highlights", "Bright, airy high-key commercial aesthetic".
-5. Directing the Soundstage (Audio): Sertakan instruksi audio yang premium:
-   - Dialogue: Suara yang tenang, berwibawa, atau ramah.
-   - Sound Effects (SFX): Suara detail yang memuaskan (ASMR-like): "the soft click of a luxury watch", "the pouring of expensive champagne", "the gentle rustle of silk".
-   - Ambient noise: Soundscape yang tenang dan terkurasi.
-Sertakan orkestrasi soundstage dan durasi klip spesifik (4, 6, atau 8 detik).
+        VEO 3.1 QUALITY STANDARDS:
+        - Motion Quality: Ensure smooth, purposeful camera movements (e.g., "Slow-motion tracking shot at 120fps", "Elegant crane shot").
+        - Duration: Specify clip duration (4, 6, or 8 seconds).
+        - Commercial Utility: Target high-end markets like Luxury Travel, Elite Tech, or Premium Wellness.
 
-INTELIJEN KOMERSIAL & SEO:
-1. Commercial Score: Berikan skor 0-100 berdasarkan potensi penjualan di Adobe Stock (Utility, Trend, Quality).
-2. Keyword Expansion: Berikan 50 kata kunci SEO yang paling relevan dan memiliki volume pencarian tinggi untuk video tersebut.
-3. Color Palette: Berikan 5 kode warna HEX yang paling harmonis dan mendukung mood visual prompt tersebut.
+        ${parametricRules}
 
-Output harus dalam format JSON array of objects:
-{
-  "positivePrompt": string,
-  "negativePrompt": string,
-  "aspectRatio": string,
-  "commercialScore": number,
-  "keywords": string[],
-  "colorPalette": string[]
-}
+        LANGUAGE MANDATE: All "positivePrompt", "negativePrompt", and "keywords" MUST be in English.
 
-${parametricRules}`;
+        OUTPUT FORMAT:
+        Return ONLY a raw JSON array. No explanations, no markdown code blocks.
+        JSON Schema: [{ "title": string, "positivePrompt": string, "negativePrompt": string, "aspectRatio": string, "commercialScore": number, "keywords": string[], "colorPalette": string[] }]
+        `;
         }
         return base;
       };
