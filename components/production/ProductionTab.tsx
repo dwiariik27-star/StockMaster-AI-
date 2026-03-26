@@ -71,9 +71,8 @@ export function ProductionTab({
   ];
 
   useEffect(() => {
-    const savedIntel = localStorage.getItem('stockmaster_market_intel');
-    if (savedIntel) setMarketIntel(JSON.parse(savedIntel));
-  }, []);
+    setActiveModel(selectedModel);
+  }, [selectedModel]);
 
   useEffect(() => {
     if (marketIntel.length > 0) localStorage.setItem('stockmaster_market_intel', JSON.stringify(marketIntel));
@@ -89,14 +88,14 @@ export function ProductionTab({
   }, [generatedPrompts]);
 
   const handleGenerate = async () => {
-    if (!keyword.trim()) { toast.error('Silakan masukkan kata kunci tren.'); return; }
-    if (targetCount < 10 || targetCount > 1000) { toast.error('Target prompt harus antara 10 - 1000.'); return; }
+    if (!keyword.trim()) { toast.error('Please enter a trend keyword.'); return; }
+    if (targetCount < 10 || targetCount > 1000) { toast.error('Target prompts must be between 10 - 1000.'); return; }
     
     setIsBatching(true);
     setCurrentCount(0);
     setGeneratedPrompts([]);
     setMarketIntel([]);
-    setBatchStatus('Melakukan Intelijen Pasar & Analisis Niche...');
+    setBatchStatus('Performing Market Intelligence & Niche Analysis...');
     
     abortControllerRef.current = new AbortController();
     let accumulatedPrompts: GeneratedPrompt[] = [];
@@ -146,7 +145,7 @@ export function ProductionTab({
             }
             setMarketIntel(dynamicThemes);
           } catch (parseError) {
-            console.error("Gagal parse market intel JSON:", parseError, "Original text:", intelText);
+            console.error("Failed to parse market intel JSON:", parseError, "Original text:", intelText);
             // Fallback inside catch
             dynamicThemes = [
               "Elite Authentic Lifestyle: Fokus pada kemewahan sehari-hari, emosi natural yang elegan.",
@@ -164,7 +163,7 @@ export function ProductionTab({
           }
         }
       } catch (e) {
-        console.error("Gagal generate market intel, menggunakan fallback.", e);
+        console.error("Failed to generate market intel, using fallback.", e);
         if (!dynamicThemes || dynamicThemes.length === 0) {
           dynamicThemes = [
             "Elite Authentic Lifestyle: Fokus pada kemewahan sehari-hari, emosi natural yang elegan.",
@@ -270,7 +269,7 @@ export function ProductionTab({
       let batchIndex = 0;
       while (accumulatedPrompts.length < targetCount) {
         if (abortControllerRef.current?.signal.aborted) {
-          toast.info('Auto-Batching dihentikan oleh pengguna.');
+          toast.info('Auto-Batching stopped by user.');
           break;
         }
 
@@ -376,7 +375,7 @@ export function ProductionTab({
             if (isQuotaError) {
               exhaustedModels.add(currentModelId);
               console.warn(`Model ${currentModelId} reached quota limit. Added to exhausted list.`);
-              toast.warning(`Model ${currentModelId.split('/').pop()} mencapai limit. Mencoba model lain...`);
+              toast.warning(`Model ${currentModelId.split('/').pop()} reached limit. Trying another model...`);
             }
 
             console.error(`Batch attempt ${retryCount + 1} failed:`, error);
@@ -387,7 +386,7 @@ export function ProductionTab({
               setBatchStatus(`Retrying with smaller batch size (${currentBatchSize})...`);
               await new Promise(resolve => setTimeout(resolve, 2000 * retryCount));
             } else {
-              toast.error(`Gagal memproses batch. Melanjutkan ke batch berikutnya...`);
+              toast.error(`Failed to process batch. Continuing to next batch...`);
               batchSuccess = true; 
             }
           }
@@ -401,9 +400,9 @@ export function ProductionTab({
     } catch (error: any) {
       const msg = error.message || '';
       if (msg.includes('429') || msg.includes('RESOURCE_EXHAUSTED')) {
-        toast.error('Error 429 (Quota Exceeded): Kuota API Key Anda habis. Silakan periksa billing di Google AI Studio.');
+        toast.error('Error 429 (Quota Exceeded): Your API Key quota is exhausted. Please check billing in Google AI Studio.');
       } else {
-        toast.error('Gagal menghasilkan prompt. Cek API Key Anda.');
+        toast.error('Failed to generate prompt. Check your API Key.');
         console.error(error);
       }
     } finally {
@@ -429,9 +428,9 @@ export function ProductionTab({
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.setAttribute("href", url);
-    link.setAttribute("download", `StockMaster_Prompts_${keyword.replace(/\\s+/g, '_')}.txt`);
+    link.setAttribute("download", `StockMaster_Prompts_${keyword.replace(/\s+/g, '_')}.txt`);
     document.body.appendChild(link); link.click(); document.body.removeChild(link);
-    toast.success('File TXT berhasil diunduh!');
+    toast.success('TXT file downloaded successfully!');
   };
 
   const copyAllPrompts = () => {
@@ -439,7 +438,7 @@ export function ProductionTab({
       .map(p => `${p.positivePrompt} --ar ${p.aspectRatio} --no ${p.negativePrompt}`)
       .join('\n\n');
     navigator.clipboard.writeText(textToCopy);
-    toast.success('Semua prompt disalin ke clipboard!');
+    toast.success('All prompts copied to clipboard!');
   };
 
   const downloadCSV = () => {
@@ -468,7 +467,7 @@ export function ProductionTab({
     link.setAttribute("href", encodedUri);
     link.setAttribute("download", `StockMaster_Prompts_${keyword.replace(/\s+/g, '_')}.csv`);
     document.body.appendChild(link); link.click(); document.body.removeChild(link);
-    toast.success('File CSV berhasil diunduh!');
+    toast.success('CSV file downloaded successfully!');
   };
 
   return (

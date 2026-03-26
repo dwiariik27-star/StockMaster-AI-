@@ -31,7 +31,7 @@ export function ResearchTab({ getAIClient, callAI, apiKey, selectedProvider, onS
   }, [researchResult]);
 
   const handleResearch = async () => {
-    if (!researchTopic.trim()) { toast.error('Silakan masukkan topik.'); return; }
+    if (!researchTopic.trim()) { toast.error('Please enter a topic.'); return; }
     setIsResearching(true); setResearchResult(null);
     
     try {
@@ -105,14 +105,14 @@ export function ResearchTab({ getAIClient, callAI, apiKey, selectedProvider, onS
           }
 
           setResearchResult(parsedResult as ResearchResult);
-          toast.success('Analisis pasar berhasil diselesaikan!');
+          toast.success('Market analysis completed successfully!');
         } catch (parseError: any) {
-          console.error("Gagal parse research JSON:", parseError, "Original text:", text);
-          toast.error(`Gagal memproses hasil riset: ${parseError.message || 'Format tidak valid'}`);
+          console.error("Failed to parse research JSON:", parseError, "Original text:", text);
+          toast.error(`Failed to process research results: ${parseError.message || 'Invalid format'}`);
         }
       }
     } catch (error: any) {
-      toast.error(`Gagal melakukan riset pasar: ${error.message || 'Cek API Key Anda.'}`);
+      toast.error(`Failed to perform market research: ${error.message || 'Check your API Key.'}`);
       console.error(error);
     } finally {
       setIsResearching(false);
@@ -153,7 +153,7 @@ export function ResearchTab({ getAIClient, callAI, apiKey, selectedProvider, onS
                   <div className="bg-cyan-950/80 text-cyan-300 text-[10px] px-2.5 py-1 rounded-full border border-cyan-500/50 shadow-[0_0_10px_rgba(6,182,212,0.2)] flex items-center gap-1.5 font-mono uppercase tracking-wider backdrop-blur-sm">
                     <span className={`w-1.5 h-1.5 rounded-full ${researchResult.sources && researchResult.sources.length > 0 ? 'bg-emerald-500/80 shadow-[0_0_8px_rgba(16,185,129,0.4)]' : 'bg-fuchsia-500/80 shadow-[0_0_8px_rgba(217,70,239,0.4)]'}`}></span> {researchResult.sources && researchResult.sources.length > 0 ? 'Live Web Grounded' : 'Internal AI Knowledge'}
                   </div>
-                  <Button variant="outline" size="sm" onClick={() => { setResearchResult(null); localStorage.removeItem('stockmaster_research'); toast.success('Data riset dibersihkan'); }} className="h-7 text-[10px] text-red-400 border-red-500/50 hover:text-red-300 hover:bg-red-950/50 font-mono px-2">Clear</Button>
+                  <Button variant="outline" size="sm" onClick={() => { setResearchResult(null); localStorage.removeItem('stockmaster_research'); toast.success('Research data cleared'); }} className="h-7 text-[10px] text-red-400 border-red-500/50 hover:text-red-300 hover:bg-red-950/50 font-mono px-2">Clear</Button>
                 </div>
               </CardHeader>
               <CardContent className="p-6">

@@ -58,17 +58,17 @@ export function SettingsPanel({
     setIsTesting(true);
     try {
       const { text } = await callAI({
-        prompt: 'Reply with "OK" if you receive this message.',
+        prompt: 'Balas dengan kata "OK" jika Anda menerima pesan ini.',
         model: selectedProvider === 'google' ? 'gemini-3-flash-preview' : 'llama-3.3-70b-versatile'
       });
       
       if (text) {
-        toast.success(`${selectedProvider === 'google' ? 'Gemini' : 'Groq'} Connection Successful!`);
+        toast.success(`Connection to ${selectedProvider === 'google' ? 'Gemini' : 'Groq'} Successful!`);
       } else {
         toast.error('Empty response from AI.');
       }
     } catch (error: any) {
-      toast.error(`Connection Failed: ${error.message || 'Please check your API Key.'}`);
+      toast.error(`Connection Failed: ${error.message || 'Check your API Key again.'}`);
       console.error(error);
     } finally {
       setIsTesting(false);
@@ -135,7 +135,7 @@ export function SettingsPanel({
                     size="icon" 
                     onClick={() => {
                       selectedProvider === 'google' ? clearApiKey() : clearGroqApiKey();
-                      toast.success('API Key successfully deleted');
+                      toast.success('API Key berhasil dihapus');
                     }}
                     className="bg-red-950/30 text-red-400 hover:bg-red-900/50 border border-red-500/50 self-start"
                   >
@@ -153,7 +153,7 @@ export function SettingsPanel({
                   onValueChange={(val) => {
                     if (val) {
                       saveModel(val);
-                      toast.success(`Model changed to ${val}`);
+                      toast.success(`Model diubah ke ${val}`);
                     }
                   }}
                 >
@@ -187,7 +187,7 @@ export function SettingsPanel({
                   className="w-full bg-cyan-950/30 text-cyan-400 hover:bg-cyan-900/50 border border-cyan-500/50 font-mono"
                 >
                   {isTesting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <CheckCircle2 className="w-4 h-4 mr-2" />}
-                  Test {selectedProvider === 'google' ? 'Gemini' : 'Groq'} Connection
+                  Test Connection to {selectedProvider === 'google' ? 'Gemini' : 'Groq'}
                 </Button>
               </div>
             </div>

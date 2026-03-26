@@ -44,7 +44,7 @@ export function VisionTab({ getAIClient, callAI, onSendToProduction }: VisionTab
   };
 
   const handleAnalyzeImage = async () => {
-    if (!imageFile) { toast.error('Silakan unggah gambar referensi.'); return; }
+    if (!imageFile) { toast.error('Please upload a reference image.'); return; }
     setIsAnalyzing(true); setVisionResult(null);
     try {
       const base64Data = await fileToBase64(imageFile);
@@ -117,7 +117,7 @@ export function VisionTab({ getAIClient, callAI, onSendToProduction }: VisionTab
         <Card className="bg-[#0a0a0a] border-cyan-500/30 shadow-[0_0_15px_rgba(6,182,212,0.05)]">
           <CardHeader>
             <CardTitle className="text-cyan-300 font-mono">Competitor Vision Analyzer</CardTitle>
-            <CardDescription className="text-cyan-500/70 text-sm font-mono">Upload a reference image selling well on Adobe Stock to dissect its techniques and prompts.</CardDescription>
+            <CardDescription className="text-cyan-500/70 text-sm font-mono">Unggah gambar referensi yang laku di Adobe Stock untuk membedah teknik dan prompt-nya.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="border-2 border-dashed border-cyan-500/40 rounded-lg p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-cyan-950/20 hover:border-cyan-400 hover:shadow-[0_0_20px_rgba(6,182,212,0.15)] transition-all bg-[#050505]" onClick={() => fileInputRef.current?.click()}>
@@ -128,14 +128,14 @@ export function VisionTab({ getAIClient, callAI, onSendToProduction }: VisionTab
               ) : (
                 <div className="flex flex-col items-center">
                   <Upload className="w-10 h-10 text-cyan-500/60 drop-shadow-[0_0_8px_rgba(6,182,212,0.5)] mb-2" />
-                  <p className="text-sm text-cyan-300 font-medium font-mono">Click to upload image</p>
+                  <p className="text-sm text-cyan-300 font-medium font-mono">Klik untuk unggah gambar</p>
                   <p className="text-xs text-cyan-500/70 mt-1 font-mono">JPG, PNG (Max 5MB)</p>
                 </div>
               )}
               <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageUpload} />
             </div>
             <Button className="w-full bg-fuchsia-600 text-white hover:bg-fuchsia-500 shadow-[0_0_15px_rgba(217,70,239,0.4)] font-bold font-mono" size="lg" onClick={handleAnalyzeImage} disabled={isAnalyzing || !imageFile}>
-              {isAnalyzing ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Analyzing Image...</> : <><Eye className="w-4 h-4 mr-2" /> Reverse-Engineer Image</>}
+              {isAnalyzing ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Menganalisis Gambar...</> : <><Eye className="w-4 h-4 mr-2" /> Reverse-Engineer Image</>}
             </Button>
           </CardContent>
         </Card>
@@ -184,7 +184,7 @@ export function VisionTab({ getAIClient, callAI, onSendToProduction }: VisionTab
         ) : (
           <Card className="h-full min-h-[400px] flex flex-col items-center justify-center text-cyan-500/50 border-dashed border-cyan-500/30 bg-[#0a0a0a]">
             <Eye className="w-12 h-12 mb-4 opacity-20 text-cyan-500" />
-            <p className="text-sm font-mono">Upload an image and click Reverse-Engineer to dissect its techniques.</p>
+            <p className="text-sm font-mono">Unggah gambar dan klik Reverse-Engineer untuk membedah tekniknya.</p>
           </Card>
         )}
       </div>
