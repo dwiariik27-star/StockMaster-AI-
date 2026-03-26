@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { createGroq } from '@ai-sdk/groq';
 import { generateText } from 'ai';
@@ -22,7 +22,7 @@ export function useAI() {
     return '';
   });
 
-  const [groqKeyIndex, setGroqKeyIndex] = useState(0);
+  const groqKeyIndexRef = useRef(0);
 
   const [selectedProvider, setSelectedProvider] = useState<AIProvider>(() => {
     if (typeof window !== 'undefined') {
@@ -109,10 +109,10 @@ export function useAI() {
       
       if (keys.length === 0) throw new Error('Groq API Key tidak valid.');
       
-      // Pick a random key from the list
-      const selectedKey = keys[Math.floor(Math.random() * keys.length)];
+      const currentIndex = groqKeyIndexRef.current % keys.length;
+      const selectedKey = keys[currentIndex];
       const keySnippet = `${selectedKey.substring(0, 8)}...${selectedKey.substring(selectedKey.length - 4)}`;
-      console.log(`[Groq] Using API Key (Random): ${keySnippet}`);
+      console.log(`[Groq] Using API Key (Index ${currentIndex}): ${keySnippet}`);
       
       return createGroq({ apiKey: selectedKey });
     }
@@ -164,12 +164,11 @@ export function useAI() {
       if (keys.length === 0) throw new Error('Groq API Key tidak ditemukan.');
 
       let lastError: any = null;
+      let attempts = 0;
       
-      // Use the persistent index
-      let currentIndex = groqKeyIndex % keys.length;
-      
-      // Try each key if we hit rate limits
-      for (let i = 0; i < keys.length; i++) {
+      // Try each key if we hit rate limits or quota
+      while (attempts < keys.length) {
+        const currentIndex = groqKeyIndexRef.current % keys.length;
         const currentKey = keys[currentIndex];
         const keySnippet = `${currentKey.substring(0, 8)}...${currentKey.substring(currentKey.length - 4)}`;
         
@@ -219,24 +218,31 @@ export function useAI() {
             } : {}),
           } as any);
 
-          // Success! Update the persistent index for next time
-          setGroqKeyIndex(currentIndex);
+          // Success!
           return { text };
         } catch (error: any) {
           lastError = error;
-          const isRateLimit = error.status === 429 || error.message?.includes('429') || error.message?.includes('rate limit') || error.message?.includes('exhausted');
+          const errorMsg = error.message?.toLowerCase() || '';
+          const isRateLimit = error.status === 429 || errorMsg.includes('429') || errorMsg.includes('rate limit') || errorMsg.includes('too many requests');
+          const isQuota = errorMsg.includes('quota') || errorMsg.includes('exhausted') || errorMsg.includes('insufficient_quota');
           
-          if (isRateLimit) {
-            console.warn(`[Groq] Key Index ${currentIndex} [${keySnippet}] hit limit. Rotating to next key...`);
-            toast.info(`Key Groq limit tercapai. Merotasi ke key berikutnya...`);
+          if (isRateLimit || isQuota) {
+            const reason = isQuota ? 'Quota exceeded' : 'Rate limit exceeded';
+            console.warn(`[Groq] Key Index ${currentIndex} [${keySnippet}] failed. Reason: ${reason}. Rotating to next key...`);
+            toast.info(`Groq API Key rotated: ${reason}`);
             
-            // Rotate index
-            currentIndex = (currentIndex + 1) % keys.length;
+            // Rotate index synchronously
+            groqKeyIndexRef.current = (groqKeyIndexRef.current + 1) % keys.length;
+            attempts++;
             continue; // Try next key
           }
-          throw error; // If not rate limit, throw
+          
+          // If it's not a rate limit or quota error, throw immediately
+          throw error;
         }
       }
+      
+      console.error(`[Groq] All ${keys.length} keys exhausted or failed.`);
       throw lastError;
     }
 

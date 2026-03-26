@@ -289,30 +289,13 @@ export function ProductionTab({
                 }
                 
                 newPrompts = newPrompts.map((p: any) => {
-                  const fallbackAspectRatio = aspectRatio !== 'Auto/AI Choice' ? aspectRatio : '16:9';
-                  const fallbackScore = Math.floor(Math.random() * 15) + 85; // 85-99
-                  
                   if (typeof p === 'string') {
-                    return { 
-                      positivePrompt: p, 
-                      negativePrompt: '',
-                      aspectRatio: fallbackAspectRatio, 
-                      commercialScore: fallbackScore, 
-                      keywords: [keyword, "commercial", "stock"] 
-                    };
+                    return { positivePrompt: p };
                   }
                   
                   const finalPositive = p.positivePrompt || p.prompt || p.description || p.text || `High quality commercial asset of ${keyword}`;
                   
-                  return {
-                    ...p,
-                    positivePrompt: finalPositive,
-                    negativePrompt: p.negativePrompt || '',
-                    aspectRatio: p.aspectRatio || fallbackAspectRatio,
-                    commercialScore: p.commercialScore || fallbackScore,
-                    keywords: Array.isArray(p.keywords) && p.keywords.length > 0 ? p.keywords : [keyword, "commercial", "stock"],
-                    colorPalette: Array.isArray(p.colorPalette) ? p.colorPalette : undefined
-                  };
+                  return { positivePrompt: finalPositive };
                 });
                 
                 accumulatedPrompts = [...accumulatedPrompts, ...newPrompts];
@@ -382,7 +365,7 @@ export function ProductionTab({
     if (generatedPrompts.length === 0) return;
     
     const txtContent = generatedPrompts
-      .map(p => `${p.positivePrompt} --ar ${p.aspectRatio}`)
+      .map(p => p.positivePrompt)
       .join('\n\n');
 
     const blob = new Blob([txtContent], { type: "text/plain;charset=utf-8" });
@@ -396,38 +379,10 @@ export function ProductionTab({
 
   const copyAllPrompts = () => {
     const textToCopy = generatedPrompts
-      .map(p => `${p.positivePrompt} --ar ${p.aspectRatio}`)
+      .map(p => p.positivePrompt)
       .join('\n\n');
     navigator.clipboard.writeText(textToCopy);
     toast.success('All prompts copied to clipboard!');
-  };
-
-  const downloadCSV = () => {
-    if (generatedPrompts.length === 0) return;
-    
-    let csvContent = "data:text/csv;charset=utf-8,";
-    csvContent += "Filename,Category,Keyword,Positive Prompt,Aspect Ratio,Commercial Score,Keywords\n";
-    
-    const categoryName = CATEGORIES.find(c => c.id === category)?.name || category;
-    
-    generatedPrompts.forEach((p, index) => {
-      const filename = `image_${index + 1}.jpg`;
-      const cat = `"${categoryName.replace(/"/g, '""')}"`;
-      const kw = `"${keyword.replace(/"/g, '""')}"`;
-      const positive = `"${(p.positivePrompt || '').replace(/"/g, '""')}"`;
-      const ar = `"${(p.aspectRatio || '').replace(/"/g, '""')}"`;
-      const score = p.commercialScore || 0;
-      const keywordsList = `"${(p.keywords || []).join(', ').replace(/"/g, '""')}"`;
-      
-      csvContent += `${filename},${cat},${kw},${positive},${ar},${score},${keywordsList}\n`;
-    });
-
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `StockMaster_Prompts_${keyword.replace(/\s+/g, '_')}.csv`);
-    document.body.appendChild(link); link.click(); document.body.removeChild(link);
-    toast.success('CSV file downloaded successfully!');
   };
 
   return (
@@ -550,7 +505,6 @@ export function ProductionTab({
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={() => { setGeneratedPrompts([]); localStorage.removeItem('stockmaster_prompts'); toast.success('Data dibersihkan'); }} className="text-red-400 border-red-500/50 hover:text-red-300 hover:bg-red-950/50 font-mono">Clear</Button>
                 <Button variant="outline" size="sm" onClick={downloadTXT} className="text-cyan-300 border-cyan-500/50 hover:bg-cyan-950/50 font-mono"><Download className="w-4 h-4 mr-2" /> Download TXT ({generatedPrompts.length})</Button>
-                <Button variant="default" size="sm" className="bg-fuchsia-600 text-white hover:bg-fuchsia-500 font-bold font-mono shadow-[0_0_10px_rgba(217,70,239,0.4)]" onClick={downloadCSV}><Download className="w-4 h-4 mr-2" /> Export CSV</Button>
               </div>
             )}
           </CardHeader>
@@ -599,30 +553,6 @@ export function ProductionTab({
                         PROMPT #{generatedPrompts.length}
                       </div>
                       <div className="space-y-4 mt-2">
-                        <div className="flex flex-wrap items-center gap-3">
-                          <div className="space-y-1">
-                            <Label className="text-[10px] uppercase tracking-wider text-cyan-500/70 font-mono">Aspect Ratio</Label>
-                            <div className="inline-flex items-center gap-1.5 px-2 py-1 bg-cyan-950/30 border border-cyan-500/40 rounded text-xs font-medium text-cyan-300 font-mono shadow-[0_0_8px_rgba(6,182,212,0.1)]">
-                              <Box className="w-3 h-3 text-fuchsia-500" /> {generatedPrompts[generatedPrompts.length - 1].aspectRatio}
-                            </div>
-                          </div>
-                          <div className="space-y-1">
-                            <Label className="text-[10px] uppercase tracking-wider text-cyan-500/70 font-mono">Commercial Score</Label>
-                            <div className="inline-flex items-center gap-1.5 px-2 py-1 bg-fuchsia-950/30 border border-fuchsia-500/40 rounded text-xs font-bold text-fuchsia-400 font-mono shadow-[0_0_8px_rgba(217,70,239,0.2)]">
-                              <Target className="w-3 h-3" /> {generatedPrompts[generatedPrompts.length - 1].commercialScore}%
-                            </div>
-                          </div>
-                          {(generatedPrompts[generatedPrompts.length - 1].positivePrompt.toLowerCase().includes('copy space') || 
-                            generatedPrompts[generatedPrompts.length - 1].positivePrompt.toLowerCase().includes('minimalist')) && (
-                            <div className="space-y-1">
-                              <Label className="text-[10px] uppercase tracking-wider text-emerald-500/70 font-mono">Utility Badge</Label>
-                              <div className="inline-flex items-center gap-1.5 px-2 py-1 bg-emerald-950/30 border border-emerald-500/40 rounded text-[10px] font-bold text-emerald-400 font-mono shadow-[0_0_8px_rgba(16,185,129,0.2)]">
-                                <Sparkles className="w-3 h-3" /> HIGH UTILITY
-                              </div>
-                            </div>
-                          )}
-                        </div>
-
                         <div className="space-y-1">
                           <Label className="text-[10px] uppercase tracking-wider text-cyan-500/70 font-mono">Positive Prompt</Label>
                           <div className="relative">
@@ -630,47 +560,13 @@ export function ProductionTab({
                             <Button size="icon" variant="ghost" className="absolute top-2 right-2 h-6 w-6 text-cyan-500 hover:text-cyan-300 hover:bg-cyan-950/50" onClick={() => { navigator.clipboard.writeText(generatedPrompts[generatedPrompts.length - 1].positivePrompt); toast.success('Prompt disalin!'); }}><Copy className="w-3 h-3" /></Button>
                           </div>
                         </div>
-
-                        {generatedPrompts[generatedPrompts.length - 1].keywords && (
-                          <div className="space-y-1">
-                            <Label className="text-[10px] uppercase tracking-wider text-cyan-500/70 font-mono">SEO Keywords (Top 50)</Label>
-                            <div className="flex flex-wrap gap-1 max-h-24 overflow-y-auto p-2 bg-[#050505] rounded border border-cyan-500/10 custom-scrollbar">
-                              {generatedPrompts[generatedPrompts.length - 1].keywords?.map((kw, idx) => (
-                                <span key={idx} className="text-[9px] bg-cyan-950/30 text-cyan-500/70 px-1.5 py-0.5 rounded border border-cyan-500/10 font-mono">
-                                  {kw}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        {generatedPrompts[generatedPrompts.length - 1].colorPalette && (
-                          <div className="space-y-1">
-                            <Label className="text-[10px] uppercase tracking-wider text-cyan-500/70 font-mono">Color Palette Suggester</Label>
-                            <div className="flex gap-2 p-2 bg-[#050505] rounded border border-cyan-500/10">
-                              {generatedPrompts[generatedPrompts.length - 1].colorPalette?.map((color, idx) => (
-                                <div 
-                                  key={idx} 
-                                  className="w-8 h-8 rounded border border-white/10 shadow-sm transition-transform hover:scale-110 cursor-pointer" 
-                                  style={{ backgroundColor: color }}
-                                  title={color}
-                                  onClick={() => { navigator.clipboard.writeText(color); toast.success(`HEX ${color} disalin!`); }}
-                                />
-                              ))}
-                              <div className="flex flex-col justify-center ml-2">
-                                <span className="text-[10px] text-cyan-500/70 font-mono uppercase tracking-widest">Visual Harmony</span>
-                                <span className="text-[8px] text-cyan-500/40 font-mono">Click to copy HEX</span>
-                              </div>
-                            </div>
-                          </div>
-                        )}
                       </div>
                     </div>
                     
                     <p className="text-center text-cyan-500/70 text-xs mt-6 bg-[#050505] p-3 rounded-lg border border-cyan-500/30 font-mono">
                       <Sparkles className="w-3 h-3 inline-block mr-1 text-fuchsia-500" />
                       Hanya menampilkan 1 prompt terakhir untuk menghemat memori browser. <br/>
-                      Silakan klik <strong className="text-cyan-300">Download TXT</strong> atau <strong className="text-cyan-300">Export CSV</strong> untuk melihat dan menyimpan seluruh {generatedPrompts.length} prompt.
+                      Silakan klik <strong className="text-cyan-300">Download TXT</strong> untuk melihat dan menyimpan seluruh {generatedPrompts.length} prompt.
                     </p>
                   </div>
                 ) : (

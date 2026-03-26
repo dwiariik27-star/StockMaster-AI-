@@ -74,12 +74,7 @@ export function VisionTab({ getAIClient, callAI, onSendToProduction }: VisionTab
           "colorGrading": string
         },
         "reverseEngineeredPrompt": {
-          "positivePrompt": string,
-          "negativePrompt": string,
-          "aspectRatio": string,
-          "title": string,
-          "keywords": string[],
-          "categoryId": number
+          "positivePrompt": string
         }
       }`;
 
@@ -176,9 +171,6 @@ export function VisionTab({ getAIClient, callAI, onSendToProduction }: VisionTab
                 <div>
                   <span className="text-xs font-bold text-cyan-500/70 uppercase tracking-wider mb-2 block font-mono">Positive Prompt</span>
                   <p className="text-sm text-cyan-50 leading-relaxed font-medium bg-[#050505] p-4 rounded-md border border-cyan-500/30">{visionResult.reverseEngineeredPrompt.positivePrompt}</p>
-                </div>
-                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-cyan-950/40 border border-cyan-500/40 rounded-md text-xs font-medium text-cyan-300 font-mono shadow-[0_0_8px_rgba(6,182,212,0.2)]">
-                  <Box className="w-3 h-3 text-cyan-400" /> Aspect Ratio: {visionResult.reverseEngineeredPrompt.aspectRatio}
                 </div>
               </CardContent>
             </Card>
