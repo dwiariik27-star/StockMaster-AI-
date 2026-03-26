@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { createGroq } from '@ai-sdk/groq';
 import { generateText } from 'ai';
+import { toast } from 'sonner';
 
 export type AIProvider = 'google' | 'groq';
 
