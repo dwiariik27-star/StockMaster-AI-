@@ -53,7 +53,22 @@ export function ProductionTab({
   const [isCohesive, setIsCohesive] = useState(false);
   const [batchStatus, setBatchStatus] = useState('');
   const [marketIntel, setMarketIntel] = useState<string[]>([]);
+  const [activeModel, setActiveModel] = useState('');
   const abortControllerRef = useRef<AbortController | null>(null);
+
+  const GOOGLE_MODELS = [
+    'gemini-3.1-flash-lite-preview',
+    'gemini-3-flash-preview',
+    'gemini-3.1-pro-preview'
+  ];
+
+  const GROQ_MODELS = [
+    'llama-3.3-70b-versatile',
+    'llama-3.1-8b-instant',
+    'meta-llama/llama-4-scout-17b-16e-instruct',
+    'meta-llama/llama-prompt-guard-2-22m',
+    'meta-llama/llama-prompt-guard-2-86m'
+  ];
 
   useEffect(() => {
     const savedIntel = localStorage.getItem('stockmaster_market_intel');
@@ -85,6 +100,7 @@ export function ProductionTab({
     
     abortControllerRef.current = new AbortController();
     let accumulatedPrompts: GeneratedPrompt[] = [];
+    const exhaustedModels = new Set<string>();
 
     try {
       // 1. Market Intelligence & Niche Discovery Phase
@@ -274,7 +290,29 @@ ${parametricRules}`;
         const remaining = targetCount - accumulatedPrompts.length;
         let currentBatchSize = Math.min(5, remaining);
         
-        setBatchStatus(`Generating batch... (${accumulatedPrompts.length}/${targetCount})`);
+        // Smart Model Rotation & Exhaustion Check
+        const providerModels = selectedProvider === 'google' ? GOOGLE_MODELS : GROQ_MODELS;
+        
+        // Check if all models for this provider are exhausted
+        if (exhaustedModels.size >= providerModels.length) {
+          toast.error(`⚠️ SEMUA MODEL ${selectedProvider.toUpperCase()} TELAH MENCAPAI LIMIT. Produksi dihentikan otomatis.`);
+          break;
+        }
+
+        let modelIdx = batchIndex % providerModels.length;
+        let currentModelId = providerModels[modelIdx];
+        
+        // Skip exhausted models in rotation
+        let skipCount = 0;
+        while (exhaustedModels.has(currentModelId) && skipCount < providerModels.length) {
+          modelIdx = (modelIdx + 1) % providerModels.length;
+          currentModelId = providerModels[modelIdx];
+          skipCount++;
+        }
+
+        setActiveModel(currentModelId);
+        
+        setBatchStatus(`Batching with ${currentModelId.split('/').pop()}... (${accumulatedPrompts.length}/${targetCount})`);
         
         const baseTemp = creativity / 100;
         const currentTemp = Math.min(baseTemp + (batchIndex / Math.max(1, Math.ceil(targetCount / 5))) * 0.4, 2.0);
@@ -306,6 +344,7 @@ ${parametricRules}`;
               system: getSystemInstruction(currentBatchSize) + dynamicInstruction,
               temperature: currentTemp,
               jsonMode: true,
+              model: currentModelId,
               maxTokens: selectedProvider === 'groq' ? 4000 : 12000
             });
 
@@ -344,6 +383,15 @@ ${parametricRules}`;
               }
             }
           } catch (error: any) {
+            const errorMsg = error.message || '';
+            const isQuotaError = errorMsg.includes('429') || errorMsg.includes('RESOURCE_EXHAUSTED') || errorMsg.includes('Rate limit');
+            
+            if (isQuotaError) {
+              exhaustedModels.add(currentModelId);
+              console.warn(`Model ${currentModelId} reached quota limit. Added to exhausted list.`);
+              toast.warning(`Model ${currentModelId.split('/').pop()} mencapai limit. Mencoba model lain...`);
+            }
+
             console.error(`Batch attempt ${retryCount + 1} failed:`, error);
             retryCount++;
             
@@ -585,7 +633,8 @@ ${parametricRules}`;
             ) : (
               <div className="space-y-6">
                 <div className="p-4 bg-[#050505] border border-cyan-500/30 rounded-lg text-center shadow-[inset_0_0_15px_rgba(6,182,212,0.05)]">
-                  <h3 className="text-cyan-300 text-lg font-medium mb-3 font-mono">Auto-Batching Status</h3>
+                  <h3 className="text-cyan-300 text-lg font-medium mb-1 font-mono">Auto-Batching Status</h3>
+                  <p className="text-[10px] text-fuchsia-400 font-mono mb-3 animate-pulse">Active Model: {activeModel || selectedModel}</p>
                   <div className="w-full bg-cyan-950/30 rounded-full h-4 mb-3 border border-cyan-500/50 overflow-hidden">
                     <div className="bg-fuchsia-500 h-4 transition-all duration-500 relative shadow-[0_0_10px_rgba(217,70,239,0.8)]" style={{ width: `${Math.min(100, (currentCount / targetCount) * 100)}%` }}>
                       <div className="absolute inset-0 bg-white/20 animate-[shimmer_2s_infinite]"></div>
