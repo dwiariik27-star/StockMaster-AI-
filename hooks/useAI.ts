@@ -107,6 +107,8 @@ export function useAI() {
       
       // Pick a random key from the list
       const selectedKey = keys[Math.floor(Math.random() * keys.length)];
+      const keySnippet = `${selectedKey.substring(0, 8)}...${selectedKey.substring(selectedKey.length - 4)}`;
+      console.log(`[Groq] Using API Key (Random): ${keySnippet}`);
       
       return createGroq({ apiKey: selectedKey });
     }
@@ -123,7 +125,6 @@ export function useAI() {
     useSearch?: boolean;
   }) => {
     const providerType = options.provider || selectedProvider;
-    const provider = getAIClient(providerType);
     
     let modelId = options.model;
     if (!modelId) {
@@ -136,14 +137,89 @@ export function useAI() {
       }
     }
     
-    // Groq models have lower output token limits (usually 4096-8192)
-    // Gemini can handle much more. We adjust maxTokens to avoid errors.
+    // Groq models have lower output token limits
     let finalMaxTokens = options.maxTokens;
     if (providerType === 'groq') {
-      // Limit to 8192 for Groq to be safe, or 4096 if not specified
       finalMaxTokens = Math.min(options.maxTokens || 4096, 8192);
     }
 
+    // --- Groq Key Rotation Logic ---
+    if (providerType === 'groq') {
+      const keys = groqApiKey.split(/[,\n]/).map(k => k.trim()).filter(Boolean);
+      if (keys.length === 0) throw new Error('Groq API Key tidak ditemukan.');
+
+      let lastError: any = null;
+      // Try each key if we hit rate limits
+      for (let i = 0; i < keys.length; i++) {
+        const currentKey = keys[i];
+        const keySnippet = `${currentKey.substring(0, 8)}...${currentKey.substring(currentKey.length - 4)}`;
+        
+        console.log(`[Groq] Using API Key: ${keySnippet}`);
+        
+        try {
+          const provider = createGroq({ apiKey: currentKey });
+          
+          const { text } = await generateText({
+            model: provider(modelId),
+            prompt: options.prompt,
+            system: options.system,
+            temperature: options.temperature,
+            maxTokens: finalMaxTokens,
+            ...(options.jsonMode ? { responseFormat: { type: 'json' } } : {}),
+            // Enable Web Grounding for Groq via Gemini Tool (if available)
+            ...(options.useSearch && (geminiApiKey || process.env.NEXT_PUBLIC_GEMINI_API_KEY) ? {
+              tools: {
+                web_search: {
+                  description: 'Search the web for real-time market data, trends, and Adobe Stock insights.',
+                  parameters: {
+                    type: 'object',
+                    properties: {
+                      query: { type: 'string', description: 'The search query to find latest data.' }
+                    },
+                    required: ['query']
+                  },
+                  execute: async ({ query }: { query: string }) => {
+                    try {
+                      const searchRes = await generateText({
+                        model: createGoogleGenerativeAI({ apiKey: geminiApiKey || process.env.NEXT_PUBLIC_GEMINI_API_KEY! })('gemini-3-flash-preview'),
+                        prompt: `Search for this and provide a detailed summary of findings: ${query}`,
+                        tools: {
+                          google_search: {
+                            description: 'Search Google.',
+                            parameters: { type: 'object', properties: {} }
+                          }
+                        }
+                      } as any);
+                      return searchRes.text;
+                    } catch (e) {
+                      console.error("Web Search Tool Error:", e);
+                      return "Gagal mengambil data real-time. Melanjutkan dengan pengetahuan internal.";
+                    }
+                  }
+                }
+              },
+              maxSteps: 3
+            } : {}),
+          } as any);
+
+          return { text };
+        } catch (error: any) {
+          lastError = error;
+          const isRateLimit = error.status === 429 || error.message?.includes('429') || error.message?.includes('rate limit') || error.message?.includes('exhausted');
+          
+          if (isRateLimit && i < keys.length - 1) {
+            console.warn(`Groq Key [${keySnippet}] hit limit. Rotating to next key...`);
+            toast.info(`Key Groq limit tercapai. Merotasi ke key berikutnya... (${i + 2}/${keys.length})`);
+            continue; // Try next key
+          }
+          throw error; // If not rate limit or no more keys, throw
+        }
+      }
+      throw lastError;
+    }
+
+    // --- Default Gemini Logic ---
+    const provider = getAIClient('google');
     const { text } = await generateText({
       model: provider(modelId),
       prompt: options.prompt,
@@ -151,48 +227,13 @@ export function useAI() {
       temperature: options.temperature,
       maxTokens: finalMaxTokens,
       ...(options.jsonMode ? { responseFormat: { type: 'json' } } : {}),
-      // Enable Google Search Grounding for Gemini if requested
-      ...(options.useSearch && providerType === 'google' ? {
+      ...(options.useSearch ? {
         tools: {
           google_search: {
             description: 'Search Google for the latest market trends and Adobe Stock data.',
             parameters: { type: 'object', properties: {} }
           }
         }
-      } : {}),
-      // Enable Web Grounding for Groq via Gemini Tool (if available)
-      ...(options.useSearch && providerType === 'groq' && (geminiApiKey || process.env.NEXT_PUBLIC_GEMINI_API_KEY) ? {
-        tools: {
-          web_search: {
-            description: 'Search the web for real-time market data, trends, and Adobe Stock insights.',
-            parameters: {
-              type: 'object',
-              properties: {
-                query: { type: 'string', description: 'The search query to find latest data.' }
-              },
-              required: ['query']
-            },
-            execute: async ({ query }: { query: string }) => {
-              try {
-                const searchRes = await generateText({
-                  model: getAIClient('google')('gemini-3-flash-preview'),
-                  prompt: `Search for this and provide a detailed summary of findings: ${query}`,
-                  tools: {
-                    google_search: {
-                      description: 'Search Google.',
-                      parameters: { type: 'object', properties: {} }
-                    }
-                  }
-                } as any);
-                return searchRes.text;
-              } catch (e) {
-                console.error("Web Search Tool Error:", e);
-                return "Gagal mengambil data real-time. Melanjutkan dengan pengetahuan internal.";
-              }
-            }
-          }
-        },
-        maxSteps: 3 // Allow Groq to call the search tool and then generate the final response
       } : {}),
     } as any);
 

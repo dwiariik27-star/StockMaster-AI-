@@ -49,23 +49,23 @@ export function VisionTab({ getAIClient, callAI, onSendToProduction }: VisionTab
     try {
       const base64Data = await fileToBase64(imageFile);
 
-      const systemInstruction = `Anda adalah Elite Art Director, Master of Visual Semiotics, & Reverse Engineer untuk Adobe Stock. Tugas Anda adalah membedah gambar yang diberikan dan mengekstrak teknik teknisnya secara presisi, lalu membuatkan Positive & Negative Prompt (Nano Banana Pro) untuk mereplikasi kualitas komersialnya.
-      
-      ANALISIS ANDA HARUS MENCAKUP:
-      1. "Commercial Deconstruction": Mengapa gambar ini laku? Apa pesan psikologisnya?
-      2. "Technical Extraction": Detail pencahayaan (lighting setup), lensa (focal length), dan color grading (film stock emulation).
-      3. "Prompt Engineering": Rakit prompt yang menggunakan formula Nano Banana Pro Ultimate.
+      const systemInstruction = `You are the World-Class Elite Art Director, Master of Visual Semiotics, & Reverse Engineer for Adobe Stock. Your mission is to dissect the provided image, extract its precise technical techniques, and generate high-end Positive & Negative Prompts (Nano Banana Pro) to replicate its commercial quality.
 
-      ATURAN WAJIB NANO BANANA PRO UNTUK REVERSE ENGINEERING:
-      1. Positive Prompt WAJIB mematuhi kerangka: [Subject] + [Action] + [Storytelling Context] + [Composition & DoF] + [Lighting & Style] + [Optical & Film Emulation] + [Commercial Utility].
-      2. Ekstrak secara spesifik elemen optik yang terlihat di gambar (misal: "anamorphic lens flare", "creamy bokeh", "film grain", "chromatic aberration", "cinematic halation") dan masukkan ke dalam Positive Prompt.
-      3. Negative Prompt WAJIB menggunakan DYNAMIC CONTEXTUAL SYNTHESIS:
-         - Mulai dengan Base Rejections: "watermark, text, signature, logo, trademark, copyright, blurry, cropped, out of focus, low quality, jpeg artifacts, noise, pixelated, ai generated, generic".
-         - Analisis subjek gambar dan tambahkan penolakan spesifik (misal: jika gambar manusia, tambahkan "ugly, deformed, extra limbs, fused fingers, asymmetrical eyes, plastic skin, bad anatomy").
-         - Gabungkan semuanya menjadi SATU string comma-separated.
-      4. LANGUAGE MANDATE: Seluruh output pada field "positivePrompt", "negativePrompt", "title", dan "keywords" WAJIB menggunakan Bahasa Inggris (English).
+      YOUR ANALYSIS MUST COVER:
+      1. "Commercial Deconstruction": Why is this image successful? What is its psychological message?
+      2. "Technical Extraction": Lighting setup, lens choice (focal length), and color grading (film stock emulation).
+      3. "Prompt Engineering": Construct a prompt using the Nano Banana Pro Ultimate formula.
+
+      MANDATORY NANO BANANA PRO REVERSE ENGINEERING RULES:
+      1. Positive Prompt MUST follow the 7-part sequence: [Subject] + [Action] + [Storytelling Context] + [Composition & DoF] + [Lighting & Style] + [Optical & Film Emulation] + [Commercial Utility].
+      2. Extract specific optical elements visible in the image (e.g., "anamorphic lens flare", "creamy bokeh", "film grain", "chromatic aberration", "cinematic halation") and include them in the Positive Prompt.
+      3. Negative Prompt MUST use DYNAMIC CONTEXTUAL SYNTHESIS:
+         - Start with Base Rejections: "watermark, text, signature, logo, trademark, copyright, blurry, cropped, out of focus, low quality, jpeg artifacts, noise, pixelated, ai generated, generic".
+         - Analyze the image subject and add specific rejections (e.g., if human, add "ugly, deformed, extra limbs, fused fingers, asymmetrical eyes, plastic skin, bad anatomy").
+         - Combine everything into ONE comma-separated string.
+      4. LANGUAGE MANDATE: All output in "positivePrompt", "negativePrompt", "title", and "keywords" MUST be in English.
       
-      Output harus dalam format JSON sesuai schema berikut:
+      Output must be in JSON format matching this schema:
       {
         "commercialDeconstruction": string,
         "technicalExtraction": {
@@ -84,9 +84,9 @@ export function VisionTab({ getAIClient, callAI, onSendToProduction }: VisionTab
       }`;
 
       const { text } = await callAI({
-        prompt: `Lakukan Reverse-Prompt Engineering tingkat lanjut pada gambar ini untuk keperluan Adobe Stock. 
-        Bedah secara mendalam mengapa komposisi ini memiliki nilai komersial tinggi (Utility Value), ekstrak teknik teknisnya (lighting, lens, color), dan buatkan Positive & Negative Prompt yang sangat detail untuk mereplikasi gaya, mood, dan kualitas gambar ini tanpa menjiplak subjek utamanya secara persis. 
-        Fokuskan pada "Commercial Masterpiece" quality.`,
+        prompt: `Perform advanced Reverse-Prompt Engineering on this image for Adobe Stock. 
+        Deeply dissect why this composition has high commercial value (Utility Value), extract its technical techniques (lighting, lens, color), and create highly detailed Positive & Negative Prompts to replicate the style, mood, and quality of this image without exactly copying the main subject. 
+        Focus on "Commercial Masterpiece" quality.`,
         image: { data: base64Data, mimeType: imageFile.type },
         system: systemInstruction,
         temperature: 0.4,

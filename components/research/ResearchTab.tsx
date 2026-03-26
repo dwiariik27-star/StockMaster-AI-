@@ -35,19 +35,22 @@ export function ResearchTab({ getAIClient, callAI, apiKey, selectedProvider, onS
     setIsResearching(true); setResearchResult(null);
     
     try {
-      const systemInstruction = `Anda adalah Elite Microstock Market Analyst dan Pakar Blue Ocean Strategy tingkat dunia. Berikan analisis yang sangat mendalam, temukan celah pasar yang belum banyak digarap kompetitor (Blue Ocean), dan berorientasi pada penjualan komersial tinggi di Adobe Stock.
+      const systemInstruction = `You are the World-Class Elite Microstock Market Analyst & Blue Ocean Strategy Expert for Adobe Stock. Your mission is to provide deep, data-driven market intelligence to find "Blue Ocean" opportunities—high-demand niches with low competition.
+
+      YOUR ANALYSIS MUST COVER:
+      1. "Market Intelligence": Current trends, cultural shifts, and industry needs driving demand.
+      2. "Niche Discovery": Identification of highly specific sub-niches (long-tail keywords) with high conversion potential.
+      3. "Technical Excellence": Technical quality standards required for the niche to avoid rejection.
       
-      ANALISIS ANDA HARUS MENCAKUP:
-      1. "Market Intelligence": Data tren terkini, pergeseran budaya, dan kebutuhan industri yang memicu permintaan.
-      2. "Niche Discovery": Identifikasi sub-niche yang sangat spesifik (long-tail keywords) dengan potensi konversi tinggi.
-      3. "Technical Excellence": Standar kualitas teknis yang dibutuhkan untuk niche tersebut agar tidak ditolak.
+      CRITICAL: REJECTION RISKS CATEGORIZATION:
+      You MUST categorize 'rejectionRisks' into these 3 specific areas:
+      1. "Compositional Risks": Framing issues, poor lighting, lack of copy space, boring angles.
+      2. "Technical Artifacts": AI artifacts, strange anatomy, noise, blur, over-sharpening, excessive chromatic aberration.
+      3. "Content Violations": Copyright infringement, logos, trademarks, private property, faces without model releases.
       
-      PENTING UNTUK REJECTION RISKS: Anda WAJIB membagi 'rejectionRisks' ke dalam 3 kategori baku berikut agar sangat actionable:
-      1. "Compositional Risks" (Masalah framing, pencahayaan buruk, lack of copy space, angle membosankan)
-      2. "Technical Artifacts" (Cacat AI, anatomi aneh, noise, blur, over-sharpening, chromatic aberration berlebih)
-      3. "Content Violations" (Pelanggaran hak cipta, logo, trademark, properti pribadi, wajah tanpa rilis model)
+      LANGUAGE MANDATE: All textual analysis, sub-niche names, reasons, and SEO tags MUST be in English.
       
-      Output harus dalam format JSON sesuai schema berikut:
+      Output must be in JSON format matching this schema:
       {
         "trendScore": number,
         "saturationIndex": number,
@@ -64,10 +67,10 @@ export function ResearchTab({ getAIClient, callAI, apiKey, selectedProvider, onS
         "seoTags": string[]
       }`;
 
-      const prompt = `Lakukan analisis intelijen pasar microstock dan Adobe Stock terbaru terkait topik: "${researchTopic}". 
-      Terapkan metode "Niche Market Discovery" dan "Blue Ocean Strategy". 
-      Analisis tingkat permintaan pasar, tingkat kompetisi, kejenuhan pasar, persona pembeli (siapa yang akan membeli aset ini?), palet warna yang sedang tren secara psikologis, dan temukan celah pasar (uncontested market space) di mana permintaan tinggi namun kompetisi/suplai aset masih sangat rendah.
-      Berikan rekomendasi 5 sub-niche "Blue Ocean" yang paling menguntungkan dengan alasan komersial yang kuat.`;
+      const prompt = `Perform a deep microstock and Adobe Stock market intelligence analysis for the topic: "${researchTopic}". 
+      Apply "Niche Market Discovery" and "Blue Ocean Strategy" methods. 
+      Analyze market demand, competition levels, saturation, buyer personas (who buys this?), psychologically trending color palettes, and find "Blue Ocean" gaps where demand is high but supply/competition is low.
+      Provide 5 most profitable "Blue Ocean" sub-niche recommendations with strong commercial justifications.`;
 
       const { text } = await callAI({
         prompt,
