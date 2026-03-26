@@ -214,6 +214,7 @@ ATURAN WAJIB ADOBE STOCK LUXURY STANDARDS:
 8. Optical & Film Emulation: Gunakan efek optik yang halus dan mahal: "subtle anamorphic lens flare", "creamy circular bokeh", "fine-grained film stock (Kodak Portra 160)", "natural halation on highlights".
 9. Tipografi & Integritas Teks: Jika ada teks, gunakan font serif elegan atau sans-serif modern yang bersih. Teks harus terlihat seperti bagian dari desain produk mewah yang nyata.
 10. Commercial Utility: Targetkan pasar "Luxury Real Estate", "High-End Tech", "Premium Wellness", "Gourmet Culinary", dan "Elite Corporate".
+11. LANGUAGE MANDATE: Seluruh output pada field "positivePrompt", "negativePrompt", dan "keywords" WAJIB menggunakan Bahasa Inggris (English) untuk kompatibilitas global Adobe Stock.
 
 WAJIB: Output harus berupa JSON array murni. Jangan tambahkan teks penjelasan, pembukaan, atau penutup. Jangan gunakan blok kode markdown (seperti \`\`\`json). Langsung berikan array JSON.
 

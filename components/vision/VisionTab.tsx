@@ -63,6 +63,7 @@ export function VisionTab({ getAIClient, callAI, onSendToProduction }: VisionTab
          - Mulai dengan Base Rejections: "watermark, text, signature, logo, trademark, copyright, blurry, cropped, out of focus, low quality, jpeg artifacts, noise, pixelated, ai generated, generic".
          - Analisis subjek gambar dan tambahkan penolakan spesifik (misal: jika gambar manusia, tambahkan "ugly, deformed, extra limbs, fused fingers, asymmetrical eyes, plastic skin, bad anatomy").
          - Gabungkan semuanya menjadi SATU string comma-separated.
+      4. LANGUAGE MANDATE: Seluruh output pada field "positivePrompt", "negativePrompt", "title", dan "keywords" WAJIB menggunakan Bahasa Inggris (English).
       
       Output harus dalam format JSON sesuai schema berikut:
       {
