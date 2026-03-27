@@ -15,6 +15,7 @@ export interface CategorizedList {
 
 export interface GeneratedPrompt { 
   positivePrompt: string; 
+  negativePrompt?: string;
 }
 
 export interface ResearchResult {

@@ -272,8 +272,9 @@ export function ProductionTab({
         
         setBatchStatus(`Batching with ${currentModelId.split('/').pop()}... (${accumulatedPrompts.length}/${targetCount})`);
         
+        // Cap temperature at 1.1 to ensure strict adherence to Adobe Stock Quality Mandate and JSON formatting
         const baseTemp = creativity / 100;
-        const currentTemp = Math.min(baseTemp + (batchIndex / Math.max(1, Math.ceil(targetCount / 5))) * 0.4, 2.0);
+        const currentTemp = Math.min(baseTemp + (batchIndex / Math.max(1, Math.ceil(targetCount / 5))) * 0.3, 1.1);
         const currentTheme = dynamicThemes[batchIndex % dynamicThemes.length];
 
         let explorationInstruction = "";
@@ -347,8 +348,16 @@ export function ProductionTab({
                   }
                   
                   const finalPositive = p.positivePrompt || p.prompt || p.description || p.text || `High quality commercial asset of ${keyword}`;
+                  const finalNegative = p.negativePrompt || "ugly, deformed, artifacts, text, watermark, signature, blurry, out of focus, bad anatomy, bad proportions, bad lighting, overexposed, underexposed, noise, grain, gibberish";
+                  const finalTitle = p.title || `Premium ${keyword} asset`;
+                  const finalKeywords = Array.isArray(p.keywords) ? p.keywords : [];
                   
-                  return { positivePrompt: finalPositive };
+                  return { 
+                    positivePrompt: finalPositive,
+                    negativePrompt: finalNegative,
+                    title: finalTitle,
+                    keywords: finalKeywords
+                  };
                 });
                 
                 accumulatedPrompts = [...accumulatedPrompts, ...newPrompts];
@@ -427,7 +436,11 @@ export function ProductionTab({
     if (generatedPrompts.length === 0) return;
     
     const txtContent = generatedPrompts
-      .map(p => p.positivePrompt)
+      .map(p => {
+        const pos = p.positivePrompt.replace(/\n/g, ' ').trim();
+        const neg = p.negativePrompt ? p.negativePrompt.replace(/\n/g, ' ').trim() : '';
+        return neg ? `${pos} ${neg}` : pos;
+      })
       .join('\n\n');
 
     const blob = new Blob([txtContent], { type: "text/plain;charset=utf-8" });
@@ -441,7 +454,11 @@ export function ProductionTab({
 
   const copyAllPrompts = () => {
     const textToCopy = generatedPrompts
-      .map(p => p.positivePrompt)
+      .map(p => {
+        const pos = p.positivePrompt.replace(/\n/g, ' ').trim();
+        const neg = p.negativePrompt ? p.negativePrompt.replace(/\n/g, ' ').trim() : '';
+        return neg ? `${pos} ${neg}` : pos;
+      })
       .join('\n\n');
     navigator.clipboard.writeText(textToCopy);
     toast.success('All prompts copied to clipboard!');
@@ -622,6 +639,15 @@ export function ProductionTab({
                             <Button size="icon" variant="ghost" className="absolute top-2 right-2 h-6 w-6 text-cyan-500 hover:text-cyan-300 hover:bg-cyan-950/50" onClick={() => { navigator.clipboard.writeText(generatedPrompts[generatedPrompts.length - 1].positivePrompt); toast.success('Prompt disalin!'); }}><Copy className="w-3 h-3" /></Button>
                           </div>
                         </div>
+                        {generatedPrompts[generatedPrompts.length - 1].negativePrompt && (
+                          <div className="space-y-1">
+                            <Label className="text-[10px] uppercase tracking-wider text-fuchsia-500/70 font-mono">Negative Prompt (Quality Guard)</Label>
+                            <div className="relative">
+                              <p className="text-sm text-fuchsia-50/80 leading-relaxed bg-[#0a0a0a] p-3 rounded border border-fuchsia-500/30">{generatedPrompts[generatedPrompts.length - 1].negativePrompt}</p>
+                              <Button size="icon" variant="ghost" className="absolute top-2 right-2 h-6 w-6 text-fuchsia-500 hover:text-fuchsia-300 hover:bg-fuchsia-950/50" onClick={() => { navigator.clipboard.writeText(generatedPrompts[generatedPrompts.length - 1].negativePrompt!); toast.success('Negative Prompt disalin!'); }}><Copy className="w-3 h-3" /></Button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                     
