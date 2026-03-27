@@ -65,11 +65,35 @@ export function ProductionTab({
 
   const GROQ_MODELS = [
     'llama-3.3-70b-versatile',
-    'deepseek-r1-distill-llama-70b',
-    'mixtral-8x7b-32768',
-    'deepseek-r1-distill-qwen-32b',
     'llama-3.1-8b-instant',
     'gemma2-9b-it'
+  ];
+
+  const MISTRAL_MODELS = [
+    'mistral-large-latest',
+    'mistral-small-latest',
+    'pixtral-12b-2409',
+    'ministral-8b-latest',
+    'ministral-3b-latest',
+    'codestral-latest'
+  ];
+
+  const OPENROUTER_MODELS = [
+    'google/gemini-2.5-flash:free',
+    'meta-llama/llama-3.3-70b-instruct:free',
+    'deepseek/deepseek-r1:free',
+    'deepseek/deepseek-chat:free',
+    'mistralai/mistral-nemo:free',
+    'qwen/qwen-2.5-72b-instruct:free'
+  ];
+
+  const NVIDIA_MODELS = [
+    'meta/llama-3.1-70b-instruct',
+    'meta/llama-3.1-8b-instruct',
+    'mistralai/mistral-large-2-instruct',
+    'mistralai/mixtral-8x22b-instruct-v0.1',
+    'google/gemma-2-27b-it',
+    'google/gemma-2-9b-it'
   ];
 
   useEffect(() => {
@@ -221,7 +245,11 @@ export function ProductionTab({
         let currentBatchSize = Math.min(5, remaining);
         
         // Smart Model Rotation & Exhaustion Check
-        const providerModels = selectedProvider === 'google' ? GOOGLE_MODELS : GROQ_MODELS;
+        let providerModels = GOOGLE_MODELS;
+        if (selectedProvider === 'groq') providerModels = GROQ_MODELS;
+        else if (selectedProvider === 'mistral') providerModels = MISTRAL_MODELS;
+        else if (selectedProvider === 'openrouter') providerModels = OPENROUTER_MODELS;
+        else if (selectedProvider === 'nvidia') providerModels = NVIDIA_MODELS;
         
         // Check if all models for this provider are exhausted
         if (exhaustedModels.size >= providerModels.length) {
@@ -290,7 +318,7 @@ export function ProductionTab({
               temperature: currentTemp,
               jsonMode: true,
               model: currentModelId,
-              maxTokens: selectedProvider === 'groq' ? 4000 : 12000
+              maxTokens: selectedProvider === 'groq' ? 4000 : (selectedProvider === 'mistral' ? 8000 : 12000)
             });
 
             if (batchText) {
@@ -339,12 +367,16 @@ export function ProductionTab({
             }
           } catch (error: any) {
             const errorMsg = error.message || '';
-            const isQuotaError = errorMsg.includes('429') || errorMsg.includes('RESOURCE_EXHAUSTED') || errorMsg.includes('Rate limit');
+            const isQuotaError = errorMsg.includes('429') || errorMsg.includes('RESOURCE_EXHAUSTED') || errorMsg.includes('Rate limit') || errorMsg.includes('quota') || errorMsg.includes('decommissioned') || errorMsg.includes('does not exist');
             
             if (isQuotaError) {
               exhaustedModels.add(currentModelId);
-              console.warn(`Model ${currentModelId} reached quota limit. Added to exhausted list.`);
-              toast.warning(`Model ${currentModelId.split('/').pop()} reached limit. Trying another model...`);
+              console.warn(`Model ${currentModelId} failed or reached limit. Added to exhausted list.`);
+              toast.warning(`Model ${currentModelId.split('/').pop()} failed. Trying another model...`);
+              
+              // If we hit a quota/decommissioned error, immediately break out of the retry loop 
+              // for THIS model and let the outer while loop pick the next model.
+              break; 
             }
 
             console.error(`Batch attempt ${retryCount + 1} failed:`, error);
@@ -355,12 +387,17 @@ export function ProductionTab({
               setBatchStatus(`Retrying with smaller batch size (${currentBatchSize})...`);
               await new Promise(resolve => setTimeout(resolve, 2000 * retryCount));
             } else {
-              toast.error(`Failed to process batch. Continuing to next batch...`);
-              batchSuccess = true; 
+              toast.error(`Failed to process batch with ${currentModelId.split('/').pop()}. Continuing...`);
+              break; // Give up on this specific batch iteration, move to next
             }
           }
         }
-        batchIndex++;
+        
+        // Only increment batchIndex if we successfully generated prompts OR if we exhausted retries
+        // If we broke out early due to quota, we want to retry the SAME batch index with the NEXT model
+        if (batchSuccess || retryCount > maxRetries) {
+          batchIndex++;
+        }
       }
       
       if (!abortControllerRef.current?.signal.aborted) {

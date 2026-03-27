@@ -27,7 +27,16 @@ export default function StockMasterDashboard() {
   if (!ai.isMounted) return null;
 
   // --- Derived State ---
-  const hasApiKey = ai.selectedProvider === 'google' ? !!ai.apiKey : !!ai.groqApiKey;
+  const hasApiKey = (() => {
+    switch (ai.selectedProvider) {
+      case 'google': return !!ai.apiKey;
+      case 'groq': return !!ai.groqApiKey;
+      case 'mistral': return !!ai.mistralApiKey;
+      case 'openrouter': return !!ai.openRouterApiKey;
+      case 'nvidia': return !!ai.nvidiaApiKey;
+      default: return false;
+    }
+  })();
 
   // --- Navigation Handlers ---
   const handleSendToProduction = (nicheName: string) => {
